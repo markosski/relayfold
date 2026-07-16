@@ -5,11 +5,17 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "0.0.0.0:3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       RUNHELM_USE_GLOBAL_NAMESPACE: "true"
       RUNHELM_WORKER_HTTP_ADDR: 0.0.0.0:3001
-      RUNHELM_STORAGE: sql
-      RUNHELM_DATABASE_URL: sqlite:///data/runhelm.db
+      RUNHELM_STORAGE: mysql
+      RUNHELM_STORE_MYSQL_HOST: ${RUNHELM_STORE_MYSQL_HOST:-host.docker.internal}
+      RUNHELM_STORE_MYSQL_PORT: ${RUNHELM_STORE_MYSQL_PORT:-3306}
+      RUNHELM_STORE_MYSQL_DATABASE: ${RUNHELM_STORE_MYSQL_DATABASE:-runhelm}
+      RUNHELM_STORE_MYSQL_USERNAME: ${RUNHELM_STORE_MYSQL_USERNAME:-root}
+      RUNHELM_STORE_MYSQL_PASSWORD: ${RUNHELM_STORE_MYSQL_PASSWORD:-pass}
     read_only: true
     tmpfs:
       - /tmp
@@ -20,9 +26,6 @@ services:
       interval: 5s
       timeout: 2s
       retries: 12
-    volumes:
-      - ${HOME}/.runhelm/sqlite:/data
-
   worker:
     build:
       context: ./worker

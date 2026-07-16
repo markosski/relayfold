@@ -251,6 +251,33 @@ npm run dev
 
 The website serves a custom homepage at `/` and Starlight documentation under `/docs/`. See `docs/website.md` for the site structure and content policy.
 
+## Testing
+
+Run the orchestrator unit tests from the component directory:
+
+```bash
+cd orchestrator
+cargo test
+```
+
+The MySQL storage integration test is a separate, ignored test target because it requires a real database. Configure a dedicated test database and a user with migration and data privileges:
+
+```bash
+export RUNHELM_STORE_MYSQL_TEST_HOST=127.0.0.1
+export RUNHELM_STORE_MYSQL_TEST_PORT=3306
+export RUNHELM_STORE_MYSQL_TEST_DATABASE=runhelm_test
+export RUNHELM_STORE_MYSQL_TEST_USERNAME=runhelm_test
+export RUNHELM_STORE_MYSQL_TEST_PASSWORD=replace-me
+```
+
+The port is optional and defaults to `3306`; the other four variables are required. Run only the MySQL integration-test target with:
+
+```bash
+cargo test --test mysql_storage -- --ignored
+```
+
+Use a dedicated database: the test applies SQLx migrations and writes workflow, function, event, and task records. In CI, supply the password through the CI system's secret store rather than committing it.
+
 ## Direction
 
 RunHelm is aimed at teams building long-running, inspectable AI systems where workflows matter more than single prompts. The goal is a platform where agents are first-class workflow nodes, execution is isolated, contracts are typed, and operators can understand exactly what happened in every run.
