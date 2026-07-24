@@ -17,6 +17,10 @@ RUNHELM_STORAGE=memory
 
 You can also omit `RUNHELM_STORAGE`; `memory` is used automatically.
 
+In-memory definitions, workflow state, task state, events, and list results are
+isolated by the namespace selected for each request. Reusing the same definition
+or workflow ID in another namespace creates an independent in-memory resource.
+
 ## Durable SQL storage
 
 Use SQL storage when workflow definitions and workflow state should survive orchestrator restarts:

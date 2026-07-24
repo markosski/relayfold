@@ -15,9 +15,9 @@
 
 ## 3. Memory Storage Isolation
 
-- [ ] 3.1 Convert memory definition, function, workflow snapshot, summary, and event keys to namespace/resource composite identities.
-- [ ] 3.2 Scope memory lists, filters, pagination, deletes, optimistic commits, and definition last-invoked projections to the supplied namespace, while supporting recovery-only workflow-info listing without one.
-- [ ] 3.3 Add memory adapter tests proving identical IDs, reads, lists, mutations, events, tasks, and version conflicts remain isolated.
+- [x] 3.1 Convert memory definition, function, workflow snapshot, summary, and event keys to namespace/resource composite identities.
+- [x] 3.2 Scope memory lists, filters, pagination, deletes, optimistic commits, and definition last-invoked projections to the supplied namespace, while supporting recovery-only workflow-info listing without one.
+- [x] 3.3 Add or modify existing memory adapter tests proving identical IDs, reads, lists, mutations, events, tasks, and version conflicts remain isolated - only add important tests
 
 ## 4. SQL Storage Isolation and Schema Reset
 

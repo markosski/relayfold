@@ -15,13 +15,15 @@ use crate::ports::storage::{
 };
 
 pub struct MemoryStorage {
-    workflow_defs: RwLock<HashMap<String, StoredWorkflowDef>>,
-    function_defs: RwLock<HashMap<String, FunctionDef>>,
-    workflow_instances: RwLock<HashMap<String, WorkflowInstance>>,
-    workflow_instance_events: RwLock<HashMap<String, Vec<WorkflowEventRecord>>>,
-    workflow_infos: RwLock<HashMap<String, WorkflowInfo>>,
+    workflow_defs: RwLock<HashMap<ResourceKey, StoredWorkflowDef>>,
+    function_defs: RwLock<HashMap<ResourceKey, FunctionDef>>,
+    workflow_instances: RwLock<HashMap<ResourceKey, WorkflowInstance>>,
+    workflow_instance_events: RwLock<HashMap<ResourceKey, Vec<WorkflowEventRecord>>>,
+    workflow_infos: RwLock<HashMap<ResourceKey, WorkflowInfo>>,
     commit_lock: Mutex<()>,
 }
+
+type ResourceKey = (Namespace, String);
 
 struct StoredWorkflowDef {
     definition: WorkflowDef,
@@ -48,16 +50,17 @@ impl MemoryStorage {
 impl StoragePort for MemoryStorage {
     async fn save_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         def: WorkflowDef,
     ) -> StorageResult<()> {
         let mut map = self.workflow_defs.write().await;
+        let key = resource_key(namespace, &def.id);
         let created_at_epoch_ms = map
-            .get(&def.id)
+            .get(&key)
             .map(|stored| stored.created_at_epoch_ms)
             .unwrap_or(unix_timestamp_ms()?);
         map.insert(
-            def.id.clone(),
+            key,
             StoredWorkflowDef {
                 definition: def,
                 created_at_epoch_ms,
@@ -68,28 +71,32 @@ impl StoragePort for MemoryStorage {
 
     async fn get_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<WorkflowDef>> {
         let map = self.workflow_defs.read().await;
-        Ok(map.get(id).map(|stored| stored.definition.clone()))
+        Ok(map
+            .get(&resource_key(namespace, id))
+            .map(|stored| stored.definition.clone()))
     }
 
     async fn list_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
     ) -> StorageResult<Vec<WorkflowDefSummary>> {
         let _commit_guard = self.commit_lock.lock().await;
         let definitions = self.workflow_defs.read().await;
         let infos = self.workflow_infos.read().await;
         let mut summaries = definitions
-            .values()
-            .map(|stored| WorkflowDefSummary {
+            .iter()
+            .filter(|((definition_namespace, _), _)| definition_namespace == namespace)
+            .map(|(_, stored)| WorkflowDefSummary {
                 id: stored.definition.id.clone(),
                 description: stored.definition.description.clone(),
                 created_at_epoch_ms: stored.created_at_epoch_ms,
                 last_invoked_at_epoch_ms: infos
                     .values()
+                    .filter(|info| &info.namespace == namespace)
                     .filter(|info| info.workflow_def_id == stored.definition.id)
                     .filter_map(|info| info.created_at_epoch_ms)
                     .max(),
@@ -106,48 +113,48 @@ impl StoragePort for MemoryStorage {
 
     async fn save_function_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         def: FunctionDef,
     ) -> StorageResult<()> {
         let mut map = self.function_defs.write().await;
-        map.insert(def.id.clone(), def);
+        map.insert(resource_key(namespace, &def.id), def);
         Ok(())
     }
 
     async fn get_function_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<FunctionDef>> {
         let map = self.function_defs.read().await;
-        Ok(map.get(id).cloned())
+        Ok(map.get(&resource_key(namespace, id)).cloned())
     }
 
-    async fn delete_function_def(&self, _namespace: &Namespace, id: &str) -> StorageResult<bool> {
+    async fn delete_function_def(&self, namespace: &Namespace, id: &str) -> StorageResult<bool> {
         let mut map = self.function_defs.write().await;
-        Ok(map.remove(id).is_some())
+        Ok(map.remove(&resource_key(namespace, id)).is_some())
     }
 
     async fn get_workflow_instance(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<WorkflowInstance>> {
         let _commit_guard = self.commit_lock.lock().await;
         let map = self.workflow_instances.read().await;
-        Ok(map.get(id).cloned())
+        Ok(map.get(&resource_key(namespace, id)).cloned())
     }
 
     async fn list_workflow_instance_events(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         workflow_instance_id: &str,
         page: WorkflowEventPageRequest,
     ) -> StorageResult<WorkflowEventPage> {
         let _commit_guard = self.commit_lock.lock().await;
         let map = self.workflow_instance_events.read().await;
         let all = map
-            .get(workflow_instance_id)
+            .get(&resource_key(namespace, workflow_instance_id))
             .map(Vec::as_slice)
             .unwrap_or_default();
         if page.limit == 0 {
@@ -225,11 +232,12 @@ impl StoragePort for MemoryStorage {
     ) -> StorageResult<()> {
         let _commit_guard = self.commit_lock.lock().await;
         let workflow_instance_id = instance.id.clone();
+        let key = resource_key(namespace, &workflow_instance_id);
         let actual_version = self
             .workflow_instances
             .read()
             .await
-            .get(&workflow_instance_id)
+            .get(&key)
             .map(|instance| instance.version)
             .unwrap_or(0);
 
@@ -252,7 +260,7 @@ impl StoragePort for MemoryStorage {
             .unwrap_or(created_from_events_at_epoch_ms);
 
         let mut infos = self.workflow_infos.write().await;
-        let existing_info = infos.get(&workflow_instance_id);
+        let existing_info = infos.get(&key);
         let created_at_epoch_ms = existing_info
             .and_then(|info| info.created_at_epoch_ms)
             .or(Some(created_from_events_at_epoch_ms));
@@ -266,20 +274,21 @@ impl StoragePort for MemoryStorage {
             modified_at_epoch_ms,
             completed_at_epoch_ms,
         );
-        infos.insert(info.id.clone(), info);
+        infos.insert(key.clone(), info);
         drop(infos);
 
         let mut events_map = self.workflow_instance_events.write().await;
-        events_map
-            .entry(workflow_instance_id)
-            .or_default()
-            .extend(events);
+        events_map.entry(key.clone()).or_default().extend(events);
         drop(events_map);
 
         let mut instances = self.workflow_instances.write().await;
-        instances.insert(instance.id.clone(), instance);
+        instances.insert(key, instance);
         Ok(())
     }
+}
+
+fn resource_key(namespace: &Namespace, id: &str) -> ResourceKey {
+    (namespace.clone(), id.to_string())
 }
 
 fn workflow_info_matches(info: &WorkflowInfo, filter: &WorkflowInstanceFilter) -> bool {
@@ -318,10 +327,24 @@ fn workflow_completed_at(instance: &WorkflowInstance, modified_at_epoch_ms: u64)
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::function::models::FunctionDef;
+    use crate::core::namespace::Namespace;
     use crate::core::task::{TaskInstance, TaskSatisfactionStatus, TaskStatus};
     use crate::core::workflow::events::{WorkflowEventRecord, WorkflowInstanceEvent};
     use crate::ports::storage::WorkflowInfoPageRequest;
     use std::collections::HashMap;
+
+    fn namespace(value: &str) -> Namespace {
+        Namespace::new(value).unwrap()
+    }
+
+    fn first_namespace() -> Namespace {
+        namespace("550e8400-e29b-41d4-a716-446655440000")
+    }
+
+    fn second_namespace() -> Namespace {
+        namespace("550e8400-e29b-41d4-a716-446655440001")
+    }
 
     fn instance(id: &str, status: WorkflowStatus) -> WorkflowInstance {
         instance_for_def(id, "wf", status)
@@ -361,6 +384,37 @@ mod tests {
             event: WorkflowInstanceEvent::WorkflowStatusChanged {
                 status: WorkflowStatus::Running,
             },
+        }
+    }
+
+    fn workflow_def(description: &str) -> WorkflowDef {
+        WorkflowDef {
+            id: "shared-def".to_string(),
+            description: description.to_string(),
+            tasks: vec![],
+            data_bindings: vec![],
+        }
+    }
+
+    fn function_def(code: &str) -> FunctionDef {
+        FunctionDef {
+            id: "shared-function".to_string(),
+            dependencies: vec![],
+            code: code.to_string(),
+        }
+    }
+
+    fn task(output: &str) -> TaskInstance {
+        TaskInstance {
+            task_def_id: "shared-task".to_string(),
+            status: TaskStatus::Completed,
+            satisfaction_status: TaskSatisfactionStatus::Pending,
+            human_input: None,
+            input_data: vec![],
+            input_mapping: vec![],
+            output_data: Some(serde_json::json!(output)),
+            generation_index: 1,
+            verifier_metadata: None,
         }
     }
 
@@ -991,5 +1045,303 @@ mod tests {
             .unwrap();
         assert_eq!(second.items[0].created_time, 300);
         assert_eq!(second.next_cursor, None);
+    }
+
+    #[tokio::test]
+    async fn isolates_identical_definition_and_function_ids() {
+        let storage = MemoryStorage::new();
+        let first = first_namespace();
+        let second = second_namespace();
+
+        storage
+            .save_workflow_def(&first, workflow_def("first"))
+            .await
+            .unwrap();
+        storage
+            .save_workflow_def(&second, workflow_def("second"))
+            .await
+            .unwrap();
+        storage
+            .save_function_def(&first, function_def("first"))
+            .await
+            .unwrap();
+        storage
+            .save_function_def(&second, function_def("second"))
+            .await
+            .unwrap();
+
+        let mut invoked =
+            instance_for_def("shared-instance", "shared-def", WorkflowStatus::Running);
+        invoked.version = 1;
+        storage
+            .save_workflow_instance(&first, 0, vec![event_record(100)], invoked)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            storage
+                .get_workflow_def(&first, "shared-def")
+                .await
+                .unwrap()
+                .unwrap()
+                .description,
+            "first"
+        );
+        assert_eq!(
+            storage
+                .get_workflow_def(&second, "shared-def")
+                .await
+                .unwrap()
+                .unwrap()
+                .description,
+            "second"
+        );
+        assert!(
+            storage
+                .list_workflow_def(&first)
+                .await
+                .unwrap()
+                .first()
+                .unwrap()
+                .last_invoked_at_epoch_ms
+                .is_some()
+        );
+        assert_eq!(
+            storage
+                .list_workflow_def(&second)
+                .await
+                .unwrap()
+                .first()
+                .unwrap()
+                .last_invoked_at_epoch_ms,
+            None
+        );
+        assert_eq!(
+            storage
+                .get_function_def(&first, "shared-function")
+                .await
+                .unwrap()
+                .unwrap()
+                .code,
+            "first"
+        );
+        assert!(
+            storage
+                .delete_function_def(&first, "shared-function")
+                .await
+                .unwrap()
+        );
+        assert!(
+            storage
+                .get_function_def(&first, "shared-function")
+                .await
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(
+            storage
+                .get_function_def(&second, "shared-function")
+                .await
+                .unwrap()
+                .unwrap()
+                .code,
+            "second"
+        );
+    }
+
+    #[tokio::test]
+    async fn isolates_identical_workflow_snapshots_tasks_events_and_lists() {
+        let storage = MemoryStorage::new();
+        let first = first_namespace();
+        let second = second_namespace();
+        let mut first_instance = instance("shared-instance", WorkflowStatus::Running);
+        first_instance.version = 1;
+        first_instance
+            .tasks
+            .insert("shared-task[1]".to_string(), task("first"));
+        let mut second_instance = instance("shared-instance", WorkflowStatus::Completed);
+        second_instance.version = 1;
+        second_instance
+            .tasks
+            .insert("shared-task[1]".to_string(), task("second"));
+
+        storage
+            .save_workflow_instance(&first, 0, vec![event_record(100)], first_instance)
+            .await
+            .unwrap();
+        storage
+            .save_workflow_instance(
+                &second,
+                0,
+                vec![WorkflowEventRecord {
+                    created_time: 100,
+                    event: WorkflowInstanceEvent::WorkflowStatusChanged {
+                        status: WorkflowStatus::Completed,
+                    },
+                }],
+                second_instance,
+            )
+            .await
+            .unwrap();
+
+        let first_saved = storage
+            .get_workflow_instance(&first, "shared-instance")
+            .await
+            .unwrap()
+            .unwrap();
+        let second_saved = storage
+            .get_workflow_instance(&second, "shared-instance")
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(first_saved.status, WorkflowStatus::Running);
+        assert_eq!(second_saved.status, WorkflowStatus::Completed);
+        assert_eq!(
+            first_saved.tasks["shared-task[1]"].output_data,
+            Some(serde_json::json!("first"))
+        );
+        assert_eq!(
+            second_saved.tasks["shared-task[1]"].output_data,
+            Some(serde_json::json!("second"))
+        );
+
+        let first_events = storage
+            .list_workflow_instance_events(
+                &first,
+                "shared-instance",
+                WorkflowEventPageRequest {
+                    limit: 10,
+                    cursor: None,
+                },
+            )
+            .await
+            .unwrap();
+        let second_events = storage
+            .list_workflow_instance_events(
+                &second,
+                "shared-instance",
+                WorkflowEventPageRequest {
+                    limit: 10,
+                    cursor: None,
+                },
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            &first_events.items[0].event,
+            WorkflowInstanceEvent::WorkflowStatusChanged {
+                status: WorkflowStatus::Running
+            }
+        ));
+        assert!(matches!(
+            &second_events.items[0].event,
+            WorkflowInstanceEvent::WorkflowStatusChanged {
+                status: WorkflowStatus::Completed
+            }
+        ));
+
+        let first_page = storage
+            .list_workflow_info(Some(&first), list_page(), vec![])
+            .await
+            .unwrap();
+        assert_eq!(first_page.items.len(), 1);
+        assert_eq!(first_page.items[0].namespace, first);
+        assert_eq!(first_page.items[0].status, WorkflowStatus::Running);
+
+        let recovery_first_page = storage
+            .list_workflow_info(None, page_request(1, None), vec![])
+            .await
+            .unwrap();
+        assert_eq!(recovery_first_page.items.len(), 1);
+        assert!(recovery_first_page.next_cursor.is_some());
+        let recovery_second_page = storage
+            .list_workflow_info(
+                None,
+                page_request(1, recovery_first_page.next_cursor),
+                vec![],
+            )
+            .await
+            .unwrap();
+        assert_eq!(recovery_second_page.items.len(), 1);
+        assert_ne!(
+            recovery_first_page.items[0].namespace,
+            recovery_second_page.items[0].namespace
+        );
+        assert_eq!(
+            recovery_first_page.items[0].id,
+            recovery_second_page.items[0].id
+        );
+    }
+
+    #[tokio::test]
+    async fn evaluates_workflow_versions_within_each_namespace() {
+        let storage = MemoryStorage::new();
+        let first = first_namespace();
+        let second = second_namespace();
+        let mut first_instance = instance("shared-instance", WorkflowStatus::Running);
+        first_instance.version = 1;
+        let mut second_instance = instance("shared-instance", WorkflowStatus::Running);
+        second_instance.version = 1;
+
+        storage
+            .save_workflow_instance(&first, 0, vec![event_record(100)], first_instance.clone())
+            .await
+            .unwrap();
+        storage
+            .save_workflow_instance(&second, 0, vec![event_record(200)], second_instance.clone())
+            .await
+            .unwrap();
+
+        first_instance.version = 2;
+        let error = storage
+            .save_workflow_instance(&first, 0, vec![event_record(300)], first_instance)
+            .await
+            .unwrap_err();
+        let crate::ports::storage::StorageError::WorkflowVersionConflict(conflict) = error else {
+            panic!("expected workflow version conflict");
+        };
+        assert_eq!(conflict.actual_version, 1);
+
+        second_instance.version = 2;
+        second_instance.status = WorkflowStatus::Completed;
+        storage
+            .save_workflow_instance(&second, 1, vec![event_record(400)], second_instance)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            storage
+                .get_workflow_instance(&first, "shared-instance")
+                .await
+                .unwrap()
+                .unwrap()
+                .version,
+            1
+        );
+        assert_eq!(
+            storage
+                .get_workflow_instance(&second, "shared-instance")
+                .await
+                .unwrap()
+                .unwrap()
+                .version,
+            2
+        );
+        assert_eq!(
+            storage
+                .list_workflow_instance_events(
+                    &second,
+                    "shared-instance",
+                    WorkflowEventPageRequest {
+                        limit: 10,
+                        cursor: None,
+                    },
+                )
+                .await
+                .unwrap()
+                .items
+                .len(),
+            2
+        );
     }
 }
