@@ -21,10 +21,10 @@
 
 ## 4. SQL Storage Isolation and Schema Reset
 
-- [ ] 4.1 Reset SQL migrations to one current initial schema with namespace columns, composite primary/foreign keys, current definition metadata, and namespace-leading indexes.
-- [ ] 4.2 Add namespace predicates and bindings to every SQL definition and workflow point read, write, delete, join, event/task/verifier operation, and projection update.
-- [ ] 4.3 Scope SQL workflow listing, filters, ordering, pagination cursors, event pages, and optimistic version checks to namespace, and add an indexed paginated recovery query that returns unfinished workflow information across namespaces.
-- [ ] 4.4 Add fresh-schema constraint and adapter tests proving identical IDs and all resource relationships remain isolated across namespaces.
+- [x] 4.1 Reset SQL migrations to one current initial schema with namespace columns, composite primary/foreign keys, current definition metadata, and namespace-leading indexes.
+- [x] 4.2 Add namespace predicates and bindings to every SQL definition and workflow point read, write, delete, join, event/task/verifier operation, and projection update.
+- [x] 4.3 Scope SQL workflow listing, filters, ordering, pagination cursors, event pages, and optimistic version checks to namespace, and add an indexed paginated recovery query that returns unfinished workflow information across namespaces.
+- [x] 4.4 Add fresh-schema constraint and adapter tests proving identical IDs and all resource relationships remain isolated across namespaces.
 
 ## 5. Queue, Recovery, and Reconciliation
 

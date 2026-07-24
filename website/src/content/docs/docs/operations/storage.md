@@ -34,6 +34,16 @@ The SQL adapter initializes its schema automatically on startup and records appl
 
 SQLite is the first supported SQL backend. The storage adapter detects the SQL dialect from `RUNHELM_DATABASE_URL`; Postgres and MySQL URL schemes are reserved for future backend support.
 
+SQL definitions, workflow state, tasks, verifier state, events, and list results
+are isolated by namespace. The same resource ID can be used independently in
+different namespaces.
+
+The namespace-aware SQL schema is a destructive compatibility boundary. RunHelm
+does not migrate databases created by pre-namespace versions. Before upgrading,
+stop the orchestrator and workers, back up state needed for rollback, and
+recreate the SQL database. The orchestrator will initialize the current schema
+when it next starts.
+
 ## Persistence model
 
 SQL storage keeps workflow-level state, task attempts, verifier state, and events in separate tables. RunHelm still exposes the same workflow state model through the API.

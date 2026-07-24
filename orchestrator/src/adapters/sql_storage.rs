@@ -19,7 +19,6 @@ use crate::ports::storage::{
 };
 
 const INITIAL_SCHEMA_MIGRATION: &str = "001_initial_sql_storage_schema";
-const WORKFLOW_DEF_DESCRIPTION_MIGRATION: &str = "002_workflow_def_description";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SqlDialect {
@@ -101,27 +100,6 @@ impl SqlStorage {
             .await?;
         }
 
-        let description_migration_applied =
-            sqlx::query("SELECT version FROM schema_migrations WHERE version = ?")
-                .bind(WORKFLOW_DEF_DESCRIPTION_MIGRATION)
-                .fetch_optional(&mut *tx)
-                .await?;
-
-        if description_migration_applied.is_none() {
-            sqlx::query(
-                "ALTER TABLE workflow_defs ADD COLUMN description TEXT NOT NULL DEFAULT ''",
-            )
-            .execute(&mut *tx)
-            .await?;
-            sqlx::query(
-                "INSERT INTO schema_migrations (version, applied_at_epoch_ms) VALUES (?, ?)",
-            )
-            .bind(WORKFLOW_DEF_DESCRIPTION_MIGRATION)
-            .bind(i64_from_u64(unix_timestamp_ms()?)?)
-            .execute(&mut *tx)
-            .await?;
-        }
-
         tx.commit().await?;
         Ok(())
     }
@@ -131,19 +109,22 @@ impl SqlStorage {
 impl StoragePort for SqlStorage {
     async fn save_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         def: WorkflowDef,
     ) -> StorageResult<()> {
         let now = i64_from_u64(unix_timestamp_ms()?)?;
         let definition_json = serde_json::to_string(&def)?;
         sqlx::query(
-            "INSERT INTO workflow_defs (id, description, definition_json, created_at_epoch_ms, updated_at_epoch_ms)
-             VALUES (?, ?, ?, ?, ?)
-             ON CONFLICT(id) DO UPDATE SET
+            "INSERT INTO workflow_defs (
+                namespace, id, description, definition_json, created_at_epoch_ms, updated_at_epoch_ms
+             )
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON CONFLICT(namespace, id) DO UPDATE SET
                 description = excluded.description,
                 definition_json = excluded.definition_json,
                 updated_at_epoch_ms = excluded.updated_at_epoch_ms",
         )
+        .bind(namespace.as_str())
         .bind(&def.id)
         .bind(&def.description)
         .bind(definition_json)
@@ -156,13 +137,18 @@ impl StoragePort for SqlStorage {
 
     async fn get_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<WorkflowDef>> {
-        let row = sqlx::query("SELECT definition_json FROM workflow_defs WHERE id = ?")
-            .bind(id)
-            .fetch_optional(&self.pool)
-            .await?;
+        let row = sqlx::query(
+            "SELECT definition_json
+             FROM workflow_defs
+             WHERE namespace = ? AND id = ?",
+        )
+        .bind(namespace.as_str())
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await?;
         Ok(row
             .map(|row| deserialize_json(row.get::<String, _>("definition_json").as_str()))
             .transpose()?)
@@ -170,7 +156,7 @@ impl StoragePort for SqlStorage {
 
     async fn list_workflow_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
     ) -> StorageResult<Vec<WorkflowDefSummary>> {
         let rows = sqlx::query(
             "SELECT
@@ -179,10 +165,13 @@ impl StoragePort for SqlStorage {
                 wd.created_at_epoch_ms,
                 MAX(wi.created_at_epoch_ms) AS last_invoked_at_epoch_ms
              FROM workflow_defs wd
-             LEFT JOIN workflow_instances wi ON wi.workflow_def_id = wd.id
-             GROUP BY wd.id, wd.description, wd.created_at_epoch_ms
+             LEFT JOIN workflow_instances wi
+                ON wi.namespace = wd.namespace AND wi.workflow_def_id = wd.id
+             WHERE wd.namespace = ?
+             GROUP BY wd.namespace, wd.id, wd.description, wd.created_at_epoch_ms
              ORDER BY wd.created_at_epoch_ms DESC, wd.id DESC",
         )
+        .bind(namespace.as_str())
         .fetch_all(&self.pool)
         .await?;
 
@@ -203,18 +192,21 @@ impl StoragePort for SqlStorage {
 
     async fn save_function_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         def: FunctionDef,
     ) -> StorageResult<()> {
         let now = i64_from_u64(unix_timestamp_ms()?)?;
         let definition_json = serde_json::to_string(&def)?;
         sqlx::query(
-            "INSERT INTO function_defs (id, definition_json, created_at_epoch_ms, updated_at_epoch_ms)
-             VALUES (?, ?, ?, ?)
-             ON CONFLICT(id) DO UPDATE SET
+            "INSERT INTO function_defs (
+                namespace, id, definition_json, created_at_epoch_ms, updated_at_epoch_ms
+             )
+             VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT(namespace, id) DO UPDATE SET
                 definition_json = excluded.definition_json,
                 updated_at_epoch_ms = excluded.updated_at_epoch_ms",
         )
+        .bind(namespace.as_str())
         .bind(&def.id)
         .bind(definition_json)
         .bind(now)
@@ -226,20 +218,26 @@ impl StoragePort for SqlStorage {
 
     async fn get_function_def(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<FunctionDef>> {
-        let row = sqlx::query("SELECT definition_json FROM function_defs WHERE id = ?")
-            .bind(id)
-            .fetch_optional(&self.pool)
-            .await?;
+        let row = sqlx::query(
+            "SELECT definition_json
+             FROM function_defs
+             WHERE namespace = ? AND id = ?",
+        )
+        .bind(namespace.as_str())
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await?;
         Ok(row
             .map(|row| deserialize_json(row.get::<String, _>("definition_json").as_str()))
             .transpose()?)
     }
 
-    async fn delete_function_def(&self, _namespace: &Namespace, id: &str) -> StorageResult<bool> {
-        let result = sqlx::query("DELETE FROM function_defs WHERE id = ?")
+    async fn delete_function_def(&self, namespace: &Namespace, id: &str) -> StorageResult<bool> {
+        let result = sqlx::query("DELETE FROM function_defs WHERE namespace = ? AND id = ?")
+            .bind(namespace.as_str())
             .bind(id)
             .execute(&self.pool)
             .await?;
@@ -248,14 +246,15 @@ impl StoragePort for SqlStorage {
 
     async fn get_workflow_instance(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         id: &str,
     ) -> StorageResult<Option<WorkflowInstance>> {
         let Some(row) = sqlx::query(
             "SELECT id, workflow_def_id, version, status, trigger_input_json, pinned_worker_host_id
              FROM workflow_instances
-             WHERE id = ?",
+             WHERE namespace = ? AND id = ?",
         )
+        .bind(namespace.as_str())
         .bind(id)
         .fetch_optional(&self.pool)
         .await?
@@ -268,8 +267,9 @@ impl StoragePort for SqlStorage {
                     human_input_json, input_data_json, input_mapping_json, output_data_json,
                     verifier_metadata_json
              FROM workflow_tasks
-             WHERE workflow_instance_id = ?",
+             WHERE namespace = ? AND workflow_instance_id = ?",
         )
+        .bind(namespace.as_str())
         .bind(id)
         .fetch_all(&self.pool)
         .await?;
@@ -297,8 +297,9 @@ impl StoragePort for SqlStorage {
         let verifier_rows = sqlx::query(
             "SELECT verifier_task_id, state_json
              FROM workflow_verifier_states
-             WHERE workflow_instance_id = ?",
+             WHERE namespace = ? AND workflow_instance_id = ?",
         )
+        .bind(namespace.as_str())
         .bind(id)
         .fetch_all(&self.pool)
         .await?;
@@ -326,7 +327,7 @@ impl StoragePort for SqlStorage {
 
     async fn list_workflow_instance_events(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         workflow_instance_id: &str,
         page: WorkflowEventPageRequest,
     ) -> StorageResult<WorkflowEventPage> {
@@ -339,10 +340,11 @@ impl StoragePort for SqlStorage {
         let rows = sqlx::query(
             "SELECT event_sequence, created_at_epoch_ms, event_json
              FROM workflow_events
-             WHERE workflow_instance_id = ? AND event_sequence > ?
+             WHERE namespace = ? AND workflow_instance_id = ? AND event_sequence > ?
              ORDER BY event_sequence ASC
              LIMIT ?",
         )
+        .bind(namespace.as_str())
         .bind(workflow_instance_id)
         .bind(i64_from_u64(page.cursor.unwrap_or(0))?)
         .bind(i64_from_usize(page.limit + 1)?)
@@ -377,7 +379,8 @@ impl StoragePort for SqlStorage {
         page: WorkflowInfoPageRequest,
         filters: Vec<WorkflowInstanceFilter>,
     ) -> StorageResult<WorkflowInfoPage> {
-        if filters
+        if page.limit == 0
+            || filters
             .iter()
             .any(|filter| matches!(filter, WorkflowInstanceFilter::Statuses(statuses) if statuses.is_empty()))
         {
@@ -388,6 +391,10 @@ impl StoragePort for SqlStorage {
         }
 
         let mut conditions = Vec::new();
+        if namespace.is_some() {
+            conditions.push("wi.namespace = ?".to_string());
+        }
+
         for filter in &filters {
             match filter {
                 WorkflowInstanceFilter::Statuses(statuses) => {
@@ -401,10 +408,21 @@ impl StoragePort for SqlStorage {
         }
 
         if page.cursor.is_some() {
-            conditions.push(
-                "(wi.modified_at_epoch_ms < ? OR (wi.modified_at_epoch_ms = ? AND wi.id < ?))"
+            if namespace.is_some() {
+                conditions.push(
+                    "(wi.modified_at_epoch_ms < ?
+                      OR (wi.modified_at_epoch_ms = ? AND wi.id < ?))"
+                        .to_string(),
+                );
+            } else {
+                conditions.push(
+                    "(wi.modified_at_epoch_ms < ?
+                      OR (wi.modified_at_epoch_ms = ? AND (
+                        wi.id < ? OR (wi.id = ? AND wi.namespace < ?)
+                      )))"
                     .to_string(),
-            );
+                );
+            }
         }
 
         let where_clause = if conditions.is_empty() {
@@ -415,6 +433,7 @@ impl StoragePort for SqlStorage {
 
         let sql = format!(
             "SELECT
+                wi.namespace,
                 wi.id,
                 wi.workflow_def_id,
                 wi.status,
@@ -424,16 +443,20 @@ impl StoragePort for SqlStorage {
                 COUNT(wt.task_attempt_id) AS total_task_count,
                 COALESCE(SUM(CASE WHEN wt.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed_task_count
              FROM workflow_instances wi
-             LEFT JOIN workflow_tasks wt ON wt.workflow_instance_id = wi.id
+             LEFT JOIN workflow_tasks wt
+                ON wt.namespace = wi.namespace AND wt.workflow_instance_id = wi.id
              {where_clause}
-             GROUP BY wi.id, wi.workflow_def_id, wi.status, wi.created_at_epoch_ms,
+             GROUP BY wi.namespace, wi.id, wi.workflow_def_id, wi.status, wi.created_at_epoch_ms,
                       wi.modified_at_epoch_ms, wi.completed_at_epoch_ms
-             ORDER BY wi.modified_at_epoch_ms DESC, wi.id DESC
+             ORDER BY wi.modified_at_epoch_ms DESC, wi.id DESC, wi.namespace DESC
              LIMIT ?"
         );
 
         let mut query = sqlx::query(&sql);
 
+        if let Some(namespace) = namespace {
+            query = query.bind(namespace.as_str());
+        }
         for filter in &filters {
             match filter {
                 WorkflowInstanceFilter::Statuses(statuses) => {
@@ -452,21 +475,22 @@ impl StoragePort for SqlStorage {
                 .bind(i64_from_u64(cursor.modified_at_epoch_ms)?)
                 .bind(i64_from_u64(cursor.modified_at_epoch_ms)?)
                 .bind(&cursor.workflow_instance_id);
+
+            if namespace.is_none() {
+                query = query
+                    .bind(&cursor.workflow_instance_id)
+                    .bind(cursor.namespace.as_str());
+            }
         }
 
         query = query.bind(i64_from_usize(page.limit + 1)?);
 
         let rows = query.fetch_all(&self.pool).await?;
         let has_more = rows.len() > page.limit;
-        let namespace = namespace.cloned().ok_or_else(|| {
-            anyhow::anyhow!(
-                "cross-namespace workflow recovery requires namespace-aware SQL storage"
-            )
-        })?;
         let workflows: Vec<WorkflowInfo> = rows
             .into_iter()
             .take(page.limit)
-            .map(|row| workflow_info_from_row(namespace.clone(), row))
+            .map(workflow_info_from_row)
             .collect::<anyhow::Result<Vec<_>>>()?;
 
         let next_cursor =
@@ -487,7 +511,7 @@ impl StoragePort for SqlStorage {
 
     async fn save_workflow_instance(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         expected_version: u64,
         events: Vec<WorkflowEventRecord>,
         instance: WorkflowInstance,
@@ -498,8 +522,9 @@ impl StoragePort for SqlStorage {
         let existing = sqlx::query(
             "SELECT version, created_at_epoch_ms, completed_at_epoch_ms
              FROM workflow_instances
-             WHERE id = ?",
+             WHERE namespace = ? AND id = ?",
         )
+        .bind(namespace.as_str())
         .bind(&workflow_instance_id)
         .fetch_optional(&mut *tx)
         .await?;
@@ -542,18 +567,18 @@ impl StoragePort for SqlStorage {
             .transpose()?
             .or_else(|| workflow_completed_at(&instance, modified_at_epoch_ms));
 
-        insert_events(&mut tx, expected_version, &instance.id, &events).await?;
-
         upsert_workflow_instance(
             &mut tx,
+            namespace,
             &instance,
             created_at_epoch_ms,
             modified_at_epoch_ms,
             completed_at_epoch_ms,
         )
         .await?;
-        persist_task_changes(&mut tx, &instance, &events, existing.is_none()).await?;
-        replace_verifier_states(&mut tx, &instance).await?;
+        insert_events(&mut tx, namespace, expected_version, &instance.id, &events).await?;
+        persist_task_changes(&mut tx, namespace, &instance, &events, existing.is_none()).await?;
+        replace_verifier_states(&mut tx, namespace, &instance).await?;
 
         tx.commit().await?;
         Ok(())
@@ -562,6 +587,7 @@ impl StoragePort for SqlStorage {
 
 async fn insert_events(
     tx: &mut Transaction<'_, Sqlite>,
+    namespace: &Namespace,
     expected_version: u64,
     workflow_instance_id: &str,
     events: &[WorkflowEventRecord],
@@ -569,10 +595,11 @@ async fn insert_events(
     for (index, event) in events.iter().enumerate() {
         sqlx::query(
             "INSERT INTO workflow_events (
-                workflow_instance_id, event_sequence, created_at_epoch_ms, event_json
+                namespace, workflow_instance_id, event_sequence, created_at_epoch_ms, event_json
              )
-             VALUES (?, ?, ?, ?)",
+             VALUES (?, ?, ?, ?, ?)",
         )
+        .bind(namespace.as_str())
         .bind(workflow_instance_id)
         .bind(i64_from_u64(expected_version + index as u64 + 1)?)
         .bind(i64_from_u64(event.created_time)?)
@@ -585,6 +612,7 @@ async fn insert_events(
 
 async fn upsert_workflow_instance(
     tx: &mut Transaction<'_, Sqlite>,
+    namespace: &Namespace,
     instance: &WorkflowInstance,
     created_at_epoch_ms: u64,
     modified_at_epoch_ms: u64,
@@ -592,11 +620,11 @@ async fn upsert_workflow_instance(
 ) -> anyhow::Result<()> {
     sqlx::query(
         "INSERT INTO workflow_instances (
-            id, workflow_def_id, version, status, trigger_input_json, pinned_worker_host_id,
+            namespace, id, workflow_def_id, version, status, trigger_input_json, pinned_worker_host_id,
             created_at_epoch_ms, modified_at_epoch_ms, completed_at_epoch_ms
          )
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(namespace, id) DO UPDATE SET
             workflow_def_id = excluded.workflow_def_id,
             version = excluded.version,
             status = excluded.status,
@@ -605,6 +633,7 @@ async fn upsert_workflow_instance(
             modified_at_epoch_ms = excluded.modified_at_epoch_ms,
             completed_at_epoch_ms = excluded.completed_at_epoch_ms",
     )
+    .bind(namespace.as_str())
     .bind(&instance.id)
     .bind(&instance.workflow_def_id)
     .bind(i64_from_u64(instance.version)?)
@@ -626,6 +655,7 @@ async fn upsert_workflow_instance(
 
 async fn persist_task_changes(
     tx: &mut Transaction<'_, Sqlite>,
+    namespace: &Namespace,
     instance: &WorkflowInstance,
     events: &[WorkflowEventRecord],
     is_new_instance: bool,
@@ -643,25 +673,26 @@ async fn persist_task_changes(
                 instance.id
             )
         })?;
-        upsert_task(tx, &instance.id, &task_attempt_id, task).await?;
+        upsert_task(tx, namespace, &instance.id, &task_attempt_id, task).await?;
     }
     Ok(())
 }
 
 async fn upsert_task(
     tx: &mut Transaction<'_, Sqlite>,
+    namespace: &Namespace,
     workflow_instance_id: &str,
     task_attempt_id: &str,
     task: &TaskInstance,
 ) -> anyhow::Result<()> {
     sqlx::query(
         "INSERT INTO workflow_tasks (
-                workflow_instance_id, task_attempt_id, task_def_id, status, status_json,
+                namespace, workflow_instance_id, task_attempt_id, task_def_id, status, status_json,
                 satisfaction_status, generation_index, human_input_json, input_data_json,
                 input_mapping_json, output_data_json, verifier_metadata_json
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             ON CONFLICT(workflow_instance_id, task_attempt_id) DO UPDATE SET
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(namespace, workflow_instance_id, task_attempt_id) DO UPDATE SET
                 task_def_id = excluded.task_def_id,
                 status = excluded.status,
                 status_json = excluded.status_json,
@@ -673,6 +704,7 @@ async fn upsert_task(
                 output_data_json = excluded.output_data_json,
                 verifier_metadata_json = excluded.verifier_metadata_json",
     )
+    .bind(namespace.as_str())
     .bind(workflow_instance_id)
     .bind(task_attempt_id)
     .bind(&task.task_def_id)
@@ -692,20 +724,26 @@ async fn upsert_task(
 
 async fn replace_verifier_states(
     tx: &mut Transaction<'_, Sqlite>,
+    namespace: &Namespace,
     instance: &WorkflowInstance,
 ) -> anyhow::Result<()> {
-    sqlx::query("DELETE FROM workflow_verifier_states WHERE workflow_instance_id = ?")
-        .bind(&instance.id)
-        .execute(&mut **tx)
-        .await?;
+    sqlx::query(
+        "DELETE FROM workflow_verifier_states
+         WHERE namespace = ? AND workflow_instance_id = ?",
+    )
+    .bind(namespace.as_str())
+    .bind(&instance.id)
+    .execute(&mut **tx)
+    .await?;
 
     for (verifier_task_id, state) in &instance.verifier_states {
         sqlx::query(
             "INSERT INTO workflow_verifier_states (
-                workflow_instance_id, verifier_task_id, state_json
+                namespace, workflow_instance_id, verifier_task_id, state_json
              )
-             VALUES (?, ?, ?)",
+             VALUES (?, ?, ?, ?)",
         )
+        .bind(namespace.as_str())
         .bind(&instance.id)
         .bind(verifier_task_id)
         .bind(serde_json::to_string(state)?)
@@ -715,12 +753,9 @@ async fn replace_verifier_states(
     Ok(())
 }
 
-fn workflow_info_from_row(
-    namespace: Namespace,
-    row: sqlx::sqlite::SqliteRow,
-) -> anyhow::Result<WorkflowInfo> {
+fn workflow_info_from_row(row: sqlx::sqlite::SqliteRow) -> anyhow::Result<WorkflowInfo> {
     Ok(WorkflowInfo {
-        namespace,
+        namespace: Namespace::new(row.get::<String, _>("namespace"))?,
         id: row.get("id"),
         workflow_def_id: row.get("workflow_def_id"),
         created_at_epoch_ms: row
@@ -830,19 +865,25 @@ fn i64_from_usize(value: usize) -> anyhow::Result<i64> {
 
 const INITIAL_SCHEMA_SQL: &[&str] = &[
     "CREATE TABLE workflow_defs (
-        id TEXT PRIMARY KEY,
+        namespace TEXT NOT NULL,
+        id TEXT NOT NULL,
+        description TEXT NOT NULL,
         definition_json TEXT NOT NULL,
         created_at_epoch_ms INTEGER NOT NULL,
-        updated_at_epoch_ms INTEGER NOT NULL
+        updated_at_epoch_ms INTEGER NOT NULL,
+        PRIMARY KEY (namespace, id)
     )",
     "CREATE TABLE function_defs (
-        id TEXT PRIMARY KEY,
+        namespace TEXT NOT NULL,
+        id TEXT NOT NULL,
         definition_json TEXT NOT NULL,
         created_at_epoch_ms INTEGER NOT NULL,
-        updated_at_epoch_ms INTEGER NOT NULL
+        updated_at_epoch_ms INTEGER NOT NULL,
+        PRIMARY KEY (namespace, id)
     )",
     "CREATE TABLE workflow_instances (
-        id TEXT PRIMARY KEY,
+        namespace TEXT NOT NULL,
+        id TEXT NOT NULL,
         workflow_def_id TEXT NOT NULL,
         version INTEGER NOT NULL,
         status TEXT NOT NULL,
@@ -850,9 +891,13 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
         pinned_worker_host_id TEXT,
         created_at_epoch_ms INTEGER NOT NULL,
         modified_at_epoch_ms INTEGER NOT NULL,
-        completed_at_epoch_ms INTEGER
+        completed_at_epoch_ms INTEGER,
+        PRIMARY KEY (namespace, id),
+        FOREIGN KEY (namespace, workflow_def_id)
+            REFERENCES workflow_defs (namespace, id)
     )",
     "CREATE TABLE workflow_tasks (
+        namespace TEXT NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         task_attempt_id TEXT NOT NULL,
         task_def_id TEXT NOT NULL,
@@ -865,28 +910,45 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
         input_mapping_json TEXT NOT NULL,
         output_data_json TEXT,
         verifier_metadata_json TEXT,
-        PRIMARY KEY (workflow_instance_id, task_attempt_id)
+        PRIMARY KEY (namespace, workflow_instance_id, task_attempt_id),
+        FOREIGN KEY (namespace, workflow_instance_id)
+            REFERENCES workflow_instances (namespace, id) ON DELETE CASCADE
     )",
     "CREATE TABLE workflow_verifier_states (
+        namespace TEXT NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         verifier_task_id TEXT NOT NULL,
         state_json TEXT NOT NULL,
-        PRIMARY KEY (workflow_instance_id, verifier_task_id)
+        PRIMARY KEY (namespace, workflow_instance_id, verifier_task_id),
+        FOREIGN KEY (namespace, workflow_instance_id)
+            REFERENCES workflow_instances (namespace, id) ON DELETE CASCADE
     )",
     "CREATE TABLE workflow_events (
+        namespace TEXT NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         event_sequence INTEGER NOT NULL,
         created_at_epoch_ms INTEGER NOT NULL,
         event_json TEXT NOT NULL,
-        PRIMARY KEY (workflow_instance_id, event_sequence)
+        PRIMARY KEY (namespace, workflow_instance_id, event_sequence),
+        FOREIGN KEY (namespace, workflow_instance_id)
+            REFERENCES workflow_instances (namespace, id) ON DELETE CASCADE
     )",
-    "CREATE INDEX workflow_instances_workflow_def_idx ON workflow_instances (workflow_def_id)",
-    "CREATE INDEX workflow_instances_status_idx ON workflow_instances (status)",
-    "CREATE INDEX workflow_instances_modified_idx ON workflow_instances (modified_at_epoch_ms, id)",
-    "CREATE INDEX workflow_instances_status_modified_idx ON workflow_instances (status, modified_at_epoch_ms, id)",
-    "CREATE INDEX workflow_instances_workflow_def_modified_idx ON workflow_instances (workflow_def_id, modified_at_epoch_ms, id)",
-    "CREATE INDEX workflow_tasks_instance_status_idx ON workflow_tasks (workflow_instance_id, status)",
-    "CREATE INDEX workflow_tasks_instance_task_def_idx ON workflow_tasks (workflow_instance_id, task_def_id)",
+    "CREATE INDEX workflow_instances_workflow_def_idx
+        ON workflow_instances (namespace, workflow_def_id)",
+    "CREATE INDEX workflow_instances_status_idx
+        ON workflow_instances (namespace, status)",
+    "CREATE INDEX workflow_instances_modified_idx
+        ON workflow_instances (namespace, modified_at_epoch_ms DESC, id DESC)",
+    "CREATE INDEX workflow_instances_status_modified_idx
+        ON workflow_instances (namespace, status, modified_at_epoch_ms DESC, id DESC)",
+    "CREATE INDEX workflow_instances_workflow_def_modified_idx
+        ON workflow_instances (namespace, workflow_def_id, modified_at_epoch_ms DESC, id DESC)",
+    "CREATE INDEX workflow_instances_recovery_idx
+        ON workflow_instances (status, modified_at_epoch_ms DESC, id DESC, namespace DESC)",
+    "CREATE INDEX workflow_tasks_instance_status_idx
+        ON workflow_tasks (namespace, workflow_instance_id, status)",
+    "CREATE INDEX workflow_tasks_instance_task_def_idx
+        ON workflow_tasks (namespace, workflow_instance_id, task_def_id)",
 ];
 
 #[cfg(test)]
@@ -902,7 +964,15 @@ mod tests {
     use serde_json::json;
 
     async fn storage() -> SqlStorage {
-        SqlStorage::connect("sqlite::memory:").await.unwrap()
+        let storage = SqlStorage::connect("sqlite::memory:").await.unwrap();
+        storage
+            .save_workflow_def(
+                &crate::core::namespace::test_namespace(),
+                workflow_def("wf", "Test workflow"),
+            )
+            .await
+            .unwrap();
+        storage
     }
 
     fn instance(id: &str, status: WorkflowStatus) -> WorkflowInstance {
@@ -942,11 +1012,13 @@ mod tests {
     }
 
     fn event_record(created_time: u64) -> WorkflowEventRecord {
+        status_event(created_time, WorkflowStatus::Running)
+    }
+
+    fn status_event(created_time: u64, status: WorkflowStatus) -> WorkflowEventRecord {
         WorkflowEventRecord {
             created_time,
-            event: WorkflowInstanceEvent::WorkflowStatusChanged {
-                status: WorkflowStatus::Running,
-            },
+            event: WorkflowInstanceEvent::WorkflowStatusChanged { status },
         }
     }
 
@@ -1353,3 +1425,4 @@ mod tests {
         assert!(saved.tasks.contains_key("added[1]"));
     }
 }
+
