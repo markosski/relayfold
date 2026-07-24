@@ -105,12 +105,12 @@ impl WorkflowQueuePort for MemoryWorkflowQueue {
         Ok(())
     }
 
-    async fn pending_ids(&self, _namespace: &Namespace) -> anyhow::Result<Vec<String>> {
+    async fn pending_ids(&self, namespace: &Namespace) -> anyhow::Result<Vec<String>> {
         let state = self.state.lock().await;
         Ok(state
             .pending
             .iter()
-            .filter(|item| &item.namespace == _namespace)
+            .filter(|item| &item.namespace == namespace)
             .map(|item| item.workflow_instance_id.clone())
             .collect())
     }
@@ -158,30 +158,29 @@ impl WorkflowQueuePort for MemoryWorkflowQueue {
 mod tests {
     use super::*;
 
+    fn item(namespace: &Namespace, workflow_instance_id: &str) -> WorkflowQueueItem {
+        WorkflowQueueItem {
+            namespace: namespace.clone(),
+            workflow_instance_id: workflow_instance_id.to_string(),
+        }
+    }
+
     #[tokio::test]
     async fn pending_ids_returns_fifo_snapshot() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-2".to_string(),
-            )
+            .enqueue(&namespace, "workflow-2".to_string())
             .await
             .unwrap();
 
         assert_eq!(
-            queue
-                .pending_ids(&crate::core::namespace::test_namespace(),)
-                .await
-                .unwrap(),
+            queue.pending_ids(&namespace).await.unwrap(),
             vec!["workflow-1".to_string(), "workflow-2".to_string()]
         );
     }
@@ -189,27 +188,19 @@ mod tests {
     #[tokio::test]
     async fn enqueue_ignores_duplicate_pending_id() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
 
         assert_eq!(
-            queue
-                .pending_ids(&crate::core::namespace::test_namespace(),)
-                .await
-                .unwrap(),
+            queue.pending_ids(&namespace).await.unwrap(),
             vec!["workflow-1".to_string()]
         );
     }
@@ -217,12 +208,10 @@ mod tests {
     #[tokio::test]
     async fn active_id_can_be_queued_for_later_pass() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         assert_eq!(
@@ -231,24 +220,15 @@ mod tests {
         );
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         assert_eq!(
-            queue
-                .pending_ids(&crate::core::namespace::test_namespace(),)
-                .await
-                .unwrap(),
+            queue.pending_ids(&namespace).await.unwrap(),
             vec!["workflow-1".to_string()]
         );
 
-        queue
-            .complete(&crate::core::namespace::test_namespace(), "workflow-1")
-            .await
-            .unwrap();
+        queue.complete(&namespace, "workflow-1").await.unwrap();
         assert_eq!(
             queue.dequeue().await.unwrap().workflow_instance_id,
             "workflow-1"
@@ -258,12 +238,10 @@ mod tests {
     #[tokio::test]
     async fn dequeue_skips_active_pending_id() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         assert_eq!(
@@ -271,17 +249,11 @@ mod tests {
             "workflow-1"
         );
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-2".to_string(),
-            )
+            .enqueue(&namespace, "workflow-2".to_string())
             .await
             .unwrap();
 
@@ -294,34 +266,19 @@ mod tests {
     #[tokio::test]
     async fn remove_deletes_pending_id() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-2".to_string(),
-            )
+            .enqueue(&namespace, "workflow-2".to_string())
             .await
             .unwrap();
 
-        assert!(
-            queue
-                .remove(&crate::core::namespace::test_namespace(), "workflow-1")
-                .await
-                .unwrap()
-        );
-        assert!(
-            !queue
-                .remove(&crate::core::namespace::test_namespace(), "workflow-3")
-                .await
-                .unwrap()
-        );
+        assert!(queue.remove(&namespace, "workflow-1").await.unwrap());
+        assert!(!queue.remove(&namespace, "workflow-3").await.unwrap());
         assert_eq!(
             queue.dequeue().await.unwrap().workflow_instance_id,
             "workflow-2"
@@ -331,35 +288,71 @@ mod tests {
     #[tokio::test]
     async fn purge_deletes_all_pending_ids() {
         let queue = MemoryWorkflowQueue::new(10);
+        let namespace = crate::core::namespace::test_namespace();
 
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-1".to_string(),
-            )
+            .enqueue(&namespace, "workflow-1".to_string())
             .await
             .unwrap();
         queue
-            .enqueue(
-                &crate::core::namespace::test_namespace(),
-                "workflow-2".to_string(),
-            )
+            .enqueue(&namespace, "workflow-2".to_string())
             .await
             .unwrap();
 
         assert_eq!(
-            queue
-                .purge(&crate::core::namespace::test_namespace(),)
-                .await
-                .unwrap(),
+            queue.purge(&namespace).await.unwrap(),
             vec!["workflow-1".to_string(), "workflow-2".to_string()]
         );
-        assert!(
-            queue
-                .pending_ids(&crate::core::namespace::test_namespace(),)
-                .await
-                .unwrap()
-                .is_empty()
+        assert!(queue.pending_ids(&namespace).await.unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn identical_ids_are_independent_across_namespaces() {
+        let queue = MemoryWorkflowQueue::new(10);
+        let first = Namespace::new("550e8400-e29b-41d4-a716-446655440000").unwrap();
+        let second = Namespace::new("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap();
+        let first_item = item(&first, "workflow-1");
+        let second_item = item(&second, "workflow-1");
+
+        queue
+            .enqueue(&first, "workflow-1".to_string())
+            .await
+            .unwrap();
+        queue
+            .enqueue(&second, "workflow-1".to_string())
+            .await
+            .unwrap();
+
+        assert_eq!(
+            queue.pending_ids(&first).await.unwrap(),
+            vec!["workflow-1".to_string()]
+        );
+        assert_eq!(
+            queue.pending_ids(&second).await.unwrap(),
+            vec!["workflow-1".to_string()]
+        );
+
+        assert_eq!(queue.dequeue().await.unwrap(), first_item);
+        assert_eq!(queue.dequeue().await.unwrap(), second_item);
+
+        queue
+            .enqueue(&first, "workflow-1".to_string())
+            .await
+            .unwrap();
+        queue
+            .enqueue(&second, "workflow-1".to_string())
+            .await
+            .unwrap();
+        queue.complete(&first, "workflow-1").await.unwrap();
+
+        assert!(queue.remove(&first, "workflow-1").await.unwrap());
+        assert_eq!(
+            queue.pending_ids(&second).await.unwrap(),
+            vec!["workflow-1".to_string()]
+        );
+        assert_eq!(
+            queue.purge(&second).await.unwrap(),
+            vec!["workflow-1".to_string()]
         );
     }
 }

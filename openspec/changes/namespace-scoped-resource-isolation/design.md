@@ -17,7 +17,7 @@ For this change, a deployment can actually select only one usable namespace thro
 **Non-Goals:**
 
 - Issuing, persisting, hashing, validating, revoking, or mapping API keys.
-- Adding a tenant namespace catalog or general cross-namespace administration API; startup recovery discovers only unfinished workflow summaries through its dedicated unscoped listing mode.
+- Adding a tenant namespace catalog or general cross-namespace administration API; internal startup recovery and lost-host reconciliation discover only unfinished workflow summaries through their dedicated unscoped listing mode.
 - Per-namespace scheduling fairness, concurrency quotas, queue capacity, or worker pools.
 - Adding namespace fields to public workflow or function definition payloads.
 - Migrating data from the existing SQL schema.
@@ -47,9 +47,9 @@ Alternatives considered: `X-API-Key` creates a custom transport contract; router
 
 ### Namespace is an explicit argument at synchronous boundaries
 
-Storage, workflow/function services, orchestrator, engine, state manager, and definition-reference resolution receive `&Namespace` or an owned `Namespace` where lifetime crosses an asynchronous boundary. Domain resource bodies keep their existing shape. `StoragePort::list_workflow_info` is the sole exception: it receives `Option<&Namespace>`, where `Some(namespace)` is required for normal resource operations and `None` is reserved for startup recovery across all namespaces.
+Storage, workflow/function services, orchestrator, engine, state manager, and definition-reference resolution receive `&Namespace` or an owned `Namespace` where lifetime crosses an asynchronous boundary. Domain resource bodies keep their existing shape. `StoragePort::list_workflow_info` is the sole exception: it receives `Option<&Namespace>`, where `Some(namespace)` is required for normal resource operations and `None` is reserved for internal startup recovery and lost-host reconciliation across all namespaces.
 
-Storage-facing `WorkflowInfo` includes its owning `Namespace`, allowing an unscoped recovery page to distinguish identical workflow instance IDs and construct owned queue items. Public workflow-list response models omit this internal ownership field. Namespace-scoped pagination interprets its cursor together with the supplied namespace; cross-namespace recovery pagination also includes namespace as an ordering tie-breaker so identical IDs and timestamps remain unambiguous.
+Storage-facing `WorkflowInfo` includes its owning `Namespace`, allowing an unscoped internal discovery page to distinguish identical workflow instance IDs and construct owned queue items. Public workflow-list response models omit this internal ownership field. Namespace-scoped pagination interprets its cursor together with the supplied namespace; cross-namespace recovery and reconciliation pagination also includes namespace as an ordering tie-breaker so identical IDs and timestamps remain unambiguous.
 
 This makes namespace omission a compile-time error and avoids service objects that are permanently bound to one tenant.
 
@@ -80,13 +80,15 @@ Alternatives considered: separate queue and in-flight component instances per na
 
 Optimistic workflow version conflicts are evaluated against the namespaced instance identity. Definition last-invoked projections update only the definition in the workflow's namespace.
 
-### Startup recovery deliberately discovers work across namespaces
+### Internal recovery and reconciliation discover work across namespaces
 
 At process startup, task synchronization and active-instance requeue call `list_workflow_info(None, ...)` to page through unfinished workflow information across all namespaces. Every returned `WorkflowInfo` carries its namespace, and all subsequent snapshot reads, state transitions, task synchronization, and queue operations use that explicit namespace. Recovery does not depend on `RUNHELM_DEFAULT_NAMESPACE` and runs even when no default is configured.
 
-The unscoped option is a narrow privileged exception for recovery discovery, not a general resource-access mode. Public handlers and workflow services always call `list_workflow_info(Some(namespace), ...)`, and all other storage operations require a namespace. SQL uses an indexed unfinished-status query rather than fetching complete tenant resources merely to filter them in application memory. Memory storage may iterate its in-process summaries for the equivalent test contract.
+When worker liveness detects lost hosts, reconciliation also calls `list_workflow_info(None, ...)` to discover non-terminal workflows across all namespaces. It then fetches each authoritative snapshot, checks its pinned host, commits any failure transition, and removes queued work using the namespace returned by storage. Host-loss monitoring therefore does not depend on `RUNHELM_DEFAULT_NAMESPACE`.
 
-Bulk control and lost-host reconciliation remain namespace-scoped entry points. Once recovery discovers an owned workflow identity, it never drops the namespace or performs later operations through an unscoped lookup.
+The unscoped option is a narrow privileged exception for internal recovery and reconciliation discovery, not a general resource-access mode. Public handlers and workflow services always call `list_workflow_info(Some(namespace), ...)`, and all other storage operations require a namespace. SQL uses an indexed unfinished-status query rather than fetching complete tenant resources merely to filter them in application memory. Memory storage may iterate its in-process summaries for the equivalent test contract.
+
+Bulk control remains a namespace-scoped entry point. Once internal discovery returns an owned workflow identity, recovery and reconciliation never drop that namespace or perform later reads, transitions, or queue actions through an unscoped operation.
 
 ### API absence remains indistinguishable across namespaces
 
@@ -97,7 +99,7 @@ A point read or mutation for an ID owned by another namespace behaves exactly li
 - [Large signature fan-out across core and tests] → Introduce the namespace type first, then let compiler errors identify every identity-bearing call site; avoid compatibility overloads that silently select a namespace.
 - [A missed SQL predicate could leak tenant data] → Add identical-ID isolation tests per adapter covering point reads, lists, mutations, events, tasks, optimistic commits, and definition projections.
 - [The deliberate resolver panic can terminate a request task or process depending on panic configuration] → Keep it isolated behind the resolver interface, test it at that boundary, and document that deployments must configure the default namespace.
-- [An ordinary caller could accidentally request cross-namespace workflow information] → Document `None` as recovery-only, keep direct recovery discovery inside the orchestrator startup path, require `Some(namespace)` in service APIs, and test that public operations never use the unscoped form.
+- [An ordinary caller could accidentally request cross-namespace workflow information] → Document `None` as internal recovery/reconciliation-only, keep direct unscoped discovery inside orchestrator background paths, require `Some(namespace)` in service APIs, and test that public operations never use the unscoped form.
 - [Cross-namespace recovery could be inefficient] → Add status-oriented SQL indexing and page namespace-qualified summaries rather than loading complete workflows globally.
 - [Schema reset discards existing SQL data] → Treat the release as a destructive schema boundary, require database recreation, and document backup/rollback expectations.
 - [Adding namespace to worker payloads is a protocol break] → Update orchestrator and worker contracts together and cover claim/result round trips in integration tests.

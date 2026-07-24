@@ -79,3 +79,8 @@ Use force retry only when losing host-local workspace or Agent session context i
 ## Queue behavior
 
 RunHelm prevents overlapping engine passes for one workflow instance. If a workflow is queued while an engine pass is active, the queued pass waits until the active pass completes.
+
+The scheduler uses one deployment-wide queue, but queued identity includes the
+selected namespace. Identical workflow instance IDs in different namespaces are
+independent. Queue status, removal, purge, pause, and resume operations affect
+only the namespace selected for the request.

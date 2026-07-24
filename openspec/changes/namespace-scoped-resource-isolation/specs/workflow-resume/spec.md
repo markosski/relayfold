@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Namespace-Scoped Workflow Scheduling and Recovery
-The orchestrator SHALL use one shared workflow queue to concurrently retain work from multiple namespaces and SHALL identify queued and active workflows by namespace and workflow instance ID. Startup recovery SHALL discover unfinished workflow information across all namespaces, while pause, resume, retry, requeue, and reconciliation operations after discovery SHALL use an explicit namespace.
+The orchestrator SHALL use one shared workflow queue to concurrently retain work from multiple namespaces and SHALL identify queued and active workflows by namespace and workflow instance ID. Startup recovery and lost-host reconciliation SHALL discover unfinished workflow information across all namespaces, while pause, resume, retry, requeue, and reconciliation operations after discovery SHALL use an explicit namespace.
 
 #### Scenario: Identical workflow IDs are queued independently
 - **WHEN** two namespaces enqueue the same workflow instance ID
@@ -35,5 +35,11 @@ The orchestrator SHALL use one shared workflow queue to concurrently retain work
 - **THEN** all subsequent snapshot reads, state transitions, task synchronization, and queue actions use that namespace
 
 #### Scenario: Reconciliation keeps namespace
-- **WHEN** lost-host or retry processing identifies a workflow action
+- **WHEN** lost-host discovery or retry processing identifies a workflow action
 - **THEN** the resulting read, state transition, and queue action use the workflow's namespace
+
+#### Scenario: Cross-namespace lost-host reconciliation
+- **WHEN** a deployment-scoped worker host is declared lost
+- **THEN** reconciliation discovers non-terminal workflow information without a namespace filter
+- **AND** it evaluates and updates pinned workflows in every namespace using the namespace returned by storage
+- **AND** it does not depend on `RUNHELM_DEFAULT_NAMESPACE`

@@ -9,7 +9,7 @@ RunHelm currently treats definitions, workflow instances, task state, events, qu
 - Make a configured default namespace authoritative and ignore any supplied API key when it is present.
 - Require a well-formed bearer credential when no default is configured, while deliberately leaving key-to-namespace resolution as a not-implemented panic in this story.
 - Scope all public and resource-specific definition, workflow-instance, task, event, queue, reconciliation, dispatch, and result operations by namespace.
-- Allow only startup recovery to list workflow information without a namespace, returning namespace-qualified workflow information so unfinished instances from every namespace can be requeued safely.
+- Allow only internal startup recovery and lost-host reconciliation to list workflow information without a namespace, returning namespace-qualified workflow information so subsequent actions retain ownership.
 - Update memory and SQL storage identities and queries so the same resource identifier can exist independently in multiple namespaces.
 - Reset the SQL initial schema rather than migrating existing pre-namespace databases.
 - Retain namespace identity in persisted and queued work so background and worker execution never depends on ambient request configuration.

@@ -251,9 +251,9 @@ impl Serialize for TaskResult {
 /// Point reads return authoritative committed state. Collection and history reads may be backed by
 /// asynchronous projections, so callers must tolerate recently committed changes being absent or
 /// stale and must re-read an entity by ID before making a state transition. List pagination is not
-/// a snapshot: concurrent writes may move entries between pages. Except for recovery-only
-/// [`StoragePort::list_workflow_info`] calls with `None`, every operation requires the namespace
-/// that owns the resource.
+/// a snapshot: concurrent writes may move entries between pages. Except for internal recovery and
+/// reconciliation [`StoragePort::list_workflow_info`] calls with `None`, every operation requires
+/// the namespace that owns the resource.
 pub trait StoragePort {
     /// Returns the authoritative committed workflow definition for `id`, or `None` when it does not
     /// exist.
@@ -300,8 +300,9 @@ pub trait StoragePort {
     /// Returns a bounded page of lightweight workflow-instance summaries.
     ///
     /// `Some(namespace)` is required for normal service and resource operations. `None` is
-    /// reserved for startup recovery across namespaces; in that mode every returned
-    /// [`WorkflowInfo`] and pagination cursor retains its owning namespace.
+    /// reserved for internal startup recovery and lost-host reconciliation across namespaces; in
+    /// that mode every returned [`WorkflowInfo`] and pagination cursor retains its owning
+    /// namespace.
     ///
     /// Filters of different kinds are combined with logical AND. Status filters match any supplied
     /// status. Results are ordered by modification time descending and then workflow-instance ID

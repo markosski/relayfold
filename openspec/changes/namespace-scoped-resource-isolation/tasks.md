@@ -7,7 +7,7 @@
 
 ## 2. Namespace-Scoped Storage Contract and Core Services
 
-- [x] 2.1 Add explicit namespace parameters to every definition and workflow operation in `StoragePort`, including point reads, lists, deletes, events, and atomic workflow commits; make `list_workflow_info` alone accept `Option<&Namespace>`, with `None` reserved for startup recovery.
+- [x] 2.1 Add explicit namespace parameters to every definition and workflow operation in `StoragePort`, including point reads, lists, deletes, events, and atomic workflow commits; make `list_workflow_info` alone accept `Option<&Namespace>`, with `None` reserved for internal startup recovery and lost-host reconciliation.
 - [x] 2.2 Add namespace ownership to storage-facing `WorkflowInfo` and cross-namespace pagination identity while keeping namespace out of public workflow-list response bodies.
 - [x] 2.3 Propagate namespace through `FunctionService`, `WorkflowService`, definition-reference resolution, and workflow immutability checks.
 - [x] 2.4 Propagate namespace through `WorkflowStateManager` and `WorkflowEngine` reads, transitions, status queries, and task dispatch calls.
@@ -16,22 +16,22 @@
 ## 3. Memory Storage Isolation
 
 - [x] 3.1 Convert memory definition, function, workflow snapshot, summary, and event keys to namespace/resource composite identities.
-- [x] 3.2 Scope memory lists, filters, pagination, deletes, optimistic commits, and definition last-invoked projections to the supplied namespace, while supporting recovery-only workflow-info listing without one.
+- [x] 3.2 Scope memory lists, filters, pagination, deletes, optimistic commits, and definition last-invoked projections to the supplied namespace, while supporting internal recovery/reconciliation workflow-info listing without one.
 - [x] 3.3 Add or modify existing memory adapter tests proving identical IDs, reads, lists, mutations, events, tasks, and version conflicts remain isolated - only add important tests
 
 ## 4. SQL Storage Isolation and Schema Reset
 
 - [x] 4.1 Reset SQL migrations to one current initial schema with namespace columns, composite primary/foreign keys, current definition metadata, and namespace-leading indexes.
 - [x] 4.2 Add namespace predicates and bindings to every SQL definition and workflow point read, write, delete, join, event/task/verifier operation, and projection update.
-- [x] 4.3 Scope SQL workflow listing, filters, ordering, pagination cursors, event pages, and optimistic version checks to namespace, and add an indexed paginated recovery query that returns unfinished workflow information across namespaces.
+- [x] 4.3 Scope SQL workflow listing, filters, ordering, pagination cursors, event pages, and optimistic version checks to namespace, and add an indexed paginated internal recovery/reconciliation query that returns unfinished workflow information across namespaces.
 - [x] 4.4 Add fresh-schema constraint and adapter tests proving identical IDs and all resource relationships remain isolated across namespaces.
 
 ## 5. Queue, Recovery, and Reconciliation
 
-- [ ] 5.1 Replace ID-only workflow queue values with owned namespace/workflow composite items in one shared queue and make duplicate, active, complete, remove, status, and purge behavior namespace-aware.
-- [ ] 5.2 Keep bulk control and lost-host reconciliation namespace-scoped, and retain the discovered namespace through every recovery read, transition, and queue action.
-- [ ] 5.3 Make startup task synchronization and active workflow requeue call `list_workflow_info(None, ...)`, recover unfinished instances from every namespace regardless of default configuration, and enqueue namespace/workflow composite items.
-- [ ] 5.4 Add queue and orchestrator tests for identical IDs, namespace-scoped bulk operations, cross-namespace recovery with and without a configured default, requeue, and reconciliation.
+- [x] 5.1 Replace ID-only workflow queue values with owned namespace/workflow composite items in one shared queue and make duplicate, active, complete, remove, status, and purge behavior namespace-aware.
+- [x] 5.2 Keep bulk control namespace-scoped, let lost-host reconciliation discover non-terminal workflows across namespaces, and retain each discovered namespace through every recovery/reconciliation read, transition, and queue action.
+- [x] 5.3 Make startup task synchronization and active workflow requeue call `list_workflow_info(None, ...)`, recover unfinished instances from every namespace regardless of default configuration, and enqueue namespace/workflow composite items.
+- [x] 5.4 Add queue and orchestrator tests for identical IDs, namespace-scoped bulk operations, cross-namespace recovery with and without a configured default, requeue, and cross-namespace reconciliation.
 
 ## 6. Worker Dispatch and Result Isolation
 

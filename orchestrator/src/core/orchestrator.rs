@@ -280,25 +280,23 @@ impl Orchestrator {
 
             let orchestrator = Arc::clone(&self);
             tokio::spawn(async move {
-                let namespace = item.namespace;
-                let workflow_instance_id = item.workflow_instance_id;
                 if let Err(error) = orchestrator
-                    .run_workflow(&namespace, workflow_instance_id.clone())
+                    .run_workflow(&item.namespace, item.workflow_instance_id.clone())
                     .await
                 {
                     error!(
-                        %workflow_instance_id,
+                        workflow_instance_id = %item.workflow_instance_id,
                         error = ?error,
                         "workflow execution failed"
                     );
                 }
                 if let Err(error) = orchestrator
                     .workflow_queue
-                    .complete(&namespace, &workflow_instance_id)
+                    .complete(&item.namespace, &item.workflow_instance_id)
                     .await
                 {
                     error!(
-                        %workflow_instance_id,
+                        workflow_instance_id = %item.workflow_instance_id,
                         error = ?error,
                         "workflow scheduler failed to mark workflow instance complete"
                     );
@@ -317,7 +315,7 @@ impl Orchestrator {
 
         let state_manager = WorkflowStateManager::new(Arc::clone(&self.storage));
 
-        for info in self.list_active_workflow_info().await?.runnable {
+        for info in self.list_nonterminal_workflow_info(None).await?.runnable {
             let Some(instance) = self
                 .storage
                 .get_workflow_instance(&info.namespace, &info.id)
@@ -355,7 +353,7 @@ impl Orchestrator {
 
     /// Requeues all active workflow instances found in storage.
     pub async fn enqueue_active_workflow_instances(&self) -> anyhow::Result<usize> {
-        let infos = self.list_active_workflow_info().await?.runnable;
+        let infos = self.list_nonterminal_workflow_info(None).await?.runnable;
         let count = infos.len();
 
         for info in infos {
@@ -369,6 +367,10 @@ impl Orchestrator {
     /// Fails non-terminal workflow instances pinned to hosts that heartbeat
     /// policy has declared lost. The existing pin remains on the snapshot so
     /// later retry behavior can decide whether to preserve or reassign it.
+    ///
+    /// Worker hosts are deployment-scoped, so discovery spans namespaces. Each
+    /// returned workflow namespace is retained for authoritative reads,
+    /// transitions, and queue removal.
     pub async fn fail_workflows_pinned_to_lost_hosts(
         &self,
         lost_hosts: &[WorkerHostId],
@@ -379,7 +381,7 @@ impl Orchestrator {
 
         let lost_hosts = lost_hosts.iter().cloned().collect::<HashSet<_>>();
         let state_manager = WorkflowStateManager::new(Arc::clone(&self.storage));
-        let active = self.list_active_workflow_info().await?;
+        let active = self.list_nonterminal_workflow_info(None).await?;
         let mut failed = 0;
 
         for info in active.runnable.into_iter().chain(active.blocked) {
@@ -406,6 +408,8 @@ impl Orchestrator {
                         status: WorkflowStatus::Failed,
                     }],
                 )
+                .await?;
+            self.remove_queued_workflow_instance(&info.namespace, &info.id)
                 .await?;
             failed += 1;
             warn!(
@@ -446,7 +450,10 @@ impl Orchestrator {
         resolve_task_function_ref(self.storage.as_ref(), namespace, task).await
     }
 
-    async fn list_active_workflow_info(&self) -> anyhow::Result<StartupWorkflowDiscovery> {
+    async fn list_nonterminal_workflow_info(
+        &self,
+        namespace: Option<&Namespace>,
+    ) -> anyhow::Result<StartupWorkflowDiscovery> {
         let mut cursor: Option<WorkflowInfoCursor> = None;
         let mut runnable_infos: Vec<WorkflowInfo> = Vec::new();
         let mut blocked_infos: Vec<WorkflowInfo> = Vec::new();
@@ -455,7 +462,7 @@ impl Orchestrator {
             let page = self
                 .storage
                 .list_workflow_info(
-                    None,
+                    namespace,
                     WorkflowInfoPageRequest { limit: 100, cursor },
                     all_nonterminal_workflow_filter(),
                 )

@@ -71,15 +71,15 @@ RunHelm SHALL evaluate every definition, workflow instance, task, verifier state
 - **AND** public resource fields cannot override the selected namespace
 
 ### Requirement: Namespace-Scoped Storage Adapters
-Every active storage adapter SHALL encode namespace ownership in authoritative keys, relationships, queries, projections, and immutable payload locations rather than applying an in-memory result filter after a cross-namespace resource read. Storage-facing workflow information SHALL carry its owning namespace. `list_workflow_info` SHALL accept an optional namespace, with a missing namespace reserved for startup recovery; every other storage operation SHALL require an explicit namespace.
+Every active storage adapter SHALL encode namespace ownership in authoritative keys, relationships, queries, projections, and immutable payload locations rather than applying an in-memory result filter after a cross-namespace resource read. Storage-facing workflow information SHALL carry its owning namespace. `list_workflow_info` SHALL accept an optional namespace, with a missing namespace reserved for internal startup recovery and lost-host reconciliation; every other storage operation SHALL require an explicit namespace.
 
 #### Scenario: Namespace-scoped workflow information listing
 - **WHEN** a normal service calls `list_workflow_info` with a namespace
 - **THEN** storage returns only workflow information owned by that namespace
 - **AND** the public workflow-list response omits the storage-facing namespace field
 
-#### Scenario: Recovery workflow information listing
-- **WHEN** startup recovery calls `list_workflow_info` without a namespace
+#### Scenario: Internal recovery and reconciliation workflow information listing
+- **WHEN** startup recovery or lost-host reconciliation calls `list_workflow_info` without a namespace
 - **THEN** storage returns matching workflow information across all namespaces
 - **AND** every returned item identifies its owning namespace
 - **AND** pagination distinguishes otherwise identical workflow IDs across namespaces

@@ -19,6 +19,7 @@ use crate::ports::task_dispatch::TaskDispatchPort;
 use async_trait::async_trait;
 use serde_json::json;
 use std::collections::HashMap;
+use std::process::Command;
 use std::sync::Mutex as StdMutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::time::{Duration, sleep};
@@ -29,6 +30,10 @@ fn orchestrator() -> Orchestrator {
         Arc::new(FakeTaskDispatcher::new()),
         Arc::new(MemoryWorkflowQueue::new(10)),
     )
+}
+
+fn other_namespace() -> Namespace {
+    Namespace::new("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap()
 }
 
 fn orchestrator_with_services() -> (Orchestrator, WorkflowService, FunctionService) {
@@ -1011,7 +1016,10 @@ async fn startup_discovery_finds_blocked_workflows_without_requeueing_them() {
             .unwrap();
     }
 
-    let discovery = orchestrator.list_active_workflow_info().await.unwrap();
+    let discovery = orchestrator
+        .list_nonterminal_workflow_info(None)
+        .await
+        .unwrap();
     let mut runnable_ids: Vec<String> =
         discovery.runnable.into_iter().map(|info| info.id).collect();
     runnable_ids.sort();
@@ -1209,6 +1217,180 @@ async fn bulk_pause_and_resume_update_queue_for_matching_workflows() {
             "running-workflow".to_string(),
         ]
     );
+}
+
+#[tokio::test]
+async fn bulk_pause_and_resume_are_namespace_scoped() {
+    let storage = Arc::new(MemoryStorage::new());
+    let queue = Arc::new(MemoryWorkflowQueue::new(10));
+    let orchestrator =
+        Orchestrator::new(storage.clone(), Arc::new(FakeTaskDispatcher::new()), queue);
+    let first = crate::core::namespace::test_namespace();
+    let second = other_namespace();
+
+    for namespace in [&first, &second] {
+        let mut active = workflow_instance("shared-active", "workflow-def");
+        active.status = WorkflowStatus::Pending;
+        storage
+            .save_workflow_instance(namespace, 0, vec![], active)
+            .await
+            .unwrap();
+
+        let mut paused = workflow_instance("shared-paused", "workflow-def");
+        paused.status = WorkflowStatus::Paused;
+        storage
+            .save_workflow_instance(namespace, 0, vec![], paused)
+            .await
+            .unwrap();
+
+        orchestrator
+            .enqueue_workflow_instance(namespace, "shared-active".to_string())
+            .await
+            .unwrap();
+    }
+
+    assert_eq!(
+        orchestrator
+            .pause_active_workflow_instances(&first)
+            .await
+            .unwrap(),
+        vec!["shared-active".to_string()]
+    );
+    assert!(
+        orchestrator
+            .get_queue_status(&first)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        orchestrator.get_queue_status(&second).await.unwrap(),
+        vec!["shared-active".to_string()]
+    );
+    assert_eq!(
+        storage
+            .get_workflow_instance(&second, "shared-active")
+            .await
+            .unwrap()
+            .unwrap()
+            .status,
+        WorkflowStatus::Pending
+    );
+
+    let mut resumed = orchestrator
+        .resume_paused_workflow_instances(&first)
+        .await
+        .unwrap();
+    resumed.sort();
+    assert_eq!(
+        resumed,
+        vec!["shared-active".to_string(), "shared-paused".to_string()]
+    );
+    assert_eq!(
+        orchestrator.get_queue_status(&second).await.unwrap(),
+        vec!["shared-active".to_string()]
+    );
+    assert_eq!(
+        storage
+            .get_workflow_instance(&second, "shared-paused")
+            .await
+            .unwrap()
+            .unwrap()
+            .status,
+        WorkflowStatus::Paused
+    );
+}
+
+#[test]
+fn startup_recovery_is_cross_namespace_with_or_without_default_configuration() {
+    for default_namespace in [None, Some("550e8400-e29b-41d4-a716-446655440000")] {
+        let mut command = Command::new(std::env::current_exe().unwrap());
+        command
+            .arg("startup_recovery_cross_namespace_child")
+            .arg("--nocapture")
+            .env("RUNHELM_STARTUP_RECOVERY_CHILD", "1");
+
+        match default_namespace {
+            Some(namespace) => {
+                command.env("RUNHELM_DEFAULT_NAMESPACE", namespace);
+            }
+            None => {
+                command.env_remove("RUNHELM_DEFAULT_NAMESPACE");
+            }
+        }
+
+        let output = command.output().unwrap();
+        assert!(
+            output.status.success(),
+            "child recovery test failed with default {default_namespace:?}\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
+
+#[tokio::test]
+async fn startup_recovery_cross_namespace_child() {
+    if std::env::var_os("RUNHELM_STARTUP_RECOVERY_CHILD").is_none() {
+        return;
+    }
+
+    let storage = Arc::new(MemoryStorage::new());
+    let queue = Arc::new(MemoryWorkflowQueue::new(10));
+    let orchestrator =
+        Orchestrator::new(storage.clone(), Arc::new(FakeTaskDispatcher::new()), queue);
+    let first = crate::core::namespace::test_namespace();
+    let second = other_namespace();
+    let task_attempt_id = TaskInstance::make_task_attempt_id("taska", 1);
+
+    for namespace in [&first, &second] {
+        let mut instance = workflow_instance("shared-workflow", "workflow-def");
+        instance.status = WorkflowStatus::Running;
+        instance.tasks.insert(
+            task_attempt_id.clone(),
+            TaskInstance {
+                task_def_id: "taska".to_string(),
+                status: TaskStatus::Running,
+                satisfaction_status: TaskSatisfactionStatus::Pending,
+                human_input: None,
+                input_data: vec![],
+                input_mapping: vec![],
+                output_data: None,
+                generation_index: 1,
+                verifier_metadata: None,
+            },
+        );
+        storage
+            .save_workflow_instance(namespace, 0, vec![], instance)
+            .await
+            .unwrap();
+    }
+
+    assert_eq!(orchestrator.synchronize_startup_tasks().await.unwrap(), 2);
+    assert_eq!(
+        orchestrator
+            .enqueue_active_workflow_instances()
+            .await
+            .unwrap(),
+        2
+    );
+
+    for namespace in [&first, &second] {
+        let recovered = storage
+            .get_workflow_instance(namespace, "shared-workflow")
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(recovered.status, WorkflowStatus::Pending);
+        assert_eq!(
+            recovered.tasks[&task_attempt_id].status,
+            TaskStatus::Pending
+        );
+        assert_eq!(
+            orchestrator.get_queue_status(namespace).await.unwrap(),
+            vec!["shared-workflow".to_string()]
+        );
+    }
 }
 
 #[tokio::test]
@@ -1504,6 +1686,72 @@ async fn lost_pinned_host_marks_nonterminal_workflows_failed() {
             .unwrap()
             .status,
         WorkflowStatus::Pending
+    );
+}
+
+#[tokio::test]
+async fn lost_host_reconciliation_discovers_and_updates_all_namespaces() {
+    let storage = Arc::new(MemoryStorage::new());
+    let queue = Arc::new(MemoryWorkflowQueue::new(10));
+    let orchestrator =
+        Orchestrator::new(storage.clone(), Arc::new(FakeTaskDispatcher::new()), queue);
+    let first = crate::core::namespace::test_namespace();
+    let second = other_namespace();
+    let lost_host = WorkerHostId::new("host-a");
+
+    for namespace in [&first, &second] {
+        let mut instance = workflow_instance("shared-workflow", "workflow-def");
+        instance.status = WorkflowStatus::Pending;
+        instance.pinned_worker_host = Some(lost_host.clone());
+        storage
+            .save_workflow_instance(namespace, 0, vec![], instance)
+            .await
+            .unwrap();
+        orchestrator
+            .enqueue_workflow_instance(namespace, "shared-workflow".to_string())
+            .await
+            .unwrap();
+    }
+
+    assert_eq!(
+        orchestrator
+            .fail_workflows_pinned_to_lost_hosts(std::slice::from_ref(&lost_host))
+            .await
+            .unwrap(),
+        2
+    );
+
+    assert_eq!(
+        storage
+            .get_workflow_instance(&first, "shared-workflow")
+            .await
+            .unwrap()
+            .unwrap()
+            .status,
+        WorkflowStatus::Failed
+    );
+    assert_eq!(
+        storage
+            .get_workflow_instance(&second, "shared-workflow")
+            .await
+            .unwrap()
+            .unwrap()
+            .status,
+        WorkflowStatus::Failed
+    );
+    assert!(
+        orchestrator
+            .get_queue_status(&first)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        orchestrator
+            .get_queue_status(&second)
+            .await
+            .unwrap()
+            .is_empty()
     );
 }
 
