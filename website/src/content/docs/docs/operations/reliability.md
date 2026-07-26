@@ -19,6 +19,13 @@ A logical task attempt can be duplicated when:
 
 RunHelm ignores late or untracked results for workflow-state advancement, but it cannot undo side effects performed by task code.
 
+## Startup recovery
+
+At startup, RunHelm discovers unfinished workflows across every stored
+namespace, regardless of whether `RUNHELM_USE_GLOBAL_NAMESPACE` is enabled.
+Recovery retains each workflow's stored namespace while resetting abandoned
+running work and requeueing runnable instances.
+
 ## Idempotent tasks
 
 Prefer side effects that are safe to repeat:

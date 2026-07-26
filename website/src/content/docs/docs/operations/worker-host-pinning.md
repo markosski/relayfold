@@ -38,6 +38,11 @@ If another worker remains registered for the same host ID, future work can conti
 
 If no worker remains registered for the pinned host, RunHelm waits rather than silently moving the workflow. If the host is considered lost, non-terminal workflows pinned to that host can fail. The workflow pin remains on the failed snapshot.
 
+Pinned-host loss reconciliation discovers non-terminal workflows across every
+stored namespace and applies failure transitions using each workflow's stored
+namespace. It runs independently of `RUNHELM_USE_GLOBAL_NAMESPACE`, just like
+startup recovery.
+
 ## Retry behavior
 
 Default retry keeps the existing pinned host:

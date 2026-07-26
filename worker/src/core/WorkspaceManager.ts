@@ -59,6 +59,9 @@ export async function deleteWorkspace(root: string, suffix: string): Promise<voi
     await rm(workspacePath, { recursive: true, force: true });
 }
 
+// TODO: This is currently dead production code. Wire it into a worker background
+// monitor once an authoritative workflow-status source and cleanup scheduling
+// configuration are available.
 export async function cleanupExpiredWorkspaces(
     root: string,
     options: WorkspaceCleanupOptions
@@ -69,27 +72,37 @@ export async function cleanupExpiredWorkspaces(
 
     const nowEpochSeconds = options.nowEpochSeconds ?? Math.floor(Date.now() / 1000);
     const result: WorkspaceCleanupResult = { removed: 0, skipped: 0 };
-    const workflowDirs = await readDirectories(root);
+    const namespaceDirs = await readDirectories(root);
 
-    for (const workflowDir of workflowDirs) {
-        const workflowStatus = options.workflowStatuses[workflowDir.name];
-        const workspaceDirs = await readDirectories(path.join(root, workflowDir.name));
+    for (const namespaceDir of namespaceDirs) {
+        const namespacePath = path.join(root, namespaceDir.name);
+        const workflowDirs = await readDirectories(namespacePath);
 
-        for (const workspaceDir of workspaceDirs) {
-            const workspacePath = path.join(root, workflowDir.name, workspaceDir.name);
-            if (!isTerminalWorkflowStatus(workflowStatus)) {
-                result.skipped += 1;
-                continue;
+        for (const workflowDir of workflowDirs) {
+            const workflowStatus =
+                options.workflowStatuses[`${namespaceDir.name}/${workflowDir.name}`];
+            const workspaceDirs = await readDirectories(path.join(namespacePath, workflowDir.name));
+
+            for (const workspaceDir of workspaceDirs) {
+                const workspacePath = path.join(
+                    namespacePath,
+                    workflowDir.name,
+                    workspaceDir.name
+                );
+                if (!isTerminalWorkflowStatus(workflowStatus)) {
+                    result.skipped += 1;
+                    continue;
+                }
+
+                const timestamp = await readWorkspaceTimestamp(workspacePath);
+                if (timestamp === undefined || nowEpochSeconds - timestamp < options.ttlSeconds) {
+                    result.skipped += 1;
+                    continue;
+                }
+
+                await rm(workspacePath, { recursive: true, force: true });
+                result.removed += 1;
             }
-
-            const timestamp = await readWorkspaceTimestamp(workspacePath);
-            if (timestamp === undefined || nowEpochSeconds - timestamp < options.ttlSeconds) {
-                result.skipped += 1;
-                continue;
-            }
-
-            await rm(workspacePath, { recursive: true, force: true });
-            result.removed += 1;
         }
     }
 

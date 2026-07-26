@@ -6,7 +6,9 @@ import test from 'node:test';
 import { FileSessionStore, defaultSessionStoreDir } from '../dist/adapters/FileSessionStore.js';
 import { SessionStoreError } from '../dist/core/ports/SessionStore.js';
 
+const namespace = '550e8400-e29b-41d4-a716-446655440000';
 const sessionKey = {
+    namespace,
     workflowInstId: 'workflow',
     taskId: 'task',
 };
@@ -44,6 +46,7 @@ test('encodes logical keys into one session file', async () => {
     try {
         const store = new FileSessionStore(dir);
         const slashLikeKey = {
+            namespace,
             workflowInstId: 'workflow-instance',
             taskId: 'task-id',
         };
@@ -74,7 +77,11 @@ test('overwrites existing session content', async () => {
 
 test('throws a typed session store error when a session cannot be read', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
-    const sessionPath = join(dir, `${Buffer.from('workflow$task', 'utf8').toString('base64url')}.jsonl`);
+    const serializedSessionKey = `${namespace}$workflow$task`;
+    const sessionPath = join(
+        dir,
+        `${Buffer.from(serializedSessionKey, 'utf8').toString('base64url')}.jsonl`
+    );
 
     try {
         await mkdir(sessionPath);
@@ -84,7 +91,7 @@ test('throws a typed session store error when a session cannot be read', async (
             store.load(sessionKey),
             (error) => {
                 assert.equal(error instanceof SessionStoreError, true);
-                assert.equal(error.sessionKey, 'workflow$task');
+                assert.equal(error.sessionKey, serializedSessionKey);
                 assert.match(error.message, /Unable to read session file/);
                 assert.ok(error.cause);
                 return true;
@@ -106,7 +113,7 @@ test('throws a typed session store error when a session cannot be written', asyn
             store.write(sessionKey, { content: '{"type":"entry"}\n' }),
             (error) => {
                 assert.equal(error instanceof SessionStoreError, true);
-                assert.equal(error.sessionKey, 'workflow$task');
+                assert.equal(error.sessionKey, `${namespace}$workflow$task`);
                 assert.match(error.message, /Unable to write session file/);
                 assert.ok(error.cause);
                 return true;

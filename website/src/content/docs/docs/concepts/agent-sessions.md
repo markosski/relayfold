@@ -25,7 +25,11 @@ kind:
 
 When `reuse_session` is omitted, RunHelm treats it as enabled.
 
-When `reuse_session: true`, the worker derives a session key from the workflow instance ID and logical task ID. Later attempts for the same logical Agent task can continue the same conversation after human input, retry, or verifier feedback.
+When `reuse_session: true`, the worker derives a session key from the claimed
+namespace, workflow instance ID, and logical task ID. Later attempts for the same
+logical Agent task can continue the same conversation after human input, retry, or
+verifier feedback. Identical workflow and task IDs in another namespace use a
+different session.
 
 When `reuse_session: false`, later attempts start without prior logical-task conversation history. Use this when the Agent should evaluate the current inputs fresh every time.
 

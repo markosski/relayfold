@@ -1,4 +1,5 @@
 use crate::core::{
+    namespace::Namespace,
     task::{ExecutionMetadata, TaskDef},
     worker::TaskDispatchConstraints,
 };
@@ -8,6 +9,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskDispatch {
+    pub namespace: Namespace,
     pub workflow_inst_id: String,
     pub task_id: String,
     pub task: TaskDef,
@@ -69,6 +71,7 @@ impl From<WorkerExecutionResult> for ExecutionResult {
 pub trait TaskDispatchPort {
     async fn dispatch_task(
         &self,
+        namespace: &Namespace,
         workflow_inst_id: &str,
         task: &TaskDef,
         inputs: &[serde_json::Value],

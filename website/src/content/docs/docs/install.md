@@ -29,6 +29,29 @@ runhelm status
 
 The generated config is written to `~/.runhelm/config.env`, and the generated Compose file is written to `~/.runhelm/docker-compose.yml`.
 
+## Global namespace mode
+
+Public resource endpoints require a namespace. Local and single-tenant
+deployments can select the readable built-in global namespace:
+
+```text
+RUNHELM_USE_GLOBAL_NAMESPACE=true
+```
+
+When enabled, RunHelm selects the exact namespace `global-namespace`. This mode
+is authoritative, so public requests do not need an authorization header and
+ignore one if supplied.
+
+When `RUNHELM_USE_GLOBAL_NAMESPACE` is unset or `false`, missing or malformed
+bearer credentials return `401 Unauthorized`. A well-formed bearer credential
+reaches the API-key-to-namespace resolver, which deliberately panics as not
+implemented in this release. Enable global namespace mode for usable public
+resource endpoints. Values other than `true` or `false` are invalid. Health
+checks remain available without namespace configuration or authorization.
+
+The repository's local-development `docker-compose.yml` explicitly uses
+`RUNHELM_USE_GLOBAL_NAMESPACE=true`.
+
 ## Image overrides
 
 Override image references in `~/.runhelm/config.env` when using an internal registry:

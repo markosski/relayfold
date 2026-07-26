@@ -149,6 +149,7 @@ mod tests {
         );
 
         let response = WorkerResponse::TaskDispatch(TaskDispatch {
+            namespace: crate::core::namespace::test_namespace(),
             workflow_inst_id: "workflow-1".to_string(),
             task_id: "dispatch-1".to_string(),
             task: TaskDef {
@@ -164,7 +165,9 @@ mod tests {
                 workspace: None,
                 required_credentials: vec![],
             },
-            workspace_path_suffix: PathBuf::from("workflow-1/taskid-hello"),
+            workspace_path_suffix: PathBuf::from(
+                "550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-hello",
+            ),
             inputs: vec![json!({ "name": "Ada" })],
             execution_metadata: ExecutionMetadata::default(),
             human_input_provided: None,
@@ -174,6 +177,7 @@ mod tests {
             serde_json::to_value(response).unwrap(),
             json!({
                 "type": "task_dispatch",
+                "namespace": "550e8400-e29b-41d4-a716-446655440000",
                 "workflow_inst_id": "workflow-1",
                 "task_id": "dispatch-1",
                 "task": {
@@ -188,7 +192,7 @@ mod tests {
                     "output_schema": null,
                     "required_credentials": []
                 },
-                "workspace_path_suffix": "workflow-1/taskid-hello",
+                "workspace_path_suffix": "550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-hello",
                 "inputs": [{ "name": "Ada" }],
                 "execution_metadata": { "generation_index": 1 }
             })

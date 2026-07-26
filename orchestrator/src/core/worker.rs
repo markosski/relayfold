@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::core::namespace::Namespace;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WorkerId(pub String);
@@ -61,6 +63,7 @@ impl WorkerHeartbeatState {
 #[allow(dead_code)]
 pub struct DispatchLease {
     pub dispatch_id: String,
+    pub namespace: Namespace,
     pub workflow_instance_id: String,
     pub task_attempt_id: String,
     pub worker_id: WorkerId,
