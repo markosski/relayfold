@@ -56,6 +56,7 @@ export interface ExecutionMetadata {
 }
 
 export interface TaskExecutionPayload {
+    namespace: string;
     workflow_inst_id: string;
     task: TaskDef;
     workspace_path_suffix?: string;
