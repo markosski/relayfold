@@ -23,6 +23,7 @@ test('session load decision is attempt-aware and honors reuse_session false', ()
 
 test('session load diagnostics include session key and attempt', () => {
     const sessionKey = {
+        namespace: '550e8400-e29b-41d4-a716-446655440000',
         workflowInstId: 'workflow-1',
         taskId: 'draft',
     };
@@ -142,6 +143,7 @@ test('fresh verifier fallback rebuilds full context and current event', () => {
 
 function payload(overrides) {
     return {
+        namespace: '550e8400-e29b-41d4-a716-446655440000',
         workflow_inst_id: 'workflow-1',
         task: {
             id: 'draft',

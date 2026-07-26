@@ -11,7 +11,14 @@ Examples use:
 export RUNHELM_URL=http://localhost:3000
 ```
 
-The orchestrator must have `RUNHELM_DEFAULT_NAMESPACE` set to a canonical UUID string for the currently supported single-tenant request path. When configured, it takes precedence over any `Authorization` header. `/health` does not require a namespace.
+For the currently supported single-tenant request path, configure
+`RUNHELM_USE_GLOBAL_NAMESPACE=true`. RunHelm then selects the exact built-in
+namespace `global-namespace` and ignores any `Authorization` header. When the
+variable is unset or `false`, missing or malformed bearer credentials return
+`401 Unauthorized`. A well-formed `Authorization: Bearer <api-key>` credential
+reaches the deferred key-to-namespace resolver, which deliberately panics as not
+implemented in this release; it does not select a fallback namespace. Values
+other than `true` or `false` are invalid. `/health` does not require a namespace.
 
 The selected namespace scopes every public definition, workflow, task, event, and
 queue operation. Resource IDs therefore identify a resource only within that
@@ -660,6 +667,7 @@ Task response:
 ```json
 {
   "type": "task_dispatch",
+  "namespace": "550e8400-e29b-41d4-a716-446655440000",
   "workflow_inst_id": "hello-workflow-1780000000000000000",
   "task_id": "worker-pool-0",
   "task": {
@@ -672,7 +680,7 @@ Task response:
     },
     "required_credentials": []
   },
-  "workspace_path_suffix": "hello-workflow-1780000000000000000/taskid-hello",
+  "workspace_path_suffix": "550e8400-e29b-41d4-a716-446655440000/hello-workflow-1780000000000000000/taskid-hello",
   "inputs": [
     {
       "name": "Ada"
@@ -718,6 +726,9 @@ Other completion payloads:
   "reason": "Missing required credential: gh_token"
 }
 ```
+
+The dispatch ID in the request path identifies the active lease, so completion
+payloads do not repeat the namespace from the claimed task.
 
 Response:
 

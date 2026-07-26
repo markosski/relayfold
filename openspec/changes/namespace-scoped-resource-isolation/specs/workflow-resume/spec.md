@@ -26,8 +26,8 @@ The orchestrator SHALL use one shared workflow queue to concurrently retain work
 - **THEN** startup task synchronization and active workflow requeue list unfinished workflow information without a namespace filter
 - **AND** they recover and enqueue each instance using the namespace returned by storage
 
-#### Scenario: Recovery is independent of default namespace
-- **WHEN** the orchestrator starts with or without `RUNHELM_DEFAULT_NAMESPACE`
+#### Scenario: Recovery is independent of global namespace mode
+- **WHEN** the orchestrator starts with `RUNHELM_USE_GLOBAL_NAMESPACE` enabled or disabled
 - **THEN** startup recovery considers unfinished workflow information from every namespace
 
 #### Scenario: Recovery retains discovered namespace
@@ -42,4 +42,4 @@ The orchestrator SHALL use one shared workflow queue to concurrently retain work
 - **WHEN** a deployment-scoped worker host is declared lost
 - **THEN** reconciliation discovers non-terminal workflow information without a namespace filter
 - **AND** it evaluates and updates pinned workflows in every namespace using the namespace returned by storage
-- **AND** it does not depend on `RUNHELM_DEFAULT_NAMESPACE`
+- **AND** it does not depend on `RUNHELM_USE_GLOBAL_NAMESPACE`

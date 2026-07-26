@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Namespace-Aware Dispatch Tracking
-`TaskDispatcher` SHALL share pending and active tracking across namespaces, SHALL retain namespace in pending dispatches and active leases, and SHALL validate the namespace echoed by worker results.
+`TaskDispatcher` SHALL share pending and active tracking across namespaces, SHALL retain namespace in pending dispatches and active leases, and SHALL correlate worker results to the authoritative lease through a globally unique dispatch ID.
 
 #### Scenario: Claimed dispatch includes namespace
 - **WHEN** a worker claims pending work
@@ -11,10 +11,7 @@
 - **WHEN** two pending dispatches use the same workflow instance ID in different namespaces
 - **THEN** an active lease for one does not block the other as the same workflow identity
 
-#### Scenario: Matching namespace result completes dispatch
-- **WHEN** a worker reports an active dispatch ID and the namespace matches the in-flight dispatch
-- **THEN** the dispatcher completes the associated workflow-side waiter
-
-#### Scenario: Mismatched namespace result is rejected
-- **WHEN** a worker reports an active dispatch ID with a different namespace from the in-flight dispatch
-- **THEN** the dispatcher does not complete or remove the active dispatch
+#### Scenario: Active dispatch result completes by dispatch ID
+- **WHEN** a worker reports a result for an active dispatch ID
+- **THEN** the dispatcher completes the workflow-side waiter associated with that exact lease
+- **AND** result ownership comes from the lease rather than a namespace field in the result payload

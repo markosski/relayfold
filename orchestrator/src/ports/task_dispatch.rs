@@ -9,6 +9,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskDispatch {
+    pub namespace: Namespace,
     pub workflow_inst_id: String,
     pub task_id: String,
     pub task: TaskDef,

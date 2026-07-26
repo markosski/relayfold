@@ -67,6 +67,7 @@ impl TaskDispatcher {
 
     async fn enqueue_task(
         &self,
+        namespace: &Namespace,
         workflow_inst_id: &str,
         task: &TaskDef,
         inputs: &[serde_json::Value],
@@ -85,10 +86,11 @@ impl TaskDispatcher {
         let (claimed_tx, claimed_rx) = oneshot::channel();
 
         let workspace_key = workspace_key_for_task(workflow_inst_id, task);
-        let workspace_path_suffix = workspace_path_suffix(&workspace_key);
+        let workspace_path_suffix = workspace_path_suffix(namespace, &workspace_key);
 
         self.pending_tasks.lock().await.push_back(PendingTask {
             dispatch: TaskDispatch {
+                namespace: namespace.clone(),
                 workflow_inst_id: workflow_inst_id.to_string(),
                 task_id: task_id.clone(),
                 task: task.clone(),
@@ -154,6 +156,7 @@ impl TaskDispatcher {
                         pending_task.dispatch.task_id.clone(),
                         DispatchLease {
                             dispatch_id: pending_task.dispatch.task_id.clone(),
+                            namespace: pending_task.dispatch.namespace.clone(),
                             workflow_instance_id: pending_task.dispatch.workflow_inst_id.clone(),
                             task_attempt_id: TaskInstance::make_task_attempt_id(
                                 &pending_task.dispatch.task.id,
@@ -299,9 +302,10 @@ impl TaskDispatcher {
         in_flight_tasks: &HashMap<String, DispatchLease>,
         pending_task: &PendingTask,
     ) -> bool {
-        in_flight_tasks
-            .values()
-            .any(|lease| lease.workflow_instance_id == pending_task.dispatch.workflow_inst_id)
+        in_flight_tasks.values().any(|lease| {
+            lease.namespace == pending_task.dispatch.namespace
+                && lease.workflow_instance_id == pending_task.dispatch.workflow_inst_id
+        })
     }
 
     fn is_worker_in_flight(leases: &HashMap<String, DispatchLease>, worker_id: &str) -> bool {
@@ -313,7 +317,7 @@ impl TaskDispatcher {
 impl TaskDispatchPort for TaskDispatcher {
     async fn dispatch_task(
         &self,
-        _namespace: &Namespace,
+        namespace: &Namespace,
         workflow_inst_id: &str,
         task: &TaskDef,
         inputs: &[serde_json::Value],
@@ -326,6 +330,7 @@ impl TaskDispatchPort for TaskDispatcher {
             .unwrap_or(self.task_timeout);
 
         self.enqueue_task(
+            namespace,
             workflow_inst_id,
             task,
             inputs,
@@ -360,16 +365,20 @@ fn workspace_key_for_task(workflow_inst_id: &str, task: &TaskDef) -> WorkspaceKe
     }
 }
 
-fn workspace_path_suffix(key: &WorkspaceKey) -> PathBuf {
+fn workspace_path_suffix(namespace: &Namespace, key: &WorkspaceKey) -> PathBuf {
     match key {
         WorkspaceKey::Task {
             workflow_inst_id,
             task_id,
-        } => PathBuf::from(workflow_inst_id).join(format!("taskid-{}", task_id)),
+        } => PathBuf::from(namespace.as_str())
+            .join(workflow_inst_id)
+            .join(format!("taskid-{}", task_id)),
         WorkspaceKey::Group {
             workflow_inst_id,
             group_name,
-        } => PathBuf::from(workflow_inst_id).join(format!("taskgroup-{}", group_name)),
+        } => PathBuf::from(namespace.as_str())
+            .join(workflow_inst_id)
+            .join(format!("taskgroup-{}", group_name)),
     }
 }
 
@@ -400,6 +409,7 @@ fn task_timeout_from_env() -> Duration {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::namespace::Namespace;
     use crate::core::task::{TaskDef, TaskTypeDef, Workspace};
     use crate::core::worker::{WorkerHostId, WorkerId};
     use serde_json::json;
@@ -414,6 +424,10 @@ mod tests {
             worker_id: WorkerId::new(worker_id),
             host_id: WorkerHostId::new(host_id),
         }
+    }
+
+    fn other_test_namespace() -> Namespace {
+        Namespace::new("550e8400-e29b-41d4-a716-446655440001").unwrap()
     }
 
     async fn wait_for_pending_tasks(dispatcher: &TaskDispatcher, expected_count: usize) {
@@ -498,6 +512,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "123",
                         &task,
                         &[],
@@ -535,6 +550,55 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn identical_workflow_ids_in_different_namespaces_can_be_in_flight() {
+        let dispatcher = Arc::new(TaskDispatcher::new());
+        let first_namespace = crate::core::namespace::test_namespace();
+        let second_namespace = other_test_namespace();
+        let mut executions = vec![];
+
+        for namespace in [first_namespace.clone(), second_namespace.clone()] {
+            let dispatcher = dispatcher.clone();
+            executions.push(tokio::spawn(async move {
+                dispatcher
+                    .enqueue_task(
+                        &namespace,
+                        "shared-workflow",
+                        &test_task("task-1"),
+                        &[],
+                        Duration::from_secs(5),
+                        ExecutionMetadata::default(),
+                        TaskDispatchConstraints::default(),
+                    )
+                    .await
+            }));
+        }
+        wait_for_pending_tasks(&dispatcher, 2).await;
+
+        let first_claim = dispatcher
+            .claim_task(test_worker("worker-1"), Duration::from_millis(10))
+            .await
+            .unwrap()
+            .unwrap();
+        let second_claim = dispatcher
+            .claim_task(test_worker("worker-2"), Duration::from_millis(10))
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(first_claim.workflow_inst_id, "shared-workflow");
+        assert_eq!(second_claim.workflow_inst_id, "shared-workflow");
+        assert_ne!(first_claim.namespace, second_claim.namespace);
+        assert_eq!(
+            HashSet::from([first_claim.namespace, second_claim.namespace]),
+            HashSet::from([first_namespace, second_namespace])
+        );
+
+        for execution in executions {
+            execution.abort();
+        }
+    }
+
+    #[tokio::test]
     async fn worker_with_active_lease_cannot_claim_another_task() {
         let dispatcher = Arc::new(TaskDispatcher::new());
         let first_task = test_task("task-1");
@@ -543,6 +607,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &first_task,
                         &[],
@@ -566,6 +631,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-2",
                         &second_task,
                         &[],
@@ -636,6 +702,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "123",
                         &task,
                         &[],
@@ -683,6 +750,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "123",
                         &task,
                         &[],
@@ -702,7 +770,7 @@ mod tests {
 
         assert_eq!(
             serde_json::to_value(&claimed).unwrap()["workspace_path_suffix"],
-            json!("123/taskid-task-1")
+            json!("550e8400-e29b-41d4-a716-446655440000/123/taskid-task-1")
         );
         execution.abort();
     }
@@ -719,6 +787,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &first_task,
                         &[],
@@ -741,6 +810,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &second_task,
                         &[],
@@ -774,7 +844,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             first_claim.workspace_path_suffix,
-            PathBuf::from("workflow-1/taskgroup-repo")
+            PathBuf::from("550e8400-e29b-41d4-a716-446655440000/workflow-1/taskgroup-repo")
         );
 
         dispatcher
@@ -800,7 +870,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             second_claim.workspace_path_suffix,
-            PathBuf::from("workflow-1/taskgroup-repo")
+            PathBuf::from("550e8400-e29b-41d4-a716-446655440000/workflow-1/taskgroup-repo")
         );
 
         first_execution.abort();
@@ -817,6 +887,7 @@ mod tests {
                 async move {
                     dispatcher
                         .enqueue_task(
+                            &crate::core::namespace::test_namespace(),
                             workflow_id,
                             &task,
                             &[],
@@ -862,6 +933,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &task,
                         &[],
@@ -894,6 +966,7 @@ mod tests {
         let lease = in_flight_tasks.get(&claimed.task_id).unwrap();
 
         assert_eq!(lease.dispatch_id, claimed.task_id);
+        assert_eq!(lease.namespace, crate::core::namespace::test_namespace());
         assert_eq!(lease.workflow_instance_id, "workflow-1");
         assert_eq!(lease.task_attempt_id, "task-1[3]");
         assert_eq!(lease.worker_id, WorkerId::new("worker-1"));
@@ -915,6 +988,7 @@ mod tests {
             async move {
                 old_dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &task,
                         &[],
@@ -945,6 +1019,7 @@ mod tests {
             async move {
                 recovered_dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &task,
                         &[],
@@ -1021,6 +1096,7 @@ mod tests {
                 async move {
                     dispatcher
                         .enqueue_task(
+                            &crate::core::namespace::test_namespace(),
                             workflow_id,
                             &task,
                             &[],
@@ -1058,6 +1134,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &active_task,
                         &[],
@@ -1087,6 +1164,7 @@ mod tests {
                 async move {
                     dispatcher
                         .enqueue_task(
+                            &crate::core::namespace::test_namespace(),
                             workflow_id,
                             &task,
                             &[],
@@ -1148,6 +1226,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "123",
                         &task,
                         &[],
@@ -1189,6 +1268,7 @@ mod tests {
             async move {
                 dispatcher
                     .enqueue_task(
+                        &crate::core::namespace::test_namespace(),
                         "workflow-1",
                         &task,
                         &[],

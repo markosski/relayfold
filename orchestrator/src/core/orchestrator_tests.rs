@@ -90,6 +90,7 @@ impl TaskDispatchPort for CountingDispatcher {
 
 #[derive(Clone, Debug)]
 struct RecordedIsolatedExecution {
+    namespace: crate::core::namespace::Namespace,
     workflow_inst_id: String,
     task_id: String,
 }
@@ -114,7 +115,7 @@ impl RecordingIsolatedDispatcher {
 impl TaskDispatchPort for RecordingIsolatedDispatcher {
     async fn dispatch_task(
         &self,
-        _namespace: &crate::core::namespace::Namespace,
+        namespace: &crate::core::namespace::Namespace,
         workflow_inst_id: &str,
         task: &TaskDef,
         _inputs: &[serde_json::Value],
@@ -125,6 +126,7 @@ impl TaskDispatchPort for RecordingIsolatedDispatcher {
             .lock()
             .unwrap()
             .push(RecordedIsolatedExecution {
+                namespace: namespace.clone(),
                 workflow_inst_id: workflow_inst_id.to_string(),
                 task_id: task.id.clone(),
             });
@@ -327,6 +329,10 @@ async fn execute_workflow_task_isolated_uses_generated_isolated_execution_id() {
 
     let records = dispatcher.records();
     assert_eq!(records.len(), 1);
+    assert_eq!(
+        records[0].namespace,
+        crate::core::namespace::test_namespace()
+    );
     assert_eq!(records[0].task_id, "taska");
     assert!(
         records[0]
@@ -1302,27 +1308,27 @@ async fn bulk_pause_and_resume_are_namespace_scoped() {
 }
 
 #[test]
-fn startup_recovery_is_cross_namespace_with_or_without_default_configuration() {
-    for default_namespace in [None, Some("550e8400-e29b-41d4-a716-446655440000")] {
+fn startup_recovery_is_cross_namespace_with_or_without_global_namespace_mode() {
+    for use_global_namespace in [None, Some("true")] {
         let mut command = Command::new(std::env::current_exe().unwrap());
         command
             .arg("startup_recovery_cross_namespace_child")
             .arg("--nocapture")
             .env("RUNHELM_STARTUP_RECOVERY_CHILD", "1");
 
-        match default_namespace {
-            Some(namespace) => {
-                command.env("RUNHELM_DEFAULT_NAMESPACE", namespace);
+        match use_global_namespace {
+            Some(enabled) => {
+                command.env("RUNHELM_USE_GLOBAL_NAMESPACE", enabled);
             }
             None => {
-                command.env_remove("RUNHELM_DEFAULT_NAMESPACE");
+                command.env_remove("RUNHELM_USE_GLOBAL_NAMESPACE");
             }
         }
 
         let output = command.output().unwrap();
         assert!(
             output.status.success(),
-            "child recovery test failed with default {default_namespace:?}\nstdout:\n{}\nstderr:\n{}",
+            "child recovery test failed with global mode {use_global_namespace:?}\nstdout:\n{}\nstderr:\n{}",
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );

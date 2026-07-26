@@ -40,7 +40,7 @@ If no worker remains registered for the pinned host, RunHelm waits rather than s
 
 Pinned-host loss reconciliation discovers non-terminal workflows across every
 stored namespace and applies failure transitions using each workflow's stored
-namespace. It runs independently of `RUNHELM_DEFAULT_NAMESPACE`, just like
+namespace. It runs independently of `RUNHELM_USE_GLOBAL_NAMESPACE`, just like
 startup recovery.
 
 ## Retry behavior

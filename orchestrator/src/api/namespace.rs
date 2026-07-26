@@ -111,13 +111,13 @@ mod tests {
         }
     }
 
-    struct DefaultResolver {
+    struct GlobalNamespaceResolver {
         namespace: Namespace,
         calls: AtomicUsize,
     }
 
     #[async_trait]
-    impl NamespaceResolverPort for DefaultResolver {
+    impl NamespaceResolverPort for GlobalNamespaceResolver {
         async fn resolve(&self, _api_key: Option<&str>) -> anyhow::Result<Namespace> {
             self.calls.fetch_add(1, Ordering::Relaxed);
             Ok(self.namespace.clone())
@@ -125,9 +125,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn configured_default_takes_precedence_without_inspecting_authorization() {
-        let resolver = Arc::new(DefaultResolver {
-            namespace: Namespace::new(NAMESPACE).unwrap(),
+    async fn enabled_global_namespace_ignores_malformed_authorization() {
+        let resolver = Arc::new(GlobalNamespaceResolver {
+            namespace: Namespace::new(crate::core::namespace::GLOBAL_NAMESPACE).unwrap(),
             calls: AtomicUsize::new(0),
         });
         let mut headers = HeaderMap::new();
@@ -137,12 +137,12 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(namespace.as_str(), NAMESPACE);
+        assert_eq!(namespace.as_str(), crate::core::namespace::GLOBAL_NAMESPACE);
         assert_eq!(resolver.calls.load(Ordering::Relaxed), 1);
     }
 
     #[tokio::test]
-    async fn valid_bearer_credential_reaches_resolver_without_default() {
+    async fn valid_bearer_credential_reaches_resolver_without_global_mode() {
         let resolver = Arc::new(RecordingResolver {
             calls: AtomicUsize::new(0),
         });

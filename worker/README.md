@@ -344,14 +344,19 @@ Task response:
 {
   "type": "task_dispatch",
   "task_id": "summarize_user-0",
+  "namespace": "550e8400-e29b-41d4-a716-446655440000",
   "workflow_inst_id": "workflow-1",
   "task": {},
-  "workspace_path_suffix": "workflow-1/taskid-summarize_user",
+  "workspace_path_suffix": "550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-summarize_user",
   "inputs": []
 }
 ```
 
-The worker resolves `workspace_path_suffix` under its own `RUNHELM_WORKSPACE_ROOT`, creates the directory, updates `.timestamp`, and passes that worker-local absolute path to the task executor.
+The claimed namespace is authoritative for that task. The worker does not read
+namespace configuration from its environment. It resolves the namespace-qualified
+`workspace_path_suffix` under its own `RUNHELM_WORKSPACE_ROOT`, creates the
+directory, updates `.timestamp`, and passes that worker-local absolute path to the
+task executor.
 
 Empty response:
 
@@ -393,6 +398,9 @@ Completes a claimed task.
   }
 }
 ```
+
+The dispatch ID in the request path identifies the active lease. The result body
+does not repeat the claimed namespace.
 
 ## Supported Task Types
 

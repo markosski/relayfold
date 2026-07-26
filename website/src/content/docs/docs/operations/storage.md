@@ -38,6 +38,11 @@ SQL definitions, workflow state, tasks, verifier state, events, and list results
 are isolated by namespace. The same resource ID can be used independently in
 different namespaces.
 
+Namespace columns are declared as `VARCHAR(36)`, which accommodates both the
+built-in `global-namespace` and canonical UUID strings. SQLite treats this
+declaration with TEXT affinity and does not enforce the declared length;
+namespace validation remains an orchestrator responsibility.
+
 The namespace-aware SQL schema is a destructive compatibility boundary. RunHelm
 does not migrate databases created by pre-namespace versions. Before upgrading,
 stop the orchestrator and workers, back up state needed for rollback, and

@@ -28,6 +28,11 @@ Agent tasks receive workspace context in their prompt so the agent knows where t
 
 The worker uses a configured workspace root. In Docker-based local installs, the workspace directory is mounted into worker containers so files can persist across task executions for the same workflow workspace group.
 
+Workspace paths include the workflow namespace before the workflow instance and
+task or group identity. Identical workflow and task IDs in separate namespaces
+therefore use separate directories. The worker uses the namespace carried by the
+claimed task; it does not derive namespace from worker environment configuration.
+
 Workspaces are scoped to the execution environment and intended to isolate task file access from unrelated host paths.
 
 ## Cleanup

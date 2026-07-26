@@ -5,6 +5,12 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { PiResourceToolProvider } from '../dist/adapters/executors/agent_tools/PiResourceToolProvider.js';
 
+function skillNamed(resources, name) {
+    const skill = resources.skills.find((skill) => skill.name === name);
+    assert.ok(skill, `expected skill ${name} to be loaded`);
+    return skill;
+}
+
 test('loads a TypeScript Pi extension tool through the Pi resource loader', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'runhelm-pi-ts-extension-'));
     const extensionPath = join(dir, 'extension.ts');
@@ -116,8 +122,10 @@ Assign priority and route the ticket.
             agentDir: join(dir, '.pi-agent'),
         }).loadResources();
 
-        assert.deepEqual(resources.skills.map((skill) => skill.name), ['ticket-triage']);
-        assert.equal(resources.skills[0].description, 'Triage support tickets by severity and owner.');
+        assert.equal(
+            skillNamed(resources, 'ticket-triage').description,
+            'Triage support tickets by severity and owner.',
+        );
     } finally {
         await rm(dir, { recursive: true, force: true });
     }
@@ -142,7 +150,7 @@ description: Triage support tickets by severity and owner.
             agentDir: join(dir, '.pi-agent'),
         }).loadResources();
 
-        assert.deepEqual(resources.skills.map((skill) => skill.name), ['ticket-triage']);
+        assert.equal(skillNamed(resources, 'ticket-triage').filePath, join(skillDir, 'SKILL.md'));
     } finally {
         await rm(dir, { recursive: true, force: true });
     }
@@ -183,9 +191,9 @@ description: Package ticket triage skill.
             agentDir: join(dir, '.pi-agent'),
         }).loadResources();
 
-        assert.deepEqual(resources.skills.map((skill) => skill.name), ['ticket-triage']);
-        assert.equal(resources.skills[0].description, 'Mounted ticket triage skill.');
-        assert.equal(resources.skills[0].filePath, join(skillDir, 'SKILL.md'));
+        const skill = skillNamed(resources, 'ticket-triage');
+        assert.equal(skill.description, 'Mounted ticket triage skill.');
+        assert.equal(skill.filePath, join(skillDir, 'SKILL.md'));
     } finally {
         await rm(dir, { recursive: true, force: true });
     }

@@ -865,7 +865,7 @@ fn i64_from_usize(value: usize) -> anyhow::Result<i64> {
 
 const INITIAL_SCHEMA_SQL: &[&str] = &[
     "CREATE TABLE workflow_defs (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         id TEXT NOT NULL,
         description TEXT NOT NULL,
         definition_json TEXT NOT NULL,
@@ -874,7 +874,7 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
         PRIMARY KEY (namespace, id)
     )",
     "CREATE TABLE function_defs (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         id TEXT NOT NULL,
         definition_json TEXT NOT NULL,
         created_at_epoch_ms INTEGER NOT NULL,
@@ -882,7 +882,7 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
         PRIMARY KEY (namespace, id)
     )",
     "CREATE TABLE workflow_instances (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         id TEXT NOT NULL,
         workflow_def_id TEXT NOT NULL,
         version INTEGER NOT NULL,
@@ -897,7 +897,7 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
             REFERENCES workflow_defs (namespace, id)
     )",
     "CREATE TABLE workflow_tasks (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         task_attempt_id TEXT NOT NULL,
         task_def_id TEXT NOT NULL,
@@ -915,7 +915,7 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
             REFERENCES workflow_instances (namespace, id) ON DELETE CASCADE
     )",
     "CREATE TABLE workflow_verifier_states (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         verifier_task_id TEXT NOT NULL,
         state_json TEXT NOT NULL,
@@ -924,7 +924,7 @@ const INITIAL_SCHEMA_SQL: &[&str] = &[
             REFERENCES workflow_instances (namespace, id) ON DELETE CASCADE
     )",
     "CREATE TABLE workflow_events (
-        namespace TEXT NOT NULL,
+        namespace VARCHAR(36) NOT NULL,
         workflow_instance_id TEXT NOT NULL,
         event_sequence INTEGER NOT NULL,
         created_at_epoch_ms INTEGER NOT NULL,
@@ -1035,6 +1035,35 @@ mod tests {
         WorkflowInfoPageRequest {
             limit: 100,
             cursor: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn namespace_columns_declare_uuid_compatible_length() {
+        let storage = SqlStorage::connect("sqlite::memory:").await.unwrap();
+
+        for table in [
+            "workflow_defs",
+            "function_defs",
+            "workflow_instances",
+            "workflow_tasks",
+            "workflow_verifier_states",
+            "workflow_events",
+        ] {
+            let rows = sqlx::query(&format!("PRAGMA table_info({table})"))
+                .fetch_all(&storage.pool)
+                .await
+                .unwrap();
+            let namespace_column = rows
+                .iter()
+                .find(|row| row.get::<String, _>("name") == "namespace")
+                .unwrap();
+
+            assert_eq!(
+                namespace_column.get::<String, _>("type"),
+                "VARCHAR(36)",
+                "{table}"
+            );
         }
     }
 

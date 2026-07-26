@@ -22,9 +22,9 @@ RunHelm ignores late or untracked results for workflow-state advancement, but it
 ## Startup recovery
 
 At startup, RunHelm discovers unfinished workflows across every stored
-namespace, including when `RUNHELM_DEFAULT_NAMESPACE` is unset or selects a
-different namespace. Recovery retains each workflow's stored namespace while
-resetting abandoned running work and requeueing runnable instances.
+namespace, regardless of whether `RUNHELM_USE_GLOBAL_NAMESPACE` is enabled.
+Recovery retains each workflow's stored namespace while resetting abandoned
+running work and requeueing runnable instances.
 
 ## Idempotent tasks
 
