@@ -503,7 +503,12 @@ Use `tools: []` to disable tools, `tools: ["_all_"]` to allow every tool availab
 
 Agent tools include RunHelm built-ins, Pi coding-agent built-ins, and Pi-compatible extension tools. The Pi built-in tool names are `read`, `bash`, `edit`, and `write`.
 
-Set `ask: true` and include `ask_user` in `tools` when an Agent may pause for human input. See `worker/examples/example_human_input_workflow.yaml` for a minimal workflow that enters `InputNeeded`, then continues after `POST /workflows/{workflow_instance_id}/tasks/{task_id}/human-input`.
+Set `ask: true` when an Agent may pause for human input. The worker adds the
+built-in `ask_user` tool automatically; do not include it in `tools`. When
+`ask` is false, `ask_user` is unavailable even if `tools` contains `ask_user`
+or `"_all_"`. See `worker/examples/example_human_input_workflow.yaml` for a
+minimal workflow that enters `InputNeeded`, then continues after
+`POST /workflows/{workflow_instance_id}/tasks/{task_id}/human-input`.
 
 Use `skills: []` to expose no skills, or list exact skill names such as `["ticket-triage"]`. Skills do not support `"_all_"`.
 

@@ -32,7 +32,7 @@ tasks:
             "response": "Release summary prepared for <channel> channel.",
             "channel": "<channel>"
           }
-        tools: ["ask_user"]
+        tools: []
         skills: []
         ask: true
         schema_failure_retry_times: 2
@@ -52,6 +52,9 @@ tasks:
 
 data_bindings: []
 ```
+
+`ask: true` automatically enables RunHelm's built-in `ask_user` tool. It does
+not need to be listed in `tools`.
 
 ## Configure credentials
 

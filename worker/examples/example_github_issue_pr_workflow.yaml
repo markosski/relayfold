@@ -113,7 +113,7 @@ tasks:
             "tests_run": ["command and result"],
             "open_questions": []
           }
-        tools: ["read", "write", "edit", "bash", "ask_user"]
+        tools: ["read", "write", "edit", "bash"]
         skills: []
         ask: true
         schema_failure_retry_times: 2
