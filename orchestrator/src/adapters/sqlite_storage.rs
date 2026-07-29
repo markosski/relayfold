@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use sqlx::{Row, Sqlite, SqlitePool, Transaction};
 use std::collections::HashMap;
-use std::str::FromStr;
+use std::path::Path;
 
 use crate::core::function::models::FunctionDef;
 use crate::core::namespace::Namespace;
@@ -20,49 +20,38 @@ use crate::ports::storage::{
 
 const INITIAL_SCHEMA_MIGRATION: &str = "001_initial_sql_storage_schema";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SqlDialect {
-    Sqlite,
-    Postgres,
-    Mysql,
-}
-
-impl SqlDialect {
-    pub fn from_database_url(database_url: &str) -> anyhow::Result<Self> {
-        if database_url.starts_with("sqlite:") {
-            Ok(Self::Sqlite)
-        } else if database_url.starts_with("postgres:") || database_url.starts_with("postgresql:") {
-            Ok(Self::Postgres)
-        } else if database_url.starts_with("mysql:") || database_url.starts_with("mariadb:") {
-            Ok(Self::Mysql)
-        } else {
-            anyhow::bail!("unsupported SQL storage database URL scheme");
-        }
-    }
-}
-
-pub struct SqlStorage {
+pub struct SqliteStorage {
     pool: SqlitePool,
 }
 
-impl SqlStorage {
-    pub async fn connect(database_url: &str) -> anyhow::Result<Self> {
-        match SqlDialect::from_database_url(database_url)? {
-            SqlDialect::Sqlite => Self::connect_sqlite(database_url).await,
-            SqlDialect::Postgres | SqlDialect::Mysql => {
-                anyhow::bail!("only sqlite SQL storage is implemented")
-            }
-        }
-    }
+pub const ENV_PATH: &str = "RUNHELM_STORE_SQLITE_PATH";
 
-    pub async fn connect_sqlite(database_url: &str) -> anyhow::Result<Self> {
-        let options = SqliteConnectOptions::from_str(database_url)?
+impl SqliteStorage {
+    pub async fn connect(database_path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let options = SqliteConnectOptions::new()
+            .filename(database_path)
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .foreign_keys(true);
 
+        Self::connect_with_options(options, 5).await
+    }
+
+    #[cfg(test)]
+    async fn connect_in_memory() -> anyhow::Result<Self> {
+        let options = SqliteConnectOptions::new()
+            .in_memory(true)
+            .foreign_keys(true);
+
+        Self::connect_with_options(options, 1).await
+    }
+
+    async fn connect_with_options(
+        options: SqliteConnectOptions,
+        max_connections: u32,
+    ) -> anyhow::Result<Self> {
         let pool = SqlitePoolOptions::new()
-            .max_connections(5)
+            .max_connections(max_connections)
             .connect_with(options)
             .await?;
 
@@ -106,7 +95,7 @@ impl SqlStorage {
 }
 
 #[async_trait]
-impl StoragePort for SqlStorage {
+impl StoragePort for SqliteStorage {
     async fn save_workflow_def(
         &self,
         namespace: &Namespace,
@@ -958,13 +947,13 @@ mod tests {
     use crate::core::verifier::VerifierAttemptMetadata;
     use crate::core::workflow::events::WorkflowInstanceEvent;
     use crate::core::workflow::models::{
-        VerifierFeedbackEntry, VerifierGenerationState, VerifierStateStatus,
+        VerifierFeedbackEntry, VerifierGenerationState, VerifierStateStatus, WorkflowStatus,
     };
     use crate::ports::storage::{StorageError, WorkflowInfoPageRequest, WorkflowInstanceFilter};
     use serde_json::json;
 
-    async fn storage() -> SqlStorage {
-        let storage = SqlStorage::connect("sqlite::memory:").await.unwrap();
+    async fn storage() -> SqliteStorage {
+        let storage = SqliteStorage::connect_in_memory().await.unwrap();
         storage
             .save_workflow_def(
                 &crate::core::namespace::test_namespace(),
@@ -1040,7 +1029,7 @@ mod tests {
 
     #[tokio::test]
     async fn namespace_columns_declare_uuid_compatible_length() {
-        let storage = SqlStorage::connect("sqlite::memory:").await.unwrap();
+        let storage = SqliteStorage::connect_in_memory().await.unwrap();
 
         for table in [
             "workflow_defs",
