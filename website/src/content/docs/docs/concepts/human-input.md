@@ -31,7 +31,9 @@ flowchart TB
 
 ## Agent configuration
 
-Human input is currently an Agent-task capability. Enable it by allowing the `ask_user` tool and setting `ask: true`:
+Human input is currently an Agent-task capability. Enable it with `ask: true`.
+RunHelm adds the built-in `ask_user` tool automatically, so it does not belong
+in the task's `tools` list:
 
 ```yaml
 tasks:
@@ -51,7 +53,7 @@ tasks:
             "response": "Release summary prepared for <channel> channel.",
             "channel": "<channel>"
           }
-        tools: ["ask_user"]
+        tools: []
         skills: []
         ask: true
         schema_failure_retry_times: 2
@@ -70,7 +72,10 @@ tasks:
       - llm_api_key
 ```
 
-When the Agent calls `ask_user`, the task returns `input_needed` instead of normal output. The workflow instance moves to `InputNeeded`.
+When `ask` is false, `ask_user` remains unavailable even if `tools` contains
+`ask_user` or `"_all_"`. When the enabled Agent calls `ask_user`, the task
+returns `input_needed` instead of normal output. The workflow instance moves to
+`InputNeeded`.
 
 ## Inspecting the request
 

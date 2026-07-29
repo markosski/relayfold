@@ -25,7 +25,7 @@ tasks:
             "response": "Release summary prepared for <channel> channel.",
             "channel": "<channel>"
           }
-        tools: ["ask_user"]
+        tools: []
         skills: []
         ask: true
         schema_failure_retry_times: 2

@@ -13,7 +13,7 @@ import { createCurrentTimeTool } from './agent_tools/currentTimeTool.js';
 import { createAskUserTool, InputNeededError } from './agent_tools/askUserTool.js';
 import { ToolRegistry } from './agent_tools/ToolRegistry.js';
 import { PiResourceToolProvider } from './agent_tools/PiResourceToolProvider.js';
-import { selectApprovedTools } from './agent_tools/toolSelection.js';
+import { selectAgentTools } from './agent_tools/toolSelection.js';
 import { selectApprovedSkills } from './agent_tools/skillSelection.js';
 import type { SessionStore } from '../../core/ports/SessionStore.js';
 import { nativeSessionDir, persistSessionBestEffort, materializePiSessionFile } from '../../core/ports/SessionStore.js';
@@ -386,15 +386,25 @@ export class AgentExecutor implements TaskExecutor {
 
         let inputNeededQuestion: string | undefined = undefined;
 
-        if (ask) {
-            toolRegistry.registerTool(createAskUserTool((question) => {
+        const askUserTool = ask
+            ? createAskUserTool((question) => {
                 inputNeededQuestion = question;
                 agent.abort();
-            }));
-        }
+            })
+            : undefined;
 
         const availableTools = toolRegistry.getTools();
-        const { approvedTools, unavailableApprovedToolNames } = selectApprovedTools(availableTools, agentDef.tools);
+        const { approvedTools, unavailableApprovedToolNames } = selectAgentTools(
+            availableTools,
+            agentDef.tools,
+            askUserTool
+                ? {
+                    name: askUserTool.name,
+                    description: askUserTool.description,
+                    tool: askUserTool,
+                }
+                : undefined,
+        );
         const { approvedSkills, unavailableApprovedSkillNames } = selectApprovedSkills(piResources.skills, agentDef.skills);
 
         if (unavailableApprovedToolNames.length > 0) {
