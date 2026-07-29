@@ -23,16 +23,45 @@ or workflow ID in another namespace creates an independent in-memory resource.
 
 ## Durable SQL storage
 
-Use SQL storage when workflow definitions and workflow state should survive orchestrator restarts:
+Use SQL storage when workflow definitions and workflow state should survive orchestrator restarts.
+The selected database adapter initializes its schema automatically on startup. MySQL uses versioned SQLx migrations recorded in the `_sqlx_migrations` table; SQLite retains its existing RunHelm migration metadata.
+
+`RUNHELM_STORAGE` selects the adapter directly:
+
+- `sqlite` uses the embedded SQLite adapter.
+- `mysql` uses the MySQL adapter.
+
+Other values are not supported.
+
+### SQLite
+
+The parent directory for a SQLite database file must exist and be writable by the orchestrator process.
 
 ```bash
-RUNHELM_STORAGE=sql
-RUNHELM_DATABASE_URL=sqlite:///var/lib/runhelm/runhelm.db
+RUNHELM_STORAGE=sqlite
+RUNHELM_STORE_SQLITE_PATH=/var/lib/runhelm/runhelm.db
 ```
 
-The SQL adapter initializes its schema automatically on startup and records applied schema migrations in the database.
+### MySQL
 
-SQLite is the first supported SQL backend. The storage adapter detects the SQL dialect from `RUNHELM_DATABASE_URL`; Postgres and MySQL URL schemes are reserved for future backend support.
+The MySQL adapter supports MySQL 8.0.19 and newer and uses InnoDB transactions for atomic workflow transitions. Create the database before starting RunHelm and grant the configured user permission to run schema migrations and read and write its tables.
+
+```bash
+RUNHELM_STORAGE=mysql
+RUNHELM_STORE_MYSQL_HOST=mysql.example.com
+RUNHELM_STORE_MYSQL_PORT=3306
+RUNHELM_STORE_MYSQL_DATABASE=runhelm
+RUNHELM_STORE_MYSQL_USERNAME=runhelm
+RUNHELM_STORE_MYSQL_PASSWORD=replace-me
+```
+
+`RUNHELM_STORE_MYSQL_HOST`, `RUNHELM_STORE_MYSQL_USERNAME`, and `RUNHELM_STORE_MYSQL_PASSWORD` are required and cannot be empty. `RUNHELM_STORE_MYSQL_PORT` defaults to `3306`, and `RUNHELM_STORE_MYSQL_DATABASE` defaults to `runhelm`. The configured database must already exist, and the configured user needs migration and data privileges.
+
+The development Docker Compose stack connects through `host.docker.internal` to a separately managed MySQL container whose port is published on the host. Copy the repository's `.env.example` to `.env`, then provide the connection settings and credentials there. The repository ignores `.env`, so credentials are not committed; treat the password as a secret and avoid placing it in shell history or logs.
+
+Switching an existing development stack from SQLite does not copy its data into MySQL. The previous `${HOME}/.runhelm/sqlite` files remain on the host, and RunHelm uses the data already present in the configured MySQL database.
+
+RunHelm stores timestamps and workflow versions as signed 64-bit integers. Indexed RunHelm identifiers are limited to 512 ASCII characters by the MySQL schema.
 
 SQL definitions, workflow state, tasks, verifier state, events, and list results
 are isolated by namespace. The same resource ID can be used independently in

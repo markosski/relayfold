@@ -1,25 +1,22 @@
-mod adapters;
-mod api;
-mod core;
-mod ports;
-
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::time::{self, Duration};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
-use crate::adapters::memory_storage::MemoryStorage;
-use crate::adapters::memory_workflow_queue::MemoryWorkflowQueue;
-use crate::adapters::sql_storage::SqlStorage;
-use crate::adapters::task_dispatcher::{self, TaskDispatcher};
-use crate::adapters::worker_registry::WorkerRegistry;
-use crate::api::router;
-use crate::core::function::function_service::FunctionService;
-use crate::core::namespace::NamespaceResolver;
-use crate::core::orchestrator::Orchestrator;
-use crate::core::workflow::workflow_service::WorkflowService;
-use crate::ports::storage::StoragePort;
+use orchestrator::adapters::memory_storage::MemoryStorage;
+use orchestrator::adapters::memory_workflow_queue::MemoryWorkflowQueue;
+use orchestrator::adapters::mysql_storage::{self, MySqlStorage, MySqlStorageConfig};
+use orchestrator::adapters::sqlite_storage::{self, SqliteStorage};
+use orchestrator::adapters::task_dispatcher::{self, TaskDispatcher};
+use orchestrator::adapters::worker_registry::WorkerRegistry;
+use orchestrator::api::router;
+use orchestrator::core::function::function_service::FunctionService;
+use orchestrator::core::namespace::NamespaceResolver;
+use orchestrator::core::orchestrator::Orchestrator;
+use orchestrator::core::workflow::workflow_service::WorkflowService;
+use orchestrator::ports::storage::StoragePort;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -105,18 +102,229 @@ fn workflow_queue_capacity() -> usize {
 }
 
 async fn create_storage() -> anyhow::Result<Arc<dyn StoragePort + Send + Sync>> {
-    match std::env::var("RUNHELM_STORAGE")
-        .unwrap_or_else(|_| "memory".to_string())
-        .as_str()
-    {
-        "memory" => Ok(Arc::new(MemoryStorage::new())),
-        "sql" => {
-            let database_url = std::env::var("RUNHELM_DATABASE_URL").map_err(|_| {
-                anyhow::anyhow!("RUNHELM_DATABASE_URL is required when RUNHELM_STORAGE=sql")
-            })?;
-            Ok(Arc::new(SqlStorage::connect(&database_url).await?))
+    match load_storage_config()? {
+        StorageConfig::Memory => Ok(Arc::new(MemoryStorage::new())),
+        StorageConfig::Sqlite { database_path } => {
+            Ok(Arc::new(SqliteStorage::connect(database_path).await?))
         }
-        value => anyhow::bail!("unsupported RUNHELM_STORAGE value {value}"),
+        StorageConfig::MySql(config) => Ok(Arc::new(MySqlStorage::connect(config).await?)),
+    }
+}
+
+enum StorageConfig {
+    Memory,
+    Sqlite { database_path: PathBuf },
+    MySql(MySqlStorageConfig),
+}
+
+fn load_storage_config() -> anyhow::Result<StorageConfig> {
+    load_storage_config_with(|name| std::env::var(name).ok())
+}
+
+fn load_storage_config_with(
+    mut read: impl FnMut(&str) -> Option<String>,
+) -> anyhow::Result<StorageConfig> {
+    match read("RUNHELM_STORAGE").as_deref().unwrap_or("memory") {
+        "memory" => Ok(StorageConfig::Memory),
+        "sqlite" => Ok(StorageConfig::Sqlite {
+            database_path: required_config_value(&mut read, sqlite_storage::ENV_PATH)?.into(),
+        }),
+        "mysql" => {
+            let port_env = mysql_storage::ENV_PORT;
+            let port = match read(port_env) {
+                None => 3306,
+                Some(value) if value.trim().is_empty() => {
+                    anyhow::bail!("{port_env} must not be empty")
+                }
+                Some(value) => value.parse::<u16>().map_err(|_| {
+                    anyhow::anyhow!("{port_env} must be an integer from 1 to 65535")
+                })?,
+            };
+            if port == 0 {
+                anyhow::bail!("{port_env} must be an integer from 1 to 65535");
+            }
+
+            let database_env = mysql_storage::ENV_DATABASE;
+            let database = match read(database_env) {
+                None => "runhelm".to_string(),
+                Some(value) if value.trim().is_empty() => {
+                    anyhow::bail!("{database_env} must not be empty")
+                }
+                Some(value) => value,
+            };
+
+            Ok(StorageConfig::MySql(MySqlStorageConfig {
+                host: required_config_value(&mut read, mysql_storage::ENV_HOST)?,
+                port,
+                database,
+                username: required_config_value(&mut read, mysql_storage::ENV_USERNAME)?,
+                password: required_config_value(&mut read, mysql_storage::ENV_PASSWORD)?,
+            }))
+        }
+        value => anyhow::bail!(
+            "unsupported RUNHELM_STORAGE value {value}; expected memory, sqlite, or mysql"
+        ),
+    }
+}
+
+fn required_config_value(
+    read: &mut impl FnMut(&str) -> Option<String>,
+    name: &str,
+) -> anyhow::Result<String> {
+    let value = read(name).ok_or_else(|| anyhow::anyhow!("{name} is required"))?;
+    if value.trim().is_empty() {
+        anyhow::bail!("{name} must not be empty");
+    }
+    Ok(value)
+}
+
+#[cfg(test)]
+mod storage_config_tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    fn parse(values: &[(&str, &str)]) -> anyhow::Result<StorageConfig> {
+        let values = values
+            .iter()
+            .map(|(name, value)| (name.to_string(), value.to_string()))
+            .collect::<HashMap<_, _>>();
+        load_storage_config_with(|name| values.get(name).cloned())
+    }
+
+    fn mysql_required_values() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("RUNHELM_STORAGE", "mysql"),
+            (mysql_storage::ENV_HOST, "mysql.internal"),
+            (mysql_storage::ENV_USERNAME, "runhelm-user"),
+            (mysql_storage::ENV_PASSWORD, "secret"),
+        ]
+    }
+
+    #[test]
+    fn defaults_to_memory_storage() {
+        assert!(matches!(parse(&[]).unwrap(), StorageConfig::Memory));
+    }
+
+    #[test]
+    fn selects_memory_storage_explicitly() {
+        assert!(matches!(
+            parse(&[("RUNHELM_STORAGE", "memory")]).unwrap(),
+            StorageConfig::Memory
+        ));
+    }
+
+    #[test]
+    fn configures_sqlite_from_path() {
+        let config = parse(&[
+            ("RUNHELM_STORAGE", "sqlite"),
+            (sqlite_storage::ENV_PATH, "/data/runhelm.db"),
+        ])
+        .unwrap();
+
+        let StorageConfig::Sqlite { database_path } = config else {
+            panic!("expected SQLite storage");
+        };
+        assert_eq!(database_path, PathBuf::from("/data/runhelm.db"));
+    }
+
+    #[test]
+    fn sqlite_requires_a_non_empty_path() {
+        for values in [
+            vec![("RUNHELM_STORAGE", "sqlite")],
+            vec![
+                ("RUNHELM_STORAGE", "sqlite"),
+                (sqlite_storage::ENV_PATH, "  "),
+            ],
+        ] {
+            let error = parse(&values).err().unwrap().to_string();
+            assert!(error.contains(sqlite_storage::ENV_PATH));
+        }
+    }
+
+    #[test]
+    fn mysql_uses_database_and_port_defaults() {
+        let StorageConfig::MySql(config) = parse(&mysql_required_values()).unwrap() else {
+            panic!("expected MySQL storage");
+        };
+
+        assert_eq!(config.host, "mysql.internal");
+        assert_eq!(config.port, 3306);
+        assert_eq!(config.database, "runhelm");
+        assert_eq!(config.username, "runhelm-user");
+        assert_eq!(config.password, "secret");
+    }
+
+    #[test]
+    fn mysql_accepts_explicit_database_and_port() {
+        let mut values = mysql_required_values();
+        values.extend([
+            (mysql_storage::ENV_PORT, "4406"),
+            (mysql_storage::ENV_DATABASE, "custom"),
+        ]);
+        let StorageConfig::MySql(config) = parse(&values).unwrap() else {
+            panic!("expected MySQL storage");
+        };
+
+        assert_eq!(config.port, 4406);
+        assert_eq!(config.database, "custom");
+    }
+
+    #[test]
+    fn mysql_requires_non_empty_connection_values() {
+        for variable in [
+            mysql_storage::ENV_HOST,
+            mysql_storage::ENV_USERNAME,
+            mysql_storage::ENV_PASSWORD,
+        ] {
+            let missing = mysql_required_values()
+                .into_iter()
+                .filter(|(name, _)| *name != variable)
+                .collect::<Vec<_>>();
+            assert!(
+                parse(&missing)
+                    .err()
+                    .unwrap()
+                    .to_string()
+                    .contains(variable)
+            );
+
+            let mut empty = mysql_required_values();
+            let value = empty
+                .iter_mut()
+                .find(|(name, _)| *name == variable)
+                .unwrap();
+            value.1 = " ";
+            assert!(parse(&empty).err().unwrap().to_string().contains(variable));
+        }
+    }
+
+    #[test]
+    fn mysql_rejects_invalid_ports() {
+        for port in ["", "0", "abc", "65536"] {
+            let mut values = mysql_required_values();
+            values.push((mysql_storage::ENV_PORT, port));
+            let error = parse(&values).err().unwrap().to_string();
+            assert!(error.contains(mysql_storage::ENV_PORT));
+        }
+    }
+
+    #[test]
+    fn mysql_rejects_an_empty_database() {
+        let mut values = mysql_required_values();
+        values.push((mysql_storage::ENV_DATABASE, ""));
+        let error = parse(&values).err().unwrap().to_string();
+        assert!(error.contains(mysql_storage::ENV_DATABASE));
+    }
+
+    #[test]
+    fn rejects_unknown_and_legacy_storage_values() {
+        for value in ["postgres", "sql", ""] {
+            let error = parse(&[("RUNHELM_STORAGE", value)])
+                .err()
+                .unwrap()
+                .to_string();
+            assert!(error.contains("unsupported RUNHELM_STORAGE"));
+        }
     }
 }
 

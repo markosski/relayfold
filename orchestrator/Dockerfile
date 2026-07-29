@@ -3,6 +3,7 @@ FROM rust:1-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache musl-dev
 COPY Cargo.toml Cargo.lock ./
+COPY migrations ./migrations
 COPY src ./src
 RUN cargo build --release
 
