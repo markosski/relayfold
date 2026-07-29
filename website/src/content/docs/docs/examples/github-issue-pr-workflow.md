@@ -13,15 +13,15 @@ Tasks that call `gh` list `gh_token` in `required_credentials`:
 
 ```yaml
 required_credentials:
-  - llm_api_key
+  - gemini_api_key
   - gh_token
 ```
 
-Add `gh_token` to the worker credential file together with `llm_api_key`:
+Add `gh_token` to the worker credential file together with `gemini_api_key`:
 
 ```json
 {
-  "llm_api_key": "...",
+  "gemini_api_key": "...",
   "gh_token": "github_pat_..."
 }
 ```
@@ -58,7 +58,7 @@ flowchart TD
     Review -->|accepted| PR
     PR --> Done
     Implement -. underspecified .-> Clarify
-    Fetch -. missing gh_token or llm_api_key .-> Failed
+    Fetch -. missing gh_token or gemini_api_key .-> Failed
     Implement -. task failure .-> Failed
     Review -. verifier failure .-> Failed
     PR -. gh failure .-> Failed

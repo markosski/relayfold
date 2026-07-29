@@ -63,7 +63,7 @@ tasks:
         response:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
   - id: verify-report
     kind:

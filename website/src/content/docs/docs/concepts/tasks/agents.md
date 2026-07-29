@@ -30,7 +30,7 @@ tasks:
         response:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 ```
 
 ## Prompt and inputs
@@ -47,7 +47,18 @@ Keep tool access narrow. If a task only needs to classify text, it should not re
 
 ## Credentials
 
-Agent tasks use the first `required_credentials` entry as the model API key. The full required credential set is also available to approved tools executed by the agent.
+Every `required_credentials` entry is resolved by name and exposed as an
+uppercase environment variable for the complete Agent execution. No entry has
+special positional meaning.
+
+Use provider-standard names for model API keys, such as `gemini_api_key` for a
+`google/...` model or `openai_api_key` for an `openai/...` model. RunHelm
+currently supports Agent model authentication through these API-key
+environment variables rather than persistent Pi or OAuth authentication.
+
+See [Task Credentials](/docs/operations/credentials/) for provider mappings.
+Required credentials are also available to approved Agent tools, so grant both
+credentials and tools narrowly.
 
 ## Human input
 
