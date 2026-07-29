@@ -85,7 +85,7 @@ tasks:
     workspace:
       group_name: repo
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
       - gh_token
 
   - id: implement-change
@@ -149,7 +149,7 @@ tasks:
     workspace:
       group_name: repo
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
   - id: review-implementation
     kind:
@@ -178,7 +178,7 @@ tasks:
     workspace:
       group_name: repo
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
   - id: create-pull-request
     kind:
@@ -237,7 +237,7 @@ tasks:
     workspace:
       group_name: repo
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
       - gh_token
 
   - id: update-github-issue
@@ -293,7 +293,7 @@ tasks:
     workspace:
       group_name: repo
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
       - gh_token
 
 data_bindings:

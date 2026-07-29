@@ -37,7 +37,7 @@ tasks:
         file_name:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
   - id: read-downloaded-page
     kind:
@@ -75,7 +75,7 @@ tasks:
         file_name:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
 data_bindings:
   - source_task_id: download-page

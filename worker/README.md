@@ -46,7 +46,7 @@ The worker reads credentials from `~/.runhelm/file_credentials.json` during star
 
 ```json
 {
-  "llm_api_key": "example-llm-key",
+  "gemini_api_key": "example-gemini-key",
   "system_brave_api_key": "example-brave-key"
 }
 ```
@@ -496,8 +496,30 @@ kind:
     ask: false
     schema_failure_retry_times: 0
 required_credentials:
-  - llm_api_key
+  - gemini_api_key
 ```
+
+Agent model authentication is resolved by Pi from the provider namespace in
+`model_id`. For API-key authentication, list the provider-standard environment
+variable in lowercase in `required_credentials`. The worker resolves it from
+the credential store and exposes it in uppercase for the complete Agent
+execution:
+
+```yaml
+kind:
+  Agent:
+    model_id: "openai/gpt-5.2"
+    # ...
+required_credentials:
+  - openai_api_key
+  - gh_token
+```
+
+`openai_api_key` becomes `OPENAI_API_KEY`; `gemini_api_key` becomes
+`GEMINI_API_KEY`; and `anthropic_api_key` becomes `ANTHROPIC_API_KEY`. No
+position in `required_credentials` is special. RunHelm uses environment-based
+API-key authentication for Agent tasks and does not create a Pi runtime
+override from `required_credentials`.
 
 Use `tools: []` to disable tools, `tools: ["_all_"]` to allow every tool available to the worker, or list specific tool names such as `["fetch_url", "get_current_time"]`.
 
@@ -554,7 +576,7 @@ kind:
 | `RUNHELM_AGENT_EXTENSION_PATHS` | unset | Comma-separated Pi extension files, directories, or package roots to load in addition to auto-discovered installed Pi packages. Relative paths are resolved from the worker process cwd. |
 | `RUNHELM_PI_AGENT_DIR` | `$HOME/.pi/agent` | Pi resource-loader agent directory used for user-level extension discovery metadata. |
 
-Credential values are not read from environment variables. Put credential values in `~/.runhelm/file_credentials.json`.
+Credentials named in `required_credentials` are read from `~/.runhelm/file_credentials.json` and exposed as uppercase environment variables during task execution. Pi can also use provider-standard variables already present in the worker environment.
 Agent session JSONL files are stored under `$HOME/.cache/runhelm/file_session_store`. This worker-local cache is used to reuse Agent sessions across attempts handled by the same live worker container.
 
 ## Docker
