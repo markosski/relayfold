@@ -45,7 +45,7 @@ tasks:
         response:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
   - id: verify
     kind:
       Agent:
@@ -68,7 +68,7 @@ tasks:
         on_exhausted_continue: false
         rerun_from_task_id: pullstocks
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
 data_bindings:
   - source_task_id: pullstocks

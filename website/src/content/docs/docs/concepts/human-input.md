@@ -69,7 +69,7 @@ tasks:
         channel:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 ```
 
 When `ask` is false, `ask_user` remains unavailable even if `tools` contains

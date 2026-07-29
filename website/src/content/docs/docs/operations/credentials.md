@@ -7,7 +7,7 @@ description: Configure the credentials tasks need before execution.
 
 ```yaml
 required_credentials:
-  - llm_api_key
+  - openai_api_key
   - gh_token
 ```
 
@@ -15,18 +15,45 @@ With the file credential adapter, the worker reads those names from `~/.runhelm/
 
 ```json
 {
-  "llm_api_key": "...",
+  "openai_api_key": "...",
   "gh_token": "github_pat_..."
 }
 ```
 
 ## Runtime exposure
 
-During task execution, the worker exposes every required credential as an uppercased environment variable. For example, `gh_token` becomes `GH_TOKEN`.
+During task execution, the worker exposes every required credential as an uppercased environment variable. For example, `gh_token` becomes `GH_TOKEN` and `openai_api_key` becomes `OPENAI_API_KEY`.
 
 Function tasks receive required credentials in the function context and in the child process environment.
 
-Agent tasks use the first required credential as the model API key, preserving the current agent credential convention. The full required credential set is available to approved tools executed by the agent.
+Agent tasks expose the complete required credential set while Pi creates the Agent session and executes the prompt. No list position is special. Credentials are also visible to approved Agent tools, so list only what the task needs and keep tool approval narrow.
+
+## Agent model authentication
+
+Pi resolves model authentication from the provider namespace in `model_id`.
+For API-key authentication, use the provider-recognized name:
+
+```yaml
+kind:
+  Agent:
+    model_id: "google/gemini-2.5-flash"
+    # ...
+required_credentials:
+  - gemini_api_key
+```
+
+Common mappings include:
+
+| Credential name | Task environment | Provider namespace |
+| --- | --- | --- |
+| `openai_api_key` | `OPENAI_API_KEY` | `openai/...` |
+| `gemini_api_key` | `GEMINI_API_KEY` | `google/...` |
+| `anthropic_api_key` | `ANTHROPIC_API_KEY` | `anthropic/...` |
+
+RunHelm currently supports Agent model authentication through
+provider-standard API-key environment variables. It does not create a Pi
+runtime override from `required_credentials`, and it does not manage
+persistent Pi or OAuth authentication.
 
 ## Missing credentials
 

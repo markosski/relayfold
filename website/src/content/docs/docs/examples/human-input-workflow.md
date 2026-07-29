@@ -48,7 +48,7 @@ tasks:
         channel:
           type: string
     required_credentials:
-      - llm_api_key
+      - gemini_api_key
 
 data_bindings: []
 ```
@@ -62,7 +62,7 @@ Add the model credential to `~/.runhelm/file_credentials.json`:
 
 ```json
 {
-  "llm_api_key": "..."
+  "gemini_api_key": "..."
 }
 ```
 

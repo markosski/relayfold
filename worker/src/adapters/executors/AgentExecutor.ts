@@ -259,31 +259,31 @@ export function buildAgentPromptParts(args: {
 export class AgentExecutor implements TaskExecutor {
     async execute(payload: TaskExecutionPayload, credentialsPort: CredentialsPort, sessionStore: SessionStore): Promise<TaskExecutionResult> {
         const agentDef = (payload.task.kind as any).Agent;
+        const modelIdFull = agentDef.model_id as string;
+
+        if (!modelIdFull.includes('/')) {
+            throw new Error(`Invalid model_id format: '${modelIdFull}'. Expected format 'provider/model' (e.g., 'google/gemini-2.5-flash').`);
+        }
+
+        const envCredentials = await resolveCredentialEnvironment(payload, credentialsPort);
+        return await withTaskEnvironment(
+            envCredentials,
+            () => this.executeWithEnvironment(payload, credentialsPort, sessionStore)
+        );
+    }
+
+    private async executeWithEnvironment(
+        payload: TaskExecutionPayload,
+        credentialsPort: CredentialsPort,
+        sessionStore: SessionStore
+    ): Promise<TaskExecutionResult> {
+        const agentDef = (payload.task.kind as any).Agent;
         const ask = (agentDef.ask ?? (payload.task as any).ask) === true;
         const modelIdFull = agentDef.model_id as string;
         const providerUrl = agentDef.provider_url as string;
         const prompt = agentDef.prompt as string;
 
         logger.info(`[AgentExecutor] Running agent model: ${modelIdFull} with provider: ${providerUrl}`);
-
-        if (!modelIdFull.includes('/')) {
-            throw new Error(`Invalid model_id format: '${modelIdFull}'. Expected format 'provider/model' (e.g., 'google/gemini-2.5-flash').`);
-        }
-
-        let apiKey: string | undefined = undefined;
-        if (payload.task.required_credentials && payload.task.required_credentials.length > 0) {
-            const credName = payload.task.required_credentials[0];
-            logger.info(`Fetching secret for ${credName}`);
-
-            if (credName) {
-                const fetched = await credentialsPort.getCredential(credName);
-                if (fetched) {
-                    apiKey = fetched;
-                } else {
-                    logger.warn(`[AgentExecutor] Required credential ${credName} not found`);
-                }
-            }
-        }
 
         // START - Configure Agent
         const parts = modelIdFull.split('/');
@@ -339,16 +339,11 @@ export class AgentExecutor implements TaskExecutor {
             sessionManager = SessionManager.create(process.cwd(), nativeSessionDir())
         }
 
-        const authStorage = AuthStorage.inMemory();
-        if (apiKey) {
-            authStorage.setRuntimeApiKey(providerName, apiKey);
-        }
-
         // Consider moving tool registration in here
         const { session } = await createAgentSession({
             sessionManager,
             model,
-            authStorage,
+            authStorage: AuthStorage.inMemory(),
         });
 
         const agent = session.agent;
@@ -454,10 +449,7 @@ export class AgentExecutor implements TaskExecutor {
         );
 
         try {
-            const envCredentials = await resolveCredentialEnvironment(payload, credentialsPort);
-            await withTaskEnvironment(envCredentials, async () => {
-                await session.prompt(finalPrompt);
-            });
+            await session.prompt(finalPrompt);
 
             if (inputNeededQuestion) {
                 return { status: 'input_needed', description: inputNeededQuestion };

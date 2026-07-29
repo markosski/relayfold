@@ -143,7 +143,7 @@ Tasks with the same `workspace.group_name` share the same workflow-instance work
 
 ```yaml
 required_credentials:
-  - llm_api_key
+  - gemini_api_key
   - gh_token
 ```
 
