@@ -51,7 +51,13 @@ Agent tasks use the first `required_credentials` entry as the model API key. The
 
 ## Human input
 
-When `ask` is enabled and the task reaches a point that requires clarification, the workflow can move to `InputNeeded`. After input is supplied, RunHelm can continue the workflow from the persisted state.
+When `ask` is enabled, RunHelm automatically provides the built-in `ask_user`
+tool. It does not need to be listed in `tools`. If the task reaches a point
+that requires clarification, the workflow can move to `InputNeeded`. After
+input is supplied, RunHelm can continue the workflow from the persisted state.
+
+When `ask` is false, `ask_user` is unavailable even when `tools` contains
+`ask_user` or `"_all_"`.
 
 See [Human Input](/docs/concepts/human-input/) for the `ask_user` flow, API call, and continuation behavior.
 
