@@ -9,7 +9,7 @@ Agent tasks run through the worker's agent executor. They are useful when a work
 tasks:
   - id: review-change
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |

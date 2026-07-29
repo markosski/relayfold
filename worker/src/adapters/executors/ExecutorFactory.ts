@@ -7,7 +7,7 @@ import { logger } from '../../utils/logger.js';
 
 export class ExecutorFactory {
     getExecutor(kind: TaskKind): TaskExecutor {
-        if ('Agent' in kind) {
+        if ('agent' in kind) {
             logger.info("selected AgentExecutor");
             return new AgentExecutor();
         } else if ('ApiCall' in kind) {

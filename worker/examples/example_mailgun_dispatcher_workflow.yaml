@@ -39,7 +39,7 @@ tasks:
 
   - id: match_workflows
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |

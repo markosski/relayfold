@@ -14,7 +14,7 @@ id: github-issue-pr-workflow
 tasks:
   - id: fetch-issue
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
@@ -90,7 +90,7 @@ tasks:
 
   - id: implement-change
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
@@ -153,7 +153,7 @@ tasks:
 
   - id: review-implementation
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
@@ -182,7 +182,7 @@ tasks:
 
   - id: create-pull-request
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
@@ -242,7 +242,7 @@ tasks:
 
   - id: update-github-issue
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |

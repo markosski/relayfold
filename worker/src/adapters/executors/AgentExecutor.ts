@@ -97,7 +97,7 @@ function parseRetryTimes(value: unknown): number {
 }
 
 export function shouldReuseAgentSession(payload: TaskExecutionPayload): boolean {
-    return 'Agent' in payload.task.kind && payload.task.kind.Agent.reuse_session !== false;
+    return 'agent' in payload.task.kind && payload.task.kind.agent.reuse_session !== false;
 }
 
 export function shouldLoadExistingAgentSession(payload: TaskExecutionPayload): boolean {
@@ -258,7 +258,7 @@ export function buildAgentPromptParts(args: {
 
 export class AgentExecutor implements TaskExecutor {
     async execute(payload: TaskExecutionPayload, credentialsPort: CredentialsPort, sessionStore: SessionStore): Promise<TaskExecutionResult> {
-        const agentDef = (payload.task.kind as any).Agent;
+        const agentDef = (payload.task.kind as any).agent;
         const modelIdFull = agentDef.model_id as string;
 
         if (!modelIdFull.includes('/')) {
@@ -277,7 +277,7 @@ export class AgentExecutor implements TaskExecutor {
         credentialsPort: CredentialsPort,
         sessionStore: SessionStore
     ): Promise<TaskExecutionResult> {
-        const agentDef = (payload.task.kind as any).Agent;
+        const agentDef = (payload.task.kind as any).agent;
         const ask = (agentDef.ask ?? (payload.task as any).ask) === true;
         const modelIdFull = agentDef.model_id as string;
         const providerUrl = agentDef.provider_url as string;
