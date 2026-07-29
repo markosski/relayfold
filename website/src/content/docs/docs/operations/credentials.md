@@ -35,7 +35,7 @@ For API-key authentication, use the provider-recognized name:
 
 ```yaml
 kind:
-  Agent:
+  agent:
     model_id: "google/gemini-2.5-flash"
     # ...
 required_credentials:

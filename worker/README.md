@@ -487,7 +487,7 @@ Required task fields:
 
 ```yaml
 kind:
-  Agent:
+  agent:
     model_id: "google/gemini-2.5-flash"
     provider_url: ""
     prompt: "Return a JSON response."
@@ -507,7 +507,7 @@ execution:
 
 ```yaml
 kind:
-  Agent:
+  agent:
     model_id: "openai/gpt-5.2"
     # ...
 required_credentials:

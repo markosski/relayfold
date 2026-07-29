@@ -16,6 +16,7 @@ pub enum TaskTypeDef {
         url: String,
         method: String,
     },
+    #[serde(rename = "agent")]
     Agent {
         // Model name, e.g. sonnet, oput, gpt-5.5, gemini-2.5-flash, etc.
         model_id: String,
@@ -171,7 +172,7 @@ mod tests {
         let task: TaskDef = serde_json::from_value(json!({
             "id": "agenttask",
             "kind": {
-                "Agent": {
+                "agent": {
                     "model_id": "test/model",
                     "provider_url": "",
                     "prompt": "Do the work.",
@@ -200,7 +201,7 @@ mod tests {
         let task: TaskDef = serde_json::from_value(json!({
             "id": "agenttask",
             "kind": {
-                "Agent": {
+                "agent": {
                     "model_id": "test/model",
                     "provider_url": "",
                     "prompt": "Do the work.",
@@ -217,7 +218,7 @@ mod tests {
         .unwrap();
 
         let serialized = serde_json::to_value(task).unwrap();
-        assert_eq!(serialized["kind"]["Agent"]["reuse_session"], json!(false));
+        assert_eq!(serialized["kind"]["agent"]["reuse_session"], json!(false));
     }
 
     #[test]

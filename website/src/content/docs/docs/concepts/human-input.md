@@ -39,7 +39,7 @@ in the task's `tools` list:
 tasks:
   - id: collect-release-preference
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |

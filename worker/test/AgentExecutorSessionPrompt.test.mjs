@@ -148,7 +148,7 @@ function payload(overrides) {
         task: {
             id: 'draft',
             kind: {
-                Agent: {
+                agent: {
                     model_id: 'test/model',
                     provider_url: '',
                     prompt: 'Draft a response.',

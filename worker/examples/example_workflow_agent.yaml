@@ -3,7 +3,7 @@ id: simpleagentworkflow
 tasks:
   - id: pullstocks
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
@@ -48,7 +48,7 @@ tasks:
       - gemini_api_key
   - id: verify
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |

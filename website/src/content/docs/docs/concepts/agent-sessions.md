@@ -13,7 +13,7 @@ Agent task definitions support `reuse_session`:
 
 ```yaml
 kind:
-  Agent:
+  agent:
     model_id: "google/gemini-2.5-flash"
     provider_url: ""
     prompt: Review the current implementation.
@@ -39,7 +39,7 @@ Disable session reuse for Agent verifier tasks when the verifier should judge ea
 
 ```yaml
 kind:
-  Agent:
+  agent:
     prompt: Decide whether the current draft satisfies the acceptance criteria.
     reuse_session: false
 ```

@@ -95,7 +95,7 @@ function taskPayload(overrides) {
         task: {
             id: 'draft-response',
             kind: {
-                Agent: {
+                agent: {
                     model_id: 'test/model',
                     provider_url: '',
                     prompt: 'Draft a customer response.',

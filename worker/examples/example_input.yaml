@@ -1,7 +1,7 @@
 task:
   id: "abc123"
   kind:
-    Agent:
+    agent:
       model_id: "google/gemini-2.5-flash"
       provider_url: null
       prompt: |

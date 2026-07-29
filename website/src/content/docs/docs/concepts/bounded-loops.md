@@ -48,7 +48,7 @@ Add `control.verifier` to the task that makes the accept-or-rerun decision:
 tasks:
   - id: draft-report
     kind:
-      Agent:
+      agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: Draft a short report from the input data.
