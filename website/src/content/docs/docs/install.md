@@ -7,7 +7,7 @@ The Docker-first local install path does not require Rust, Node.js, or a source 
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
-runhelm init --version dev
+runhelm init --version dev # dev for unstable or release tag
 runhelm up
 runhelm status
 ```
