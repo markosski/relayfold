@@ -59,7 +59,7 @@ If a verifier can reject a slice, every task inside that slice may run again. Ke
 
 Workspaces are execution storage, not application storage. A workspace may survive retries on the same pinned host, but workflows should copy durable artifacts to an external system when the result must outlive the worker environment.
 
-See [Task Workspaces](/docs/operations/workspaces/) for workspace behavior.
+See [Task Workspaces](/runhelm/docs/operations/workspaces/) for workspace behavior.
 
 ## Retries and local context
 

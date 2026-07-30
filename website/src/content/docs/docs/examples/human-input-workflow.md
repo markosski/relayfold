@@ -152,4 +152,4 @@ Example output:
 }
 ```
 
-See [Human Input](/docs/concepts/human-input/) for the full behavior and design guidance.
+See [Human Input](/runhelm/docs/concepts/human-input/) for the full behavior and design guidance.

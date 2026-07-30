@@ -7,9 +7,9 @@ Tasks are the executable nodes in a RunHelm workflow. Each task receives structu
 
 A workflow can combine different task kinds in one run:
 
-- [Agent tasks](/docs/concepts/tasks/agents/) use an AI model, prompt, approved tools, selected skills, and optional human input.
-- [Function tasks](/docs/concepts/tasks/functions/) run JavaScript code for deterministic logic, integration glue, parsing, validation, and file work.
-- [API call tasks](/docs/concepts/tasks/api-calls/) make direct HTTP-style calls when a workflow step does not need model reasoning or custom code.
+- [Agent tasks](/runhelm/docs/concepts/tasks/agents/) use an AI model, prompt, approved tools, selected skills, and optional human input.
+- [Function tasks](/runhelm/docs/concepts/tasks/functions/) run JavaScript code for deterministic logic, integration glue, parsing, validation, and file work.
+- [API call tasks](/runhelm/docs/concepts/tasks/api-calls/) make direct HTTP-style calls when a workflow step does not need model reasoning or custom code.
 
 ## Shared task fields
 

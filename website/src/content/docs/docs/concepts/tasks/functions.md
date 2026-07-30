@@ -74,7 +74,7 @@ tasks:
 
 Use registered functions for integrations or helpers that multiple workflows share. A registered function definition contains the same `code` and `dependencies` shape as an inline function, but workflows refer to it by `ref`.
 
-See the [Function Registry](/docs/guides/function-registry/) guide for registration, deletion, and build artifact examples.
+See the [Function Registry](/runhelm/docs/guides/function-registry/) guide for registration, deletion, and build artifact examples.
 
 ## Dependencies
 
@@ -116,7 +116,7 @@ This catches entry point, import, and output-shape issues before the code is emb
 
 ## Verifier loops
 
-Function tasks can participate in [bounded loops](/docs/concepts/bounded-loops/) as either the task being revised or the verifier task. Use a Function verifier for deterministic checks such as validating fields, applying numeric thresholds, checking files in `workspacePath`, or enforcing business rules that should produce the same decision for the same inputs.
+Function tasks can participate in [bounded loops](/runhelm/docs/concepts/bounded-loops/) as either the task being revised or the verifier task. Use a Function verifier for deterministic checks such as validating fields, applying numeric thresholds, checking files in `workspacePath`, or enforcing business rules that should produce the same decision for the same inputs.
 
 A Function verifier returns the verifier decision directly:
 

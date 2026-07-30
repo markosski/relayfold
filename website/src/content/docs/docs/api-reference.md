@@ -512,7 +512,7 @@ Task result statuses include `success`, `failure`, `pending`, `running`, and `in
 
 Submit input for an Agent task currently waiting in `InputNeeded`:
 
-See [Human Input](/docs/concepts/human-input/) for the full workflow behavior and Agent configuration.
+See [Human Input](/runhelm/docs/concepts/human-input/) for the full workflow behavior and Agent configuration.
 
 ```bash
 curl -sS -X POST "$RUNHELM_URL/workflows/human-workflow-1780000000000000000/tasks/collect-release-preference/human-input" \

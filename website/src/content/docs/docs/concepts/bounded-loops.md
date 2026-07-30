@@ -21,7 +21,7 @@ flowchart TB
 
 ## Verifier task contract
 
-Any task kind can be a verifier task. That means the verifier itself can be an [Agent task](/docs/concepts/tasks/agents/), [Function task](/docs/concepts/tasks/functions/), or API Call task.
+Any task kind can be a verifier task. That means the verifier itself can be an [Agent task](/runhelm/docs/concepts/tasks/agents/), [Function task](/runhelm/docs/concepts/tasks/functions/), or API Call task.
 
 A verifier returns control output, not corrected business data:
 

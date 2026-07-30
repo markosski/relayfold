@@ -73,6 +73,22 @@ npm run build
 
 No server-side runtime is required for the website or docs search. The site is static HTML, CSS, JavaScript, images, and Pagefind search assets.
 
+### GitHub Pages
+
+The Astro configuration publishes the project site under `/runhelm`. Homepage links use Astro's configured base URL, and documentation cross-links include the same project path.
+
+Publish the generated site to the `gh-pages` branch:
+
+```bash
+cd website
+npm install
+npm run deploy
+```
+
+The deploy command adds a `.nojekyll` marker to the published branch so GitHub Pages serves Astro's underscore-prefixed `_astro` asset directory.
+
+In the repository's GitHub Pages settings, select **Deploy from a branch**, choose `gh-pages`, and publish from `/(root)`. The site is available at `https://markosski.github.io/runhelm/`.
+
 Example S3 upload:
 
 ```bash
