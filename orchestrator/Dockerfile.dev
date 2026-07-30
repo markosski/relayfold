@@ -14,8 +14,8 @@ ENV HOME=/home/runhelm
 RUN apk add --no-cache ca-certificates \
     && addgroup -g 10001 runhelm \
     && adduser -D -h /home/runhelm -u 10001 -G runhelm runhelm \
-    && mkdir -p /workspaces \
-    && chown runhelm:runhelm /workspaces
+    && mkdir -p /var/lib/runhelm /workspaces \
+    && chown runhelm:runhelm /var/lib/runhelm /workspaces
 COPY --from=builder /app/target/debug/orchestrator /usr/local/bin/orchestrator
 USER runhelm
 

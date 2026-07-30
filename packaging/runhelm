@@ -1,0 +1,193 @@
+#!/usr/bin/env sh
+set -eu
+
+RUNHELM_SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+RUNHELM_HOME="${RUNHELM_HOME:-$HOME/.runhelm}"
+CONFIG_FILE="$RUNHELM_HOME/config.env"
+COMPOSE_FILE="$RUNHELM_HOME/docker-compose.yml"
+COMPOSE_TEMPLATE_FILE="$RUNHELM_SCRIPT_DIR/docker-compose.release.yml"
+DEFAULT_IMAGE_REGISTRY="ghcr.io/markosski"
+DEFAULT_VERSION="0"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  runhelm init [--version VERSION] [--registry REGISTRY]
+  runhelm up
+  runhelm down
+  runhelm status
+  runhelm logs [SERVICE]
+  runhelm doctor
+  runhelm build [--ref REF] [--tag-prefix PREFIX] [--version VERSION] [--push]
+
+Environment:
+  RUNHELM_HOME defaults to ~/.runhelm.
+USAGE
+}
+
+require_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "docker is not installed or not on PATH" >&2
+    exit 1
+  fi
+}
+
+compose_cmd() {
+  require_docker
+  docker compose version >/dev/null 2>&1 || {
+    echo "docker compose is not available" >&2
+    exit 1
+  }
+  docker compose --env-file "$CONFIG_FILE" -f "$COMPOSE_FILE" "$@"
+}
+
+write_config() {
+  version="$1"
+  registry="$2"
+  cat > "$CONFIG_FILE" <<EOF_CONFIG
+RUNHELM_HOME=$RUNHELM_HOME
+RUNHELM_VERSION=$version
+RUNHELM_ORCHESTRATOR_IMAGE=$registry/runhelm-orchestrator:$version
+RUNHELM_WORKER_IMAGE=$registry/runhelm-worker:$version
+RUNHELM_WORKER_HOST_ID=local-host
+RUNHELM_PUBLIC_HTTP_BIND=127.0.0.1:3000
+RUNHELM_STORAGE=sqlite
+RUNHELM_STORE_SQLITE_PATH=/var/lib/runhelm/runhelm.db
+RUNHELM_MAX_CONCURRENT_WORKFLOWS=1
+RUNHELM_WORKFLOW_QUEUE_CAPACITY=1024
+RUNHELM_TASK_TIMEOUT_SECS=300
+EOF_CONFIG
+}
+
+write_compose() {
+  cp "$COMPOSE_TEMPLATE_FILE" "$COMPOSE_FILE"
+}
+
+init_runhelm() {
+  version="$DEFAULT_VERSION"
+  registry="$DEFAULT_IMAGE_REGISTRY"
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --version)
+        version="${2:-}"
+        shift 2
+        ;;
+      --registry)
+        registry="${2:-}"
+        shift 2
+        ;;
+      *)
+        echo "unknown init argument: $1" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  if [ ! -f "$COMPOSE_TEMPLATE_FILE" ]; then
+    echo "Compose template was not found at $COMPOSE_TEMPLATE_FILE; reinstall RunHelm with packaging/install.sh." >&2
+    exit 1
+  fi
+
+  mkdir -p "$RUNHELM_HOME/skills" "$RUNHELM_HOME/workspaces" "$RUNHELM_HOME/cache" "$RUNHELM_HOME/workflows"
+  if [ ! -f "$RUNHELM_HOME/file_credentials.json" ]; then
+    printf '{}\n' > "$RUNHELM_HOME/file_credentials.json"
+    chmod 600 "$RUNHELM_HOME/file_credentials.json"
+  fi
+
+  write_config "$version" "$registry"
+  write_compose
+
+  echo "Initialized RunHelm local config in $RUNHELM_HOME"
+  echo "Edit $RUNHELM_HOME/file_credentials.json before running workflows that require credentials."
+}
+
+doctor() {
+  ok="true"
+
+  if command -v docker >/dev/null 2>&1; then
+    echo "ok: docker found"
+  else
+    echo "missing: docker is not installed or not on PATH"
+    ok="false"
+  fi
+
+  if docker info >/dev/null 2>&1; then
+    echo "ok: docker daemon is reachable"
+  else
+    echo "missing: docker daemon is not reachable"
+    ok="false"
+  fi
+
+  if docker compose version >/dev/null 2>&1; then
+    echo "ok: docker compose found"
+  else
+    echo "missing: docker compose is not available"
+    ok="false"
+  fi
+
+  for path in "$RUNHELM_HOME" "$CONFIG_FILE" "$COMPOSE_FILE" "$RUNHELM_HOME/file_credentials.json" "$RUNHELM_HOME/skills" "$RUNHELM_HOME/workspaces" "$RUNHELM_HOME/cache" "$RUNHELM_HOME/workflows"; do
+    if [ -e "$path" ]; then
+      echo "ok: $path exists"
+    else
+      echo "missing: $path"
+      ok="false"
+    fi
+  done
+
+  if [ "$ok" = "true" ]; then
+    exit 0
+  fi
+
+  exit 1
+}
+
+build_images() {
+  if [ -x "$RUNHELM_SCRIPT_DIR/build-images.sh" ]; then
+    "$RUNHELM_SCRIPT_DIR/build-images.sh" "$@"
+  elif [ -x "./packaging/build-images.sh" ]; then
+    "./packaging/build-images.sh" "$@"
+  else
+    echo "build-images.sh was not found. Run this command from a RunHelm checkout or install packaging/build-images.sh next to runhelm." >&2
+    exit 1
+  fi
+}
+
+command="${1:-}"
+if [ -z "$command" ]; then
+  usage
+  exit 2
+fi
+shift
+
+case "$command" in
+  init)
+    init_runhelm "$@"
+    ;;
+  up)
+    compose_cmd up -d "$@"
+    ;;
+  down)
+    compose_cmd down "$@"
+    ;;
+  status)
+    compose_cmd ps "$@"
+    ;;
+  logs)
+    compose_cmd logs -f "$@"
+    ;;
+  doctor)
+    doctor
+    ;;
+  build)
+    build_images "$@"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    echo "unknown command: $command" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

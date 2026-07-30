@@ -5,7 +5,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 const url = (path: string) => `${base}${path}`;
 
 const installCommand = `curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
-runhelm init
+runhelm init --version dev
 runhelm up`;
 ---
 
@@ -404,8 +404,8 @@ runhelm up`;
           <div class="install-note">
             <h3>What starts</h3>
             <p>
-              The generated local environment starts the orchestrator, worker,
-              and frontend services and stores local configuration under
+              The generated local environment starts the orchestrator and
+              worker services and stores local configuration under
               <code>~/.runhelm</code>.
             </p>
             <div class="actions">

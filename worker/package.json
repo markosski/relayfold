@@ -1,6 +1,6 @@
 {
   "name": "worker",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Docker container worker for executing agentic tasks",
   "type": "module",
   "main": "dist/index.js",
