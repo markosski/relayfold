@@ -1,3 +1,4 @@
+# Development stack: builds local component sources and uses external MySQL.
 services:
   orchestrator:
     build:
@@ -16,6 +17,12 @@ services:
       RUNHELM_STORE_MYSQL_DATABASE: ${RUNHELM_STORE_MYSQL_DATABASE:-runhelm}
       RUNHELM_STORE_MYSQL_USERNAME: ${RUNHELM_STORE_MYSQL_USERNAME:-root}
       RUNHELM_STORE_MYSQL_PASSWORD: ${RUNHELM_STORE_MYSQL_PASSWORD:-pass}
+      # To use SQLite instead, comment out the MySQL settings above and uncomment:
+      # RUNHELM_STORAGE: sqlite
+      # RUNHELM_STORE_SQLITE_PATH: /var/lib/runhelm/runhelm.db
+    # Also uncomment this volume when using SQLite:
+    # volumes:
+    #   - runhelm-storage:/var/lib/runhelm
     read_only: true
     tmpfs:
       - /tmp
@@ -54,5 +61,7 @@ services:
       replicas: 2
 
 volumes:
+  # Used by the commented SQLite configuration above.
+  runhelm-storage:
   runhelm-workspaces:
   runhelm-cache:

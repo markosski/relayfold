@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Learn how RunHelm separates orchestration, task execution, and operator visibility.
+description: Learn how RunHelm separates orchestration and task execution.
 ---
 
 RunHelm separates control-plane concerns from execution concerns.
@@ -34,10 +34,6 @@ Workers:
 - read required credentials through a credentials port
 
 Function tasks run arbitrary code in an isolated Node.js child process. Agent tasks use a provider-agnostic model interface, approved tools, selected skills, and credentials loaded through the worker credential adapter.
-
-## Frontend
-
-The frontend is the start of an operator UI for workflows, runs, and system visibility. It is currently a shell rather than a fully integrated console, but it establishes the direction for observing orchestrated runs.
 
 ## Ports and adapters
 

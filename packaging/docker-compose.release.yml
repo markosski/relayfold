@@ -1,0 +1,53 @@
+# Canonical Compose template for release images and `runhelm init`.
+services:
+  orchestrator:
+    image: ${RUNHELM_ORCHESTRATOR_IMAGE}
+    ports:
+      - "${RUNHELM_PUBLIC_HTTP_BIND:-127.0.0.1:3000}:3000"
+    environment:
+      RUNHELM_USE_GLOBAL_NAMESPACE: "true"
+      RUNHELM_WORKER_HTTP_ADDR: 0.0.0.0:3001
+      RUNHELM_STORAGE: ${RUNHELM_STORAGE:-sqlite}
+      RUNHELM_STORE_SQLITE_PATH: ${RUNHELM_STORE_SQLITE_PATH:-/var/lib/runhelm/runhelm.db}
+      RUNHELM_MAX_CONCURRENT_WORKFLOWS: ${RUNHELM_MAX_CONCURRENT_WORKFLOWS:-1}
+      RUNHELM_WORKFLOW_QUEUE_CAPACITY: ${RUNHELM_WORKFLOW_QUEUE_CAPACITY:-1024}
+      RUNHELM_TASK_TIMEOUT_SECS: ${RUNHELM_TASK_TIMEOUT_SECS:-300}
+    volumes:
+      - runhelm-storage:/var/lib/runhelm
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health >/dev/null && wget -qO- http://127.0.0.1:3001/health >/dev/null"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
+    restart: unless-stopped
+
+  worker:
+    image: ${RUNHELM_WORKER_IMAGE}
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    environment:
+      RUNHELM_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
+      RUNHELM_WORKER_HOST_ID: ${RUNHELM_WORKER_HOST_ID:-local-host}
+      RUNHELM_WORKSPACE_ROOT: /workspaces
+    volumes:
+      - ${RUNHELM_HOME}/file_credentials.json:/home/runhelm/.runhelm/file_credentials.json:ro
+      - ${RUNHELM_HOME}/skills:/home/runhelm/.pi/agent/skills:ro
+      - ${RUNHELM_HOME}/workspaces:/workspaces
+      - ${RUNHELM_HOME}/cache:/home/runhelm/.cache
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+volumes:
+  runhelm-storage:

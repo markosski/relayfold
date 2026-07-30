@@ -7,10 +7,13 @@ The Docker-first local install path does not require Rust, Node.js, or a source 
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
-runhelm init
+runhelm init --version dev
 runhelm up
 runhelm status
 ```
+
+The `--version dev` option configures the local environment to use the current
+development images.
 
 ## Local files
 
@@ -28,6 +31,10 @@ runhelm status
 ```
 
 The generated config is written to `~/.runhelm/config.env`, and the generated Compose file is written to `~/.runhelm/docker-compose.yml`.
+The installer places the canonical Compose template beside the `runhelm`
+executable, and `runhelm init` copies that template into the local environment.
+Workflow definitions and run state are persisted in the `runhelm-storage`
+Docker volume using SQLite.
 
 ## Global namespace mode
 
@@ -35,8 +42,9 @@ Public resource endpoints require a namespace. Local and single-tenant
 deployments can select the readable built-in global namespace:
 
 :::caution
-Bearer-token API-key authentication is not fully implemented yet. For now, set
-`RUNHELM_USE_GLOBAL_NAMESPACE=true` so public resource endpoints are usable.
+Bearer-token API-key authentication is not fully implemented yet. The generated
+local Compose environment sets `RUNHELM_USE_GLOBAL_NAMESPACE=true` so public
+resource endpoints are usable.
 :::
 
 ```text
@@ -61,9 +69,8 @@ The repository's local-development `docker-compose.yml` explicitly uses
 Override image references in `~/.runhelm/config.env` when using an internal registry:
 
 ```text
-RUNHELM_ORCHESTRATOR_IMAGE=registry.example.com/runhelm-orchestrator:0
-RUNHELM_WORKER_IMAGE=registry.example.com/runhelm-worker:0
-RUNHELM_FRONTEND_IMAGE=registry.example.com/runhelm-frontend:0
+RUNHELM_ORCHESTRATOR_IMAGE=registry.example.com/runhelm-orchestrator:dev
+RUNHELM_WORKER_IMAGE=registry.example.com/runhelm-worker:dev
 ```
 
 ## Self-build path
