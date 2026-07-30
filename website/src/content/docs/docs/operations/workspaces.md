@@ -39,4 +39,4 @@ Workspaces are scoped to the execution environment and intended to isolate task 
 
 Workspace cleanup is a lifecycle concern for the worker environment. Do not treat workspaces as durable application storage unless a workflow explicitly copies artifacts to an external system.
 
-See [Worker Host Pinning](/docs/operations/worker-host-pinning/) for how RunHelm keeps workflow tasks on the host that owns workspace state, and [Reliability and Side Effects](/docs/operations/reliability/) for retry and idempotency guidance.
+See [Worker Host Pinning](/runhelm/docs/operations/worker-host-pinning/) for how RunHelm keeps workflow tasks on the host that owns workspace state, and [Reliability and Side Effects](/runhelm/docs/operations/reliability/) for retry and idempotency guidance.

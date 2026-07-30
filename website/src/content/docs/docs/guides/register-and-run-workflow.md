@@ -194,4 +194,4 @@ Example response:
 
 ## Next steps
 
-Use the [Workflow YAML Reference](/docs/concepts/workflow-yaml/) when building larger definitions, and the [API Reference](/docs/api-reference/) for the full endpoint list.
+Use the [Workflow YAML Reference](/runhelm/docs/concepts/workflow-yaml/) when building larger definitions, and the [API Reference](/runhelm/docs/api-reference/) for the full endpoint list.

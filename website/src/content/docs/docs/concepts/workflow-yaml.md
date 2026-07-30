@@ -128,7 +128,7 @@ control:
 
 `control.verifier` turns a task into a bounded-loop verifier. The verifier returns `{ "decision": "complete" }` or `{ "decision": "continue", "feedback": "..." }`.
 
-See [Bounded Loops](/docs/concepts/bounded-loops/) for the full control-flow behavior.
+See [Bounded Loops](/runhelm/docs/concepts/bounded-loops/) for the full control-flow behavior.
 
 ## Workspaces
 

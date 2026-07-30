@@ -56,7 +56,7 @@ Terminal workflows cannot be resumed. A workflow waiting for human input should 
 
 `InputNeeded` is workflow-blocking. When an Agent task asks for human input, the current engine pass stops after recording the question. Independent branches that could otherwise run remain pending until human input is submitted.
 
-See [Human Input](/docs/concepts/human-input/) for the operator flow.
+See [Human Input](/runhelm/docs/concepts/human-input/) for the operator flow.
 
 ## Retry
 
