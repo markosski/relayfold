@@ -5,6 +5,12 @@ description: Run RunHelm locally with Docker and the runhelm wrapper.
 
 The Docker-first local install path does not require Rust, Node.js, or a source checkout after installation. It uses prebuilt images by default and manages local config under `~/.runhelm`.
 
+:::caution
+This local install path is intended for development and evaluation only. It is
+not suitable for production deployments. For a production-shaped topology, see
+[Live Deployment](/runhelm/docs/operations/live-deployment/).
+:::
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
 runhelm init --version dev # dev for unstable or release tag
