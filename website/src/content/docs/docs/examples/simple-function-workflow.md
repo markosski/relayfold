@@ -5,13 +5,16 @@ description: A minimal workflow that uses one inline Function task.
 
 This example shows a single Function task that reads trigger input and returns structured output.
 
+The ready-to-run definition is
+`worker/examples/example_simple_function_workflow.yaml`.
+
 ## Workflow definition
 
 ```yaml
 id: simple-function-workflow
 
 tasks:
-  - id: summarize-user
+  - id: greeter
     kind:
       Function:
         dependencies: []
@@ -47,14 +50,13 @@ data_bindings: []
 
 ## Register with the API
 
-The API accepts JSON and YAML. Save the definition above as
-`simple-function-workflow.yaml`, then register it directly:
+The API accepts JSON and YAML. Register the ready-to-run example directly:
 
 ```bash
 export RUNHELM_URL=http://localhost:3000
 
 curl -sS -X POST "$RUNHELM_URL/workflow-def" \
-  --data-binary @simple-function-workflow.yaml
+  --data-binary @worker/examples/example_simple_function_workflow.yaml
 ```
 
 ## Start a run
@@ -78,7 +80,7 @@ Example response:
 ## Read the result
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/simple-function-workflow-1780000000000000000/tasks/summarize-user"
+curl -sS "$RUNHELM_URL/workflows/simple-function-workflow-1780000000000000000/tasks/greeter"
 ```
 
 Example response:
@@ -95,8 +97,8 @@ Example response:
     "response": "Hello, Ada Lovelace!",
     "normalizedName": "ada lovelace"
   },
-  "task_def_id": "summarize-user",
-  "task_attempt_id": "summarize-user[1]",
+  "task_def_id": "greeter",
+  "task_attempt_id": "greeter[1]",
   "satisfaction": "Satisfied",
   "generation_index": 1
 }

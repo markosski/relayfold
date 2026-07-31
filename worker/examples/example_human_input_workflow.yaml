@@ -1,28 +1,57 @@
 id: human-input-agent-workflow
+description: Prepare a release announcement, asking a human to supply the missing release channel.
 
-# Single Agent task example that intentionally pauses for human input.
-# Register this workflow, start an instance, then submit the answer with:
-# POST /workflows/{workflow_instance_id}/tasks/collect-release-preference/human-input
-# body: { "input": "stable" }
+# The Agent discovers that a required business decision is missing and pauses
+# for human input.
+#
+# Try it locally after starting RunHelm and configuring gemini_api_key:
+#
+#   export RUNHELM_URL=http://localhost:3000
+#
+#   curl -sS -X POST "$RUNHELM_URL/workflow-def" \
+#     --data-binary @worker/examples/example_human_input_workflow.yaml
+#
+#   curl -sS -X POST \
+#     "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
+#     -H 'content-type: application/json' \
+#     -d '{}'
+#
+# Copy the returned workflow instance ID, wait for the task to enter
+# InputNeeded, and submit the missing channel:
+#
+#   export WORKFLOW_ID=human-input-agent-workflow-...
+#
+#   curl -sS \
+#     "$RUNHELM_URL/workflows/$WORKFLOW_ID/tasks/release-announcement"
+#
+#   curl -sS -X POST \
+#     "$RUNHELM_URL/workflows/$WORKFLOW_ID/tasks/release-announcement/human-input" \
+#     -H 'content-type: application/json' \
+#     -d '{ "input": "stable" }'
+#
+# Read the same task endpoint again to see the completed announcement.
 
 tasks:
-  - id: collect-release-preference
+  - id: release-announcement
     kind:
       agent:
-        model_id: "google/gemini-2.5-flash"
+        model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
-          You are preparing a release note summary, but the release channel is
-          intentionally missing.
+          You are a release coordinator preparing an announcement for RunHelm 1.4.0.
 
-          If there is no USER RESPONSE TO PREVIOUS INQUIRY in the current task
-          context, call the ask_user tool with this exact question:
-          "Which release channel should this summary target: stable, beta, or nightly?"
+          Release facts:
+          - Added reusable Agent sessions.
+          - Added human input for missing workflow decisions.
+          - Fixed duplicate task attempts after workflow resume.
 
-          If a USER RESPONSE TO PREVIOUS INQUIRY is present, use that response
-          as the release channel and return exactly this JSON shape:
+          Every announcement must target exactly one release channel: stable,
+          beta, or nightly. Do not invent release facts or choose a channel on
+          the operator's behalf.
+
+          Return exactly this JSON shape:
           {
-            "response": "Release summary prepared for <channel> channel.",
+            "response": "<a concise announcement appropriate for the channel>",
             "channel": "<channel>"
           }
         tools: []
@@ -40,6 +69,10 @@ tasks:
           type: string
         channel:
           type: string
+          enum:
+            - stable
+            - beta
+            - nightly
     required_credentials:
       - gemini_api_key
 

@@ -3,9 +3,13 @@ title: Human Input Workflow
 description: A workflow that pauses in InputNeeded and continues after an operator response.
 ---
 
-This example shows an Agent task that intentionally asks the operator for a missing release channel before returning structured output.
+This example gives an Agent enough release facts to prepare an announcement, but
+omits a required business decision: the target release channel. The Agent must
+recognize that it cannot complete the task without inventing information and ask
+the operator for the missing decision.
 
-It is based on `worker/examples/example_human_input_workflow.yaml`.
+The ready-to-run definition is
+`worker/examples/example_human_input_workflow.yaml`.
 
 ## Workflow definition
 
@@ -13,23 +17,26 @@ It is based on `worker/examples/example_human_input_workflow.yaml`.
 id: human-input-agent-workflow
 
 tasks:
-  - id: collect-release-preference
+  - id: release-announcement
     kind:
       agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |
-          You are preparing a release note summary, but the release channel is
-          intentionally missing.
+          You are a release coordinator preparing an announcement for RunHelm 1.4.0.
 
-          If there is no USER RESPONSE TO PREVIOUS INQUIRY in the current task
-          context, call the ask_user tool with this exact question:
-          "Which release channel should this summary target: stable, beta, or nightly?"
+          Release facts:
+          - Added reusable Agent sessions.
+          - Added human input for missing workflow decisions.
+          - Fixed duplicate task attempts after workflow resume.
 
-          If a USER RESPONSE TO PREVIOUS INQUIRY is present, use that response
-          as the release channel and return exactly this JSON shape:
+          Every announcement must target exactly one release channel: stable,
+          beta, or nightly. Do not invent release facts or choose a channel on
+          the operator's behalf.
+
+          Return exactly this JSON shape:
           {
-            "response": "Release summary prepared for <channel> channel.",
+            "response": "<a concise announcement appropriate for the channel>",
             "channel": "<channel>"
           }
         tools: []
@@ -47,6 +54,10 @@ tasks:
           type: string
         channel:
           type: string
+          enum:
+            - stable
+            - beta
+            - nightly
     required_credentials:
       - gemini_api_key
 
@@ -85,25 +96,29 @@ curl -sS -X POST "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
   -d '{}'
 ```
 
-The run should eventually move to `InputNeeded`.
+Because the required channel is absent, the run should eventually move to
+`InputNeeded`. The prompt does not tell the Agent to inspect for a previous
+response or prescribe a question. The Agent discovers the missing decision from
+the task constraints and uses the human-input capability made available by
+`ask: true`.
 
 ## Inspect the question
 
 Read the task result:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/collect-release-preference"
+curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement"
 ```
 
-Example response:
+Example response (the exact wording is chosen by the Agent):
 
 ```json
 {
   "status": "input_needed",
   "input": [],
   "input_request": "Which release channel should this summary target: stable, beta, or nightly?",
-  "task_def_id": "collect-release-preference",
-  "task_attempt_id": "collect-release-preference[1]",
+  "task_def_id": "release-announcement",
+  "task_attempt_id": "release-announcement[1]",
   "satisfaction": "Unsatisfied",
   "generation_index": 1
 }
@@ -112,7 +127,7 @@ Example response:
 ## Submit the answer
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/collect-release-preference/human-input" \
+curl -sS -X POST "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement/human-input" \
   -H 'content-type: application/json' \
   -d '{ "input": "stable" }'
 ```
@@ -123,7 +138,7 @@ Response:
 {
   "status": "queued",
   "workflow_instance_id": "human-input-agent-workflow-1780000000000000000",
-  "task_attempt_id": "collect-release-preference[2]"
+  "task_attempt_id": "release-announcement[2]"
 }
 ```
 
@@ -132,7 +147,7 @@ Response:
 After the continuation runs, read the task result again:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/collect-release-preference"
+curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement"
 ```
 
 Example output:
@@ -142,11 +157,11 @@ Example output:
   "status": "success",
   "input": [],
   "output": {
-    "response": "Release summary prepared for stable channel.",
+    "response": "RunHelm 1.4.0 adds reusable Agent sessions and human input for missing workflow decisions, and fixes duplicate task attempts after resume.",
     "channel": "stable"
   },
-  "task_def_id": "collect-release-preference",
-  "task_attempt_id": "collect-release-preference[2]",
+  "task_def_id": "release-announcement",
+  "task_attempt_id": "release-announcement[2]",
   "satisfaction": "Satisfied",
   "generation_index": 2
 }
