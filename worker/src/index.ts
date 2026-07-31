@@ -1,7 +1,8 @@
-import { Ajv } from 'ajv';
+import type { Ajv } from 'ajv';
 import { ExecutorFactory } from './adapters/executors/ExecutorFactory.js';
 import { FileCredentialsAdapter, defaultCredentialsFilePath } from './adapters/FileCredentialsAdapter.js';
 import { FileSessionStore } from './adapters/FileSessionStore.js';
+import { createJsonSchemaValidator } from './core/JsonSchemaValidator.js';
 import type { TaskDispatchPayload, TaskExecutionPayload } from './core/models/TaskDef.js';
 import type { CredentialsPort } from './core/ports/CredentialsPort.js';
 import type { SessionStore } from './core/ports/SessionStore.js';
@@ -352,7 +353,7 @@ async function main() {
     const credentialsAdapter = await FileCredentialsAdapter.fromFile(credentialsFilePath);
     const sessionStore = new FileSessionStore();
 
-    const ajv = new Ajv();
+    const ajv = createJsonSchemaValidator();
 
     await runWorker(workerId, workerHostId, executorFactory, credentialsAdapter, sessionStore, ajv);
 }

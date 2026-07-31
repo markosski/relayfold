@@ -56,6 +56,9 @@ tasks:
 | `required_credentials` | Yes | Named credentials required before execution. Use `[]` when none are needed. |
 | `control` | No | Verifier control settings for bounded loops. |
 
+Input and output schemas support standard format validation, including `date`,
+`email`, and `uri`.
+
 ## Task kinds
 
 Agent task:

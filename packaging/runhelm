@@ -44,15 +44,19 @@ compose_cmd() {
 write_config() {
   version="$1"
   registry="$2"
+  worker_uid="$(id -u)"
+  worker_gid="$(id -g)"
   cat > "$CONFIG_FILE" <<EOF_CONFIG
 RUNHELM_HOME=$RUNHELM_HOME
 RUNHELM_VERSION=$version
 RUNHELM_ORCHESTRATOR_IMAGE=$registry/runhelm-orchestrator:$version
 RUNHELM_WORKER_IMAGE=$registry/runhelm-worker:$version
+RUNHELM_WORKER_UID=$worker_uid
+RUNHELM_WORKER_GID=$worker_gid
 RUNHELM_WORKER_HOST_ID=local-host
 RUNHELM_PUBLIC_HTTP_BIND=127.0.0.1:3000
 RUNHELM_STORAGE=sqlite
-RUNHELM_STORE_SQLITE_PATH=/var/lib/runhelm/runhelm.db
+RUNHELM_STORE_SQLITE_PATH=/tmp/runhelm.db
 RUNHELM_MAX_CONCURRENT_WORKFLOWS=1
 RUNHELM_WORKFLOW_QUEUE_CAPACITY=1024
 RUNHELM_TASK_TIMEOUT_SECS=300
@@ -165,7 +169,7 @@ case "$command" in
     init_runhelm "$@"
     ;;
   up)
-    compose_cmd up -d "$@"
+    compose_cmd up "$@"
     ;;
   down)
     compose_cmd down "$@"

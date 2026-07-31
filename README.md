@@ -168,15 +168,16 @@ The Docker-first local install path does not require Rust, Node.js, or a source 
 curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
 runhelm init
 runhelm up
-runhelm status
 ```
+
+`runhelm up` stays attached and streams container logs. Press `Ctrl+C` to stop
+the containers; use another terminal for commands such as `runhelm status`.
 
 The generated config is written to `~/.runhelm/config.env`, and the generated Compose file is written to `~/.runhelm/docker-compose.yml`. Override image references there when using an internal registry:
 
 ```env
 RUNHELM_ORCHESTRATOR_IMAGE=registry.example.com/runhelm-orchestrator:0
 RUNHELM_WORKER_IMAGE=registry.example.com/runhelm-worker:0
-RUNHELM_FRONTEND_IMAGE=registry.example.com/runhelm-frontend:0
 ```
 
 Users who need to own their image artifacts can build them from a checkout or git ref:
