@@ -23,8 +23,20 @@ Most agent demos stop at "the model produced an answer." Real systems need more 
 
 RunHelm treats an agent the same way it treats a function or API task: as a node in a workflow with declared inputs, outputs, and credentials.
 
+## RunHelm features
+
+- **Provider-agnostic Agent tasks** — choose the model provider that fits each step without changing the workflow execution model.
+- **Mixed task workflows** — compose AI agents, JavaScript functions, and direct API calls in one workflow, with explicit data bindings and optional schema validation between steps.
+- **Agent-directed human input** — let an Agent request clarification only when it needs it, pause the workflow in `InputNeeded`, and continue from persisted state after a response.
+- **Bounded verifier loops** — repeat AI agent task sequences with structured feedback and a configured attempt limit.
+- **Observable, resumable runs** — inspect workflow and task state, follow lifecycle events, and retry or resume work without restarting the entire workflow.
+- **Controlled execution environments** — grant each task only the tools, skills, credentials, and shared workspace access it needs.
+- **Scalable worker execution** — separate orchestration from task execution so workers can register, claim tasks, and scale independently while preserving workflow-local state.
+
 ## Current status
 
-RunHelm is in an early implementation stage. The repository already includes the core workflow engine, orchestration API skeleton, in-memory storage and queue adapters, worker registration plus task dispatch, and a TypeScript worker runtime.
+> **RunHelm is still in an early development stage, expect bugs and breaking changes.**
+
+## Where to start?
 
 Start with the [install guide](/runhelm/docs/install/) for local setup, then try [Register and Run a Workflow](/runhelm/docs/guides/register-and-run-workflow/). After that, read the [workflow concepts](/runhelm/docs/concepts/workflows/), [task concepts](/runhelm/docs/concepts/tasks/), [workflow YAML reference](/runhelm/docs/concepts/workflow-yaml/), [API reference](/runhelm/docs/api-reference/), and [architecture overview](/runhelm/docs/concepts/architecture/).

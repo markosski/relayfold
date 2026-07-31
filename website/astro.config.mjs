@@ -56,6 +56,7 @@ export default defineConfig({
         {
           label: 'Operations',
           items: [
+            { label: 'Scaling', slug: 'docs/operations/scaling' },
             { label: 'Orchestrator Storage', slug: 'docs/operations/storage' },
             { label: 'Workspaces', slug: 'docs/operations/workspaces' },
             { label: 'Credentials', slug: 'docs/operations/credentials' },

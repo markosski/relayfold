@@ -287,6 +287,16 @@ curl -sS -X POST "$RUNHELM_URL/workflow-def/hello-workflow/tasks/hello" \
   -d '{ "inputs": [{ "name": "Ada" }] }'
 ```
 
+This execution mode returns the worker result directly and does not persist a
+workflow instance, task attempt, workflow event, queue entry, or result in the
+orchestrator storage. It also does not update the definition's
+`last_invoked_at_epoch_ms`. An `input_needed` response cannot be resumed through
+the workflow APIs; invoking the endpoint again starts a new isolated execution.
+
+The persistence boundary applies to orchestrator workflow state. The task can
+still create external side effects, and worker-local workspace or Agent session
+files can remain according to their normal storage lifecycles.
+
 Success response:
 
 ```json

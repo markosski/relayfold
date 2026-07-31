@@ -16,7 +16,7 @@ runhelm up`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="RunHelm is an agentic workflow orchestrator for reliable, observable multi-step AI and automation runs."
+      content="RunHelm is a distributed workflow orchestrator that scales AI and automation runs across workers and independent orchestrator partitions."
     />
     <title>RunHelm</title>
     <style>
@@ -317,7 +317,7 @@ runhelm up`;
       <nav class="nav" aria-label="Main navigation">
         <a class="brand" href={url('')}>
           <img src={url('runhelm-logo.png')} alt="" />
-          <span>Agentic workflow orchestrator</span>
+          <span>Distributed workflow orchestrator</span>
         </a>
         <div class="nav-links">
           <a href={url('docs/')}>Docs</a>
@@ -330,10 +330,10 @@ runhelm up`;
     <main>
       <section class="hero">
         <div>
-          <p class="eyebrow">Provider-agnostic agentic workflows</p>
-          <h1>Run reliable multi-step AI and automation workflows.</h1>
+          <!--<p class="eyebrow">Distributed, provider-agnostic agentic workflows</p>-->
+          <h1>Scale reliable AI and automation workflows.</h1>
           <p class="hero-copy">
-            RunHelm composes AI agents, API calls, and code execution into
+            RunHelm composes AI agents, and code execution into
             observable, reusable workflow runs with explicit data flow, typed task
             contracts, resumable state, and isolated workers.
           </p>
@@ -377,10 +377,11 @@ runhelm up`;
             </p>
           </article>
           <article class="feature">
-            <h3>Isolated workers</h3>
+            <h3>Distributed workers</h3>
             <p>
-              Workers claim queued tasks and execute agent, function, or API
-              payloads behind a replaceable executor boundary.
+              Add worker instances to increase execution capacity. Workers
+              register with an orchestrator, claim queued tasks, and execute
+              agent, function, or API payloads in isolation.
             </p>
           </article>
           <article class="feature">
