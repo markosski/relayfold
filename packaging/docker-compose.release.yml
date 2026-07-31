@@ -8,12 +8,10 @@ services:
       RUNHELM_USE_GLOBAL_NAMESPACE: "true"
       RUNHELM_WORKER_HTTP_ADDR: 0.0.0.0:3001
       RUNHELM_STORAGE: ${RUNHELM_STORAGE:-sqlite}
-      RUNHELM_STORE_SQLITE_PATH: ${RUNHELM_STORE_SQLITE_PATH:-/var/lib/runhelm/runhelm.db}
+      RUNHELM_STORE_SQLITE_PATH: ${RUNHELM_STORE_SQLITE_PATH:-/tmp/runhelm.db}
       RUNHELM_MAX_CONCURRENT_WORKFLOWS: ${RUNHELM_MAX_CONCURRENT_WORKFLOWS:-1}
       RUNHELM_WORKFLOW_QUEUE_CAPACITY: ${RUNHELM_WORKFLOW_QUEUE_CAPACITY:-1024}
       RUNHELM_TASK_TIMEOUT_SECS: ${RUNHELM_TASK_TIMEOUT_SECS:-300}
-    volumes:
-      - runhelm-storage:/var/lib/runhelm
     read_only: true
     tmpfs:
       - /tmp
@@ -28,6 +26,7 @@ services:
 
   worker:
     image: ${RUNHELM_WORKER_IMAGE}
+    user: "${RUNHELM_WORKER_UID:-10001}:${RUNHELM_WORKER_GID:-10001}"
     depends_on:
       orchestrator:
         condition: service_healthy
@@ -48,6 +47,3 @@ services:
     cap_drop:
       - ALL
     restart: unless-stopped
-
-volumes:
-  runhelm-storage:

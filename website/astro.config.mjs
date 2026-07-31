@@ -56,6 +56,7 @@ export default defineConfig({
         {
           label: 'Operations',
           items: [
+            { label: 'Scaling', slug: 'docs/operations/scaling' },
             { label: 'Orchestrator Storage', slug: 'docs/operations/storage' },
             { label: 'Workspaces', slug: 'docs/operations/workspaces' },
             { label: 'Credentials', slug: 'docs/operations/credentials' },
@@ -84,6 +85,10 @@ export default defineConfig({
             {
               label: 'GitHub Issue to PR',
               slug: 'docs/examples/github-issue-pr-workflow',
+            },
+            {
+              label: 'Daily Stock Report',
+              slug: 'docs/examples/daily-stock-report-workflow',
             },
           ],
         },

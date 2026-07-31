@@ -156,3 +156,28 @@ The task dispatch port SHALL receive the namespace that owns the workflow execut
 #### Scenario: Workspace and session identity are namespaced
 - **WHEN** two namespaces execute the same workflow and logical task IDs
 - **THEN** worker workspace and reusable Agent session identities do not collide between the namespaces
+
+### Requirement: Isolated Definition Task Persistence Boundary
+The system SHALL execute an isolated workflow-definition task without creating or mutating persisted workflow execution state in the orchestrator storage.
+
+#### Scenario: Isolated task is dispatched directly
+- **WHEN** a caller executes one task from a registered workflow definition in isolation
+- **THEN** the orchestrator loads the selected definition and task
+- **THEN** the orchestrator dispatches the task using a unique synthetic execution ID
+- **THEN** the orchestrator returns the worker result directly to the caller
+
+#### Scenario: Isolated task does not create workflow state
+- **WHEN** an isolated workflow-definition task returns success, failure, or an input-needed result
+- **THEN** the orchestrator does not create a workflow instance, task attempt, workflow event, or workflow queue entry for that execution
+- **THEN** the orchestrator does not update the workflow definition's last-invoked metadata
+- **THEN** the isolated result is not available through workflow instance or task result read APIs
+
+#### Scenario: Input-needed result is not resumable
+- **WHEN** an isolated workflow-definition task returns an input-needed result
+- **THEN** the result is returned only in the isolated invocation response
+- **THEN** a later isolated invocation starts with a new synthetic execution ID rather than resuming persisted workflow state
+
+#### Scenario: Task side effects remain possible
+- **WHEN** an isolated workflow-definition task executes
+- **THEN** the absence of persisted orchestrator workflow state does not imply side-effect-free execution
+- **THEN** task-created external state and worker-local workspace or Agent session files MAY persist according to their respective storage lifecycles

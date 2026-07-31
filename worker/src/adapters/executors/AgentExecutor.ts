@@ -4,8 +4,8 @@ import type { CredentialsPort } from '../../core/ports/CredentialsPort.js';
 import { getModel } from '@earendil-works/pi-ai';
 import { Agent } from '@earendil-works/pi-agent-core';
 import { AuthStorage, createAgentSession, createCodingTools, formatSkillsForPrompt, SessionManager, type Skill } from '@earendil-works/pi-coding-agent';
-import { Ajv } from 'ajv';
 import { logger } from '../../utils/logger.js';
+import { createJsonSchemaValidator } from '../../core/JsonSchemaValidator.js';
 import { createBraveSearchTool } from './agent_tools/braveSearchTool.js';
 import { createFetchUrlTool } from './agent_tools/fetchUrlTool.js';
 import { createHttpRequestTool } from './agent_tools/httpRequestTool.js';
@@ -461,7 +461,7 @@ export class AgentExecutor implements TaskExecutor {
 
             if (payload.task.output_schema) {
                 const retryTimes = parseRetryTimes(agentDef.schema_failure_retry_times);
-                const ajv = new Ajv();
+                const ajv = createJsonSchemaValidator();
                 const validate = ajv.compile(payload.task.output_schema);
 
                 for (let attempt = 0; attempt <= retryTimes; attempt++) {

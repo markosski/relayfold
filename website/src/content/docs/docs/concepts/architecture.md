@@ -38,3 +38,9 @@ Function tasks run arbitrary code in an isolated Node.js child process. Agent ta
 ## Ports and adapters
 
 Side effects live behind ports and adapters. Storage, workflow queues, task dispatch, credentials, and worker execution are modeled as replaceable boundaries so the core orchestration logic can remain testable and cohesive.
+
+## Scaling the deployment
+
+RunHelm scales task execution by adding workers to an orchestrator's worker pool. At a larger deployment size, workloads can be partitioned across independent orchestrators with dedicated worker pools.
+
+See [Scaling](/runhelm/docs/operations/scaling/) for deployment guidance and the distinction between worker scaling and orchestrator partitioning.
