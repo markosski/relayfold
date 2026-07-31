@@ -24,6 +24,7 @@ This is instructions to the agent on how to do work in this project.
 - When making changes to existing code favor simplicity over backwards compatibility
 - Do not make assumptions about critical decisions, ask to clarify underspecified information
 - When creating data contracts between modules, APIs, etc. don't future proof models, create models that only include information that is needed and not what may be needed in the future
+- Only start a new open spec, if user suggests it, otherwise implement change without the spec. However, always verify existing spec for conflicts and update the spec if behavior and invariants change.
 
 ## Design Principles
 - Code is organized into highly cohesive modules for ease of maintenance and testing.

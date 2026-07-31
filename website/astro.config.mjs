@@ -86,6 +86,10 @@ export default defineConfig({
               label: 'GitHub Issue to PR',
               slug: 'docs/examples/github-issue-pr-workflow',
             },
+            {
+              label: 'Daily Stock Report',
+              slug: 'docs/examples/daily-stock-report-workflow',
+            },
           ],
         },
       ],

@@ -5,15 +5,23 @@ description: Run RunHelm locally with Docker and the runhelm wrapper.
 
 The Docker-first local install path does not require Rust, Node.js, or a source checkout after installation. It uses prebuilt images by default and manages local config under `~/.runhelm`.
 
+:::caution
+This local install path is intended for development and evaluation only. It is
+not suitable for production deployments.
+:::
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
 runhelm init --version dev # dev for unstable or release tag
 runhelm up
-runhelm status
 ```
 
 The `--version dev` option configures the local environment to use the current
 development images.
+
+`runhelm up` runs in the foreground and streams the container logs to the
+terminal. Press `Ctrl+C` to stop the containers. Run commands such as
+`runhelm status` from another terminal while RunHelm is running.
 
 ## Local files
 
@@ -33,8 +41,11 @@ development images.
 The generated config is written to `~/.runhelm/config.env`, and the generated Compose file is written to `~/.runhelm/docker-compose.yml`.
 The installer places the canonical Compose template beside the `runhelm`
 executable, and `runhelm init` copies that template into the local environment.
-Workflow definitions and run state are persisted in the `runhelm-storage`
-Docker volume using SQLite.
+It also records the current user's numeric UID and GID so the non-root worker
+can write to the bind-mounted `workspaces/` and `cache/` directories.
+Workflow definitions and run state use SQLite at `/tmp/runhelm.db` inside the
+orchestrator container. This database is temporary and is discarded when the
+orchestrator stops.
 
 ## Global namespace mode
 
