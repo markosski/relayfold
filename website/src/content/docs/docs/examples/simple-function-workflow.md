@@ -6,7 +6,7 @@ description: A minimal workflow that uses one inline Function task.
 This example shows a single Function task that reads trigger input and returns structured output.
 
 The ready-to-run definition is
-`worker/examples/example_simple_function_workflow.yaml`.
+[`worker/examples/example_simple_function_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_simple_function_workflow.yaml)
 
 ## Workflow definition
 

@@ -3,7 +3,8 @@ title: GitHub Issue to Pull Request Workflow
 description: Example agentic workflow that fetches a GitHub issue, implements a change, verifies it, and creates a pull request.
 ---
 
-`worker/examples/example_github_issue_pr_workflow.yaml` demonstrates an agentic workflow that fetches a GitHub issue, implements the requested change, uses a verifier loop to review the implementation, and creates a pull request.
+[`worker/examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_github_issue_pr_workflow.yaml)
+demonstrates an agentic workflow that fetches a GitHub issue, implements the requested change, uses a verifier loop to review the implementation, and creates a pull request.
 
 ## Worker image tooling
 

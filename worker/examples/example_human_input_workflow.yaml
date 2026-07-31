@@ -3,34 +3,6 @@ description: Prepare a release announcement, asking a human to supply the missin
 
 # The Agent discovers that a required business decision is missing and pauses
 # for human input.
-#
-# Try it locally after starting RunHelm and configuring gemini_api_key:
-#
-#   export RUNHELM_URL=http://localhost:3000
-#
-#   curl -sS -X POST "$RUNHELM_URL/workflow-def" \
-#     --data-binary @worker/examples/example_human_input_workflow.yaml
-#
-#   curl -sS -X POST \
-#     "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
-#     -H 'content-type: application/json' \
-#     -d '{}'
-#
-# Copy the returned workflow instance ID, wait for the task to enter
-# InputNeeded, and submit the missing channel:
-#
-#   export WORKFLOW_ID=human-input-agent-workflow-...
-#
-#   curl -sS \
-#     "$RUNHELM_URL/workflows/$WORKFLOW_ID/tasks/release-announcement"
-#
-#   curl -sS -X POST \
-#     "$RUNHELM_URL/workflows/$WORKFLOW_ID/tasks/release-announcement/human-input" \
-#     -H 'content-type: application/json' \
-#     -d '{ "input": "stable" }'
-#
-# Read the same task endpoint again to see the completed announcement.
-
 tasks:
   - id: release-announcement
     kind:

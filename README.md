@@ -1,5 +1,9 @@
 # RunHelm
 
+<p align="center">
+  <img src="runhelm_logo_large.png" alt="RunHelm logo" width="670">
+</p>
+
 RunHelm is an agentic workflow orchestrator for composing AI agents, JavaScript
 functions, and API calls into reliable, observable multi-step runs.
 

@@ -9,7 +9,7 @@ recognize that it cannot complete the task without inventing information and ask
 the operator for the missing decision.
 
 The ready-to-run definition is
-`worker/examples/example_human_input_workflow.yaml`.
+[`worker/examples/example_human_input_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_human_input_workflow.yaml)
 
 ## Workflow definition
 
@@ -157,7 +157,7 @@ Example output:
   "status": "success",
   "input": [],
   "output": {
-    "response": "RunHelm 1.4.0 adds reusable Agent sessions and human input for missing workflow decisions, and fixes duplicate task attempts after resume.",
+    "response": "RunHelm 1.4.0 is now live on the stable channel. This update introduces reusable Agent sessions, enables human input for workflow decisions, and resolves a bug causing duplicate task attempts when resuming workflows.",
     "channel": "stable"
   },
   "task_def_id": "release-announcement",
