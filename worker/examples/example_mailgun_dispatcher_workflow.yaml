@@ -18,7 +18,7 @@ id: mailgun-dispatcher-workflow
 tasks:
   - id: fetch_inbound_mail
     kind:
-      Function:
+      function:
         ref: mailgun.fetch_inbound_mail
     output_schema:
       type: object
@@ -132,7 +132,7 @@ tasks:
   - id: dispatch_and_reply
     timeout_secs: 600
     kind:
-      Function:
+      function:
         ref: mailgun.dispatch_and_reply
     input_schemas:
       - type: object

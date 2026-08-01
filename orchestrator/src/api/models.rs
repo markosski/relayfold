@@ -183,7 +183,7 @@ mod tests {
                 "task": {
                     "id": "hello",
                     "kind": {
-                        "Function": {
+                        "function": {
                             "dependencies": [],
                             "code": "export default async function run() {}"
                         }

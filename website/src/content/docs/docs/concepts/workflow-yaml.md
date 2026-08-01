@@ -31,7 +31,7 @@ tasks:
   - id: summarize
     timeout_secs: 300
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs }) {
@@ -48,7 +48,7 @@ tasks:
 | Field | Required | Description |
 | --- | --- | --- |
 | `id` | Yes | Logical task ID used by bindings, retries, and results. |
-| `kind` | Yes | One of `Agent`, `Function`, or `ApiCall`. |
+| `kind` | Yes | One of `agent`, `function`, or `apiCall`. |
 | `timeout_secs` | No | Task execution timeout. |
 | `input_schemas` | No | JSON Schemas for expected input slots. |
 | `output_schema` | No | JSON Schema for task output. Verifier tasks must omit this because RunHelm injects the decision schema. |
@@ -80,7 +80,7 @@ Function task:
 
 ```yaml
 kind:
-  Function:
+  function:
     dependencies:
       - name: lodash-es
         version: 4.17.21
@@ -94,7 +94,7 @@ Registered Function reference:
 
 ```yaml
 kind:
-  Function:
+  function:
     ref: mailgun.fetch_inbound_mail
 ```
 
@@ -102,7 +102,7 @@ API Call task:
 
 ```yaml
 kind:
-  ApiCall:
+  apiCall:
     url: "https://example.com/status"
     method: "GET"
 ```

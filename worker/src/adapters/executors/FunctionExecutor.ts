@@ -26,11 +26,11 @@ type FunctionEnvelope =
 
 export class FunctionExecutor implements TaskExecutor {
     async execute(payload: TaskExecutionPayload, credentialsPort: CredentialsPort): Promise<TaskExecutionResult> {
-        if (!('Function' in payload.task.kind)) {
+        if (!('function' in payload.task.kind)) {
             return { status: 'error', message: 'FunctionExecutor received a non-Function task' };
         }
 
-        const functionDef = payload.task.kind.Function;
+        const functionDef = payload.task.kind.function;
         if (!('code' in functionDef)) {
             return { status: 'error', message: `Function ref ${functionDef.ref} was not resolved before worker execution` };
         }

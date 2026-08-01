@@ -14,7 +14,7 @@ description: Research current stock data and recent news, render a daily HTML sn
 tasks:
   - id: fetch-market-data
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           const API_BASE = "https://api.twelvedata.com";
@@ -502,7 +502,7 @@ tasks:
 
   - id: send-report-email
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs, credentials }) {

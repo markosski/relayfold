@@ -19,7 +19,7 @@ All task kinds participate in the same orchestration model:
 tasks:
   - id: summarize
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs }) {

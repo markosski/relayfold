@@ -9,7 +9,7 @@ API call tasks represent direct service calls in a workflow. Use them when a ste
 tasks:
   - id: fetch-status
     kind:
-      ApiCall:
+      apiCall:
         url: "https://example.com/status"
         method: "GET"
     required_credentials: []

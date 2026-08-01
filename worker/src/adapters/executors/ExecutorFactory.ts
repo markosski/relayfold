@@ -10,10 +10,10 @@ export class ExecutorFactory {
         if ('agent' in kind) {
             logger.info("selected AgentExecutor");
             return new AgentExecutor();
-        } else if ('ApiCall' in kind) {
+        } else if ('apiCall' in kind) {
             logger.info("selected ApiCallExecutor");
             return new ApiCallExecutor();
-        } else if ('Function' in kind) {
+        } else if ('function' in kind) {
             logger.info("selected FunctionExecutor");
             return new FunctionExecutor();
         }

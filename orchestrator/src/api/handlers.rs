@@ -782,7 +782,7 @@ description: From YAML
 tasks:
   - id: run
     kind:
-      Function:
+      function:
         code: "export default async function run() { return {}; }"
         dependencies: []
     input_schemas: []
@@ -1164,7 +1164,7 @@ code: "export default async function run() { return {}; }"
             .unwrap();
         let response: Value = serde_yaml::from_slice(&body).unwrap();
         assert_eq!(response["id"], "yaml-workflow");
-        assert!(response["tasks"][0]["kind"]["Function"].is_object());
+        assert!(response["tasks"][0]["kind"]["function"].is_object());
     }
 
     #[test]

@@ -12,10 +12,8 @@ fn default_true() -> bool {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TaskTypeDef {
-    ApiCall {
-        url: String,
-        method: String,
-    },
+    #[serde(rename = "apiCall")]
+    ApiCall { url: String, method: String },
     #[serde(rename = "agent")]
     Agent {
         // Model name, e.g. sonnet, oput, gpt-5.5, gemini-2.5-flash, etc.
@@ -35,6 +33,7 @@ pub enum TaskTypeDef {
         #[serde(default = "default_true")]
         reuse_session: bool,
     },
+    #[serde(rename = "function")]
     Function(FunctionTaskDef),
 }
 
@@ -222,11 +221,28 @@ mod tests {
     }
 
     #[test]
+    fn task_kinds_serialize_with_lowercase_initials() {
+        let api_call = serde_json::to_value(TaskTypeDef::ApiCall {
+            url: "https://example.com".to_string(),
+            method: "GET".to_string(),
+        })
+        .unwrap();
+        let function = serde_json::to_value(TaskTypeDef::Function(FunctionTaskDef::Inline {
+            dependencies: vec![],
+            code: "export default async function run() {}".to_string(),
+        }))
+        .unwrap();
+
+        assert!(api_call.get("apiCall").is_some());
+        assert!(function.get("function").is_some());
+    }
+
+    #[test]
     fn task_workspace_defaults_to_none_when_omitted() {
         let task: TaskDef = serde_json::from_value(json!({
             "id": "task",
             "kind": {
-                "Function": {
+                "function": {
                     "dependencies": [],
                     "code": "export default async function run() { return {}; }"
                 }
@@ -244,7 +260,7 @@ mod tests {
         let task: TaskDef = serde_json::from_value(json!({
             "id": "task",
             "kind": {
-                "Function": {
+                "function": {
                     "dependencies": [],
                     "code": "export default async function run() { return {}; }"
                 }
@@ -270,7 +286,7 @@ mod tests {
         let error = serde_json::from_value::<TaskDef>(json!({
             "id": "task",
             "kind": {
-                "Function": {
+                "function": {
                     "dependencies": [],
                     "code": "export default async function run() { return {}; }"
                 }

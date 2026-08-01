@@ -79,7 +79,7 @@ curl -sS -X POST "$RUNHELM_URL/workflow-def" \
       {
         "id": "hello",
         "kind": {
-          "Function": {
+          "function": {
             "dependencies": [],
             "code": "export default async function run({ inputs }) { return { response: `hello ${inputs[0].name}` }; }"
           }
@@ -167,7 +167,7 @@ Response:
     {
       "id": "hello",
       "kind": {
-        "Function": {
+        "function": {
           "dependencies": [],
           "code": "export default async function run({ inputs }) { return { response: `hello ${inputs[0].name}` }; }"
         }
@@ -683,7 +683,7 @@ Task response:
   "task": {
     "id": "hello",
     "kind": {
-      "Function": {
+      "function": {
         "dependencies": [],
         "code": "export default async function run() { return { response: \"ok\" }; }"
       }

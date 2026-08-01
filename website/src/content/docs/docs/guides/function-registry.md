@@ -93,7 +93,7 @@ Use `ref` in the workflow task:
 tasks:
   - id: hello
     kind:
-      Function:
+      function:
         ref: format.hello
     input_schemas: []
     output_schema:
@@ -155,7 +155,7 @@ Use inline functions for small workflow-local logic:
 
 ```yaml
 kind:
-  Function:
+  function:
     dependencies: []
     code: |
       export default async function run({ inputs }) {
