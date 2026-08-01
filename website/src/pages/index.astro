@@ -399,19 +399,19 @@ runhelm up`;
         <h2>Start locally with Docker.</h2>
         <p>
           The local install path uses a small wrapper and Docker Compose so
-          users can run RunHelm without installing Rust or Node.js.
+          users can easily try out RunHelm without complex setup.
         </p>
         <div class="install">
           <pre><code>{installCommand}</code></pre>
           <div class="install-note">
             <h3>What starts</h3>
             <p>
-              The generated local environment starts the orchestrator and
-              worker services and stores local configuration under
+              The generated local environment starts the orchestrator with SQLite backend, single worker services and creates local configuration under
               <code>~/.runhelm</code>.
             </p>
             <div class="actions">
               <a class="button primary" href={url('docs/install/')}>Install guide</a>
+              <a class="button" href={url('docs/examples/simple-function-workflow')}>Example Workflows</a>
               <a class="button" href={url('docs/concepts/architecture/')}>Architecture</a>
             </div>
           </div>
