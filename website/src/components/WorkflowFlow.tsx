@@ -79,7 +79,7 @@ const nodeData: Array<Node<FlowNodeData>> = [
     position: { x: 25, y: 72 },
     data: {
       title: 'User input',
-      kind: 'Trigger',
+      kind: 'Trigger: HTTP API',
       detail: 'Ticker symbols',
       tone: 'input',
       hasTarget: false,
