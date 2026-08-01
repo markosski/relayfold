@@ -9,7 +9,7 @@ recognize that it cannot complete the task without inventing information and ask
 the operator for the missing decision.
 
 The ready-to-run definition is
-[`worker/examples/example_human_input_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_human_input_workflow.yaml)
+[`examples/example_human_input_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_human_input_workflow.yaml)
 
 ## Workflow definition
 
@@ -77,21 +77,22 @@ Add the model credential to `~/.runhelm/file_credentials.json`:
 }
 ```
 
-## Register and start
+## Register the workflow
 
-Register the example YAML directly with the API:
+Download and register the example YAML directly from GitHub:
 
 ```bash
 export RUNHELM_URL=http://localhost:3000
 
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
-  --data-binary @worker/examples/example_human_input_workflow.yaml
+curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_human_input_workflow.yaml \
+  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+      --data-binary @-
 ```
 
-Start an instance:
+## Execute the workflow
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
+curl -fsS -X POST "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
   -H 'content-type: application/json' \
   -d '{}'
 ```
@@ -104,10 +105,11 @@ the task constraints and uses the human-input capability made available by
 
 ## Inspect the question
 
-Read the task result:
+Replace `<workflow_id>` with the `id` returned when you executed the workflow,
+then read the task result:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement"
+curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement"
 ```
 
 Example response (the exact wording is chosen by the Agent):
@@ -127,7 +129,7 @@ Example response (the exact wording is chosen by the Agent):
 ## Submit the answer
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement/human-input" \
+curl -fsS -X POST "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement/human-input" \
   -H 'content-type: application/json' \
   -d '{ "input": "stable" }'
 ```
@@ -142,12 +144,12 @@ Response:
 }
 ```
 
-## Final result
+## Check the output
 
 After the continuation runs, read the task result again:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement"
+curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement"
 ```
 
 Example output:

@@ -34,7 +34,7 @@ Open your application repository in your coding agent, then adapt this prompt:
 ```text
 Create a RunHelm workflow that [describe the outcome you want].
 
-Use the workflow examples in runhelm/worker/examples/ and the documentation in
+Use the workflow examples in `runhelm/examples/` and the documentation in
 runhelm/website/src/content/docs/docs/ as the authoritative references. Inspect
 my application to understand the inputs, outputs, APIs, and credentials the
 workflow needs.
