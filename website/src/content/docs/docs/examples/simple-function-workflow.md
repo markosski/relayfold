@@ -6,7 +6,7 @@ description: A minimal workflow that uses one inline Function task.
 This example shows a single Function task that reads trigger input and returns structured output.
 
 The ready-to-run definition is
-[`worker/examples/example_simple_function_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_simple_function_workflow.yaml)
+[`examples/example_simple_function_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_simple_function_workflow.yaml)
 
 ## Workflow definition
 
@@ -48,21 +48,23 @@ tasks:
 data_bindings: []
 ```
 
-## Register with the API
+## Register the workflow
 
-The API accepts JSON and YAML. Register the ready-to-run example directly:
+The API accepts JSON and YAML. Download and register the ready-to-run example
+directly from GitHub:
 
 ```bash
 export RUNHELM_URL=http://localhost:3000
 
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
-  --data-binary @worker/examples/example_simple_function_workflow.yaml
+curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_simple_function_workflow.yaml \
+  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+      --data-binary @-
 ```
 
-## Start a run
+## Execute the workflow
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def/simple-function-workflow" \
+curl -fsS -X POST "$RUNHELM_URL/workflow-def/simple-function-workflow" \
   -H 'content-type: application/json' \
   -d '{ "name": "Ada Lovelace" }'
 ```
@@ -77,10 +79,12 @@ Example response:
 }
 ```
 
-## Read the result
+## Check the output
+
+Replace `<workflow_id>` with the `id` returned when you executed the workflow:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/simple-function-workflow-1780000000000000000/tasks/greeter"
+curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/greeter"
 ```
 
 Example response:

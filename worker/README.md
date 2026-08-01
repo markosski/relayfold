@@ -1,8 +1,18 @@
 # RunHelm Worker
 
-The worker executes tasks for the RunHelm orchestrator. It starts as a resident Node.js process, registers with the orchestrator, asks for work, executes claimed tasks, and sends task results back.
+The worker is the Node.js process that executes tasks for the RunHelm
+orchestrator. It registers with the orchestrator, claims work, executes tasks,
+and reports results. Workers initiate all communication with the orchestrator
+over HTTP.
 
-Workers communicate with the orchestrator over HTTP. The orchestrator owns the HTTP API; workers only initiate requests.
+This README is for contributors working on the worker. For user-facing
+documentation, see:
+
+- [Installation](../website/src/content/docs/docs/install.md)
+- [API reference](../website/src/content/docs/docs/api-reference.md)
+- [Task types](../website/src/content/docs/docs/concepts/tasks/index.md)
+- [Register and run a workflow](../website/src/content/docs/docs/guides/register-and-run-workflow.md)
+- [Workflow examples](../examples)
 
 ## Requirements
 
@@ -36,13 +46,31 @@ Run the worker from TypeScript source:
 npm run dev
 ```
 
-By default the worker connects to the orchestrator worker API at `http://127.0.0.1:3001`. Set `RUNHELM_ORCHESTRATOR_HTTP_URL` when the worker API is reachable at a different URL.
+Run tests:
 
-Set `RUNHELM_WORKER_HOST_ID` before starting the worker. This value is required and should identify the durable host state domain that owns the worker's local workspace and session stores, not a short-lived worker process or container ID.
+```bash
+npm test
+```
 
-The worker registers with the orchestrator before polling for tasks. If the orchestrator service name or worker API is not reachable yet during container startup, registration is retried until it succeeds. These startup retries are expected during Compose bootstrap and do not require a worker restart.
+Commands in this section run from the `worker/` directory.
 
-The worker reads credentials from `~/.runhelm/file_credentials.json` during startup. The file must contain a flat JSON object whose keys are credential names and whose values are strings:
+## Runtime behavior
+
+By default, the worker connects to the orchestrator worker API at
+`http://127.0.0.1:3001`. Set `RUNHELM_ORCHESTRATOR_HTTP_URL` when that API is
+reachable at a different URL.
+
+Set `RUNHELM_WORKER_HOST_ID` before starting the worker. It identifies the
+durable host state domain that owns the worker's local workspace and session
+stores, rather than a short-lived process or container.
+
+The worker registers before polling for tasks. Registration is retried until it
+succeeds, which allows the worker to start before the orchestrator is ready
+during container startup.
+
+Credentials are loaded from `~/.runhelm/file_credentials.json`. The file must
+contain a flat JSON object whose keys are credential names and whose values are
+strings:
 
 ```json
 {
@@ -51,546 +79,42 @@ The worker reads credentials from `~/.runhelm/file_credentials.json` during star
 }
 ```
 
-## Orchestrator HTTP Endpoints
-
-The public orchestrator API listens on port `3000` by default.
-
-### `GET /health`
-
-Health check.
-
-Response:
-
-```text
-OK
-```
-
-### `POST /workflow-def`
-
-Registers a workflow definition.
-
-Example:
-
-```bash
-yq -o=json worker/examples/example_simple_function_workflow.yaml \
-  | curl -sS -X POST http://localhost:3000/workflow-def \
-      -H 'content-type: application/json' \
-      --data-binary @-
-```
-
-Response:
-
-```json
-{
-  "status": "created",
-  "id": "simple-function-workflow"
-}
-```
-
-### `POST /function-def`
-
-Registers a reusable function definition. Workflow Function tasks can reference the registered definition with `ref`.
-
-Example:
-
-```bash
-curl -sS -X POST http://localhost:3000/function-def \
-  -H 'content-type: application/json' \
-  --data-binary @functions/mailgun-dispatcher/dist/mailgun.fetch_inbound_mail.json
-```
-
-Response:
-
-```json
-{
-  "status": "created",
-  "id": "mailgun.fetch_inbound_mail",
-  "version": null
-}
-```
-
-### `DELETE /function-def/{def_id}`
-
-Deletes a reusable function definition.
-
-Example:
-
-```bash
-curl -sS -X DELETE http://localhost:3000/function-def/mailgun.fetch_inbound_mail
-```
-
-### `POST /workflow-def/{def_id}`
-
-Creates and starts a workflow instance from a registered workflow definition.
-The JSON body is used as the initial input for root tasks that declare
-`input_schemas`. The request body is persisted as a single JSON value and then
-passed as one input slot to eligible root tasks. `null` is treated as no initial
-input.
-
-Example:
-
-```bash
-curl -sS -X POST http://localhost:3000/workflow-def/simple-function-workflow \
-  -H 'content-type: application/json' \
-  -d '{"name":"Ada"}'
-```
-
-Response:
-
-```json
-{
-  "status": "queued",
-  "id": "simple-function-workflow-1780000000000000000",
-  "pinned_host_id": "local-host"
-}
-```
-
-### `POST /workflow-def/{def_id}/tasks/{task_id}`
-
-Executes a task from a registered workflow definition in isolation. This bypasses workflow instance creation and is intended for testing individual tasks.
-
-Example:
-
-```bash
-curl -sS -X POST http://localhost:3000/workflow-def/simple-function-workflow/tasks/greeter \
-  -H 'content-type: application/json' \
-  -d '{ "inputs": [] }'
-```
-
-Response:
-
-```json
-{
-  "status": "success",
-  "output": {
-    "response": "Hello, friend!",
-    "normalizedName": "friend"
-  }
-}
-```
-
-### `GET /workflows/{id}`
-
-Returns a workflow instance status report.
-
-Example:
-
-```bash
-curl -sS http://localhost:3000/workflows/simple-function-workflow-1780000000000000000
-```
-
-Response shape:
-
-```json
-{
-  "instance_id": "simple-function-workflow-1780000000000000000",
-  "workflow_def_id": "simple-function-workflow",
-  "status": "Completed",
-  "tasks": [
-    {
-      "task_id": "greeter",
-      "status": "Completed",
-      "has_output": true
-    }
-  ]
-}
-```
-
-### `GET /workflows/{workflow_instance_id}/tasks`
-
-Returns all materialized task attempt results for a workflow instance.
-
-Example:
-
-```bash
-curl -sS http://localhost:3000/workflows/simple-function-workflow-1780000000000000000/tasks
-```
-
-Example response:
-
-```json
-{
-  "workflow_instance_id": "simple-function-workflow-1780000000000000000",
-  "tasks": [
-    {
-      "task_id": "greeter[1]",
-      "result": {
-        "status": "success",
-        "input": [
-          {
-            "name": "Ada"
-          }
-        ],
-        "output": {
-          "response": "Hello, Ada!",
-          "normalizedName": "ada"
-        },
-        "requested_task_id": "greeter[1]",
-        "resolved_attempt_id": "greeter[1]"
-      }
-    }
-  ]
-}
-```
-
-### `GET /workflows/{workflow_instance_id}/tasks/{task_id}`
-
-Returns a task result for a workflow instance.
-
-Task result responses include `status`, `input`, and status-specific fields such as `output` or `error_message`. Attempt metadata fields such as `task_def_id`, `task_attempt_id`, `generation_index`, `input_mapping`, `satisfaction`, and `verifier_metadata` are included only when the resolved task attempt needs that context.
-
-Example:
-
-```bash
-curl -sS http://localhost:3000/workflows/simple-function-workflow-1780000000000000000/tasks/greeter
-```
-
-Example response:
-
-```json
-{
-  "status": "success",
-  "input": [
-    {
-      "name": "Ada"
-    }
-  ],
-  "output": {
-    "response": "Hello, Ada!",
-    "normalizedName": "ada"
-  },
-  "requested_task_id": "greeter",
-  "resolved_attempt_id": "greeter[1]"
-}
-```
-
-### `GET /workflow-queue`
-
-Returns pending workflow instance IDs waiting for scheduler execution.
-
-Example:
-
-```bash
-curl -sS http://localhost:3000/workflow-queue
-```
-
-Response shape:
-
-```json
-{
-  "pending": [
-    "simple-function-workflow-1780000000000000000"
-  ]
-}
-```
-
-### `DELETE /workflow-queue/{id}`
-
-Removes one pending workflow instance from the scheduler queue without deleting the workflow instance record.
-
-Example:
-
-```bash
-curl -sS -X DELETE http://localhost:3000/workflow-queue/simple-function-workflow-1780000000000000000
-```
-
-### `DELETE /workflow-queue`
-
-Purges all pending workflow instances from the scheduler queue without deleting workflow instance records.
-
-Example:
-
-```bash
-curl -sS -X DELETE http://localhost:3000/workflow-queue
-```
-
-Unknown routes return `404`.
-
-## Worker HTTP Protocol
-
-Workers use HTTP JSON endpoints for registration, task claiming, and task completion. The worker-only orchestrator API listens on `127.0.0.1:3001` by default.
-
-### `POST /workers/register`
-
-Registers a worker.
-
-```json
-{
-  "worker_id": "remote-worker-1",
-  "host_id": "local-dev-host"
-}
-```
-
-Response:
-
-```json
-{
-  "type": "registration_ack",
-  "worker_id": "remote-worker-1",
-  "heartbeat_interval_ms": 5000
-}
-```
-
-### `POST /workers/tasks/claim`
-
-Long-polls for one task. Returns `no_task` when the poll timeout expires.
-
-```json
-{
-  "worker_id": "remote-worker-1"
-}
-```
-
-Task response:
-
-```json
-{
-  "type": "task_dispatch",
-  "task_id": "summarize_user-0",
-  "namespace": "550e8400-e29b-41d4-a716-446655440000",
-  "workflow_inst_id": "workflow-1",
-  "task": {},
-  "workspace_path_suffix": "550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-summarize_user",
-  "inputs": []
-}
-```
-
-The claimed namespace is authoritative for that task. The worker does not read
-namespace configuration from its environment. It resolves the namespace-qualified
-`workspace_path_suffix` under its own `RUNHELM_WORKSPACE_ROOT`, creates the
-directory, updates `.timestamp`, and passes that worker-local absolute path to the
-task executor.
-
-Empty response:
-
-```json
-{
-  "type": "no_task"
-}
-```
-
-### `POST /workers/heartbeat`
-
-Joins or renews a worker registration using the worker process ID and stable host ID.
-
-```json
-{
-  "worker_id": "remote-worker-1",
-  "host_id": "local-dev-host"
-}
-```
-
-Response:
-
-```json
-{
-  "status": "accepted",
-  "worker_id": "remote-worker-1"
-}
-```
-
-### `POST /workers/tasks/{task_id}/result`
-
-Completes a claimed task.
-
-```json
-{
-  "kind": "success",
-  "output": {
-    "response": "hello world"
-  }
-}
-```
-
-The dispatch ID in the request path identifies the active lease. The result body
-does not repeat the claimed namespace.
-
-## Supported Task Types
-
-Every task may set `timeout_secs`. When omitted, the orchestrator falls back to `RUNHELM_TASK_TIMEOUT_SECS`.
-
-### Function
-
-Runs JavaScript ESM in a per-task temporary directory and executes it in a child Node.js process. The task must export a default async or sync function.
-
-Functions may be declared inline for small tasks:
-
-```yaml
-kind:
-  function:
-    dependencies:
-      - name: left-pad
-        version: 1.3.0
-    code: |
-      import leftPad from "left-pad";
-
-      export default async function run(ctx) {
-        return {
-          response: leftPad(ctx.inputs[0].value, 5, "0")
-        };
-      }
-```
-
-Or referenced from a registered function definition:
-
-```yaml
-kind:
-  function:
-    ref: mailgun.fetch_inbound_mail
-```
-
-Register reusable functions separately:
-
-```bash
-(cd functions/mailgun-dispatcher && npm run build)
-
-curl -sS -X POST http://localhost:3000/function-def \
-  -H 'content-type: application/json' \
-  --data-binary @functions/mailgun-dispatcher/dist/mailgun.fetch_inbound_mail.json
-```
-
-The build writes YAML registration artifacts for review and JSON artifacts for the current HTTP API.
-
-Delete a registered function with:
-
-```bash
-curl -sS -X DELETE http://localhost:3000/function-def/mailgun.fetch_inbound_mail
-```
-
-Use a task-specific timeout when execution duration differs from the global default:
-
-```yaml
-id: summarize_user
-timeout_secs: 60
-kind:
-  function:
-    dependencies: []
-    code: |
-      export default async function run() {
-        return { response: "hello world" };
-      }
-```
-
-The Function context contains:
-
-```ts
-{
-  inputs: unknown[];
-  credentials: Record<string, string>;
-}
-```
-
-`dependencies` is required. Use `[]` when the task has no npm dependencies.
-
-### Agent
-
-Runs an LLM-backed agent task.
-
-Required task fields:
-
-```yaml
-kind:
-  agent:
-    model_id: "google/gemini-2.5-flash"
-    provider_url: ""
-    prompt: "Return a JSON response."
-    tools: ["_all_"]
-    skills: []
-    ask: false
-    schema_failure_retry_times: 0
-required_credentials:
-  - gemini_api_key
-```
-
-Agent model authentication is resolved by Pi from the provider namespace in
-`model_id`. For API-key authentication, list the provider-standard environment
-variable in lowercase in `required_credentials`. The worker resolves it from
-the credential store and exposes it in uppercase for the complete Agent
-execution:
-
-```yaml
-kind:
-  agent:
-    model_id: "openai/gpt-5.2"
-    # ...
-required_credentials:
-  - openai_api_key
-  - gh_token
-```
-
-`openai_api_key` becomes `OPENAI_API_KEY`; `gemini_api_key` becomes
-`GEMINI_API_KEY`; and `anthropic_api_key` becomes `ANTHROPIC_API_KEY`. No
-position in `required_credentials` is special. RunHelm uses environment-based
-API-key authentication for Agent tasks and does not create a Pi runtime
-override from `required_credentials`.
-
-Use `tools: []` to disable tools, `tools: ["_all_"]` to allow every tool available to the worker, or list specific tool names such as `["fetch_url", "get_current_time"]`.
-
-Agent tools include RunHelm built-ins, Pi coding-agent built-ins, and Pi-compatible extension tools. The Pi built-in tool names are `read`, `bash`, `edit`, and `write`.
-
-Set `ask: true` when an Agent may pause for human input. The worker adds the
-built-in `ask_user` tool automatically; do not include it in `tools`. When
-`ask` is false, `ask_user` is unavailable even if `tools` contains `ask_user`
-or `"_all_"`. See `worker/examples/example_human_input_workflow.yaml` for a
-minimal workflow that enters `InputNeeded`, then continues after
-`POST /workflows/{workflow_instance_id}/tasks/{task_id}/human-input`.
-
-Use `skills: []` to expose no skills, or list exact skill names such as `["ticket-triage"]`. Skills do not support `"_all_"`.
-
-The worker uses Pi's resource loader, so TypeScript extensions and skills are supported. Extension and skill packages are runtime resources, not worker application dependencies. They must already be installed in the worker image or mounted into the worker environment before startup. The default Docker Compose deployment mounts `${RUNHELM_SKILLS_DIR:-${HOME}/.runhelm/skills}` into `/home/runhelm/.pi/agent/skills` as read-only. If a mounted skill and an installed package skill have the same name, the mounted skill takes priority.
-
-Packages installed under the worker's `node_modules` are auto-discovered when their `package.json` contains a `pi` manifest:
-
-```json
-{
-  "name": "@acme/runhelm-tools",
-  "pi": {
-    "extensions": ["./extensions"],
-    "skills": ["./skills"]
-  }
-}
-```
-
-Extension tools are enabled with the `name` passed to `pi.registerTool(...)`. Skills are added to the agent system prompt using Pi's skill formatter; when a skill is relevant, the agent can use the `read` tool to load the full `SKILL.md`, so include `read` or `"_all_"` in `tools` for skill-driven tasks.
-
-You can also provide comma-separated extension files, directories, or package roots with `RUNHELM_AGENT_EXTENSION_PATHS`.
-
-### ApiCall
-
-Currently simulated by the worker.
-
-```yaml
-kind:
-  apiCall:
-    url: "http://localhost:3000/health"
-    method: "GET"
-```
+For details about credential exposure, task execution, workspaces, and worker
+host identity, see the website documentation:
+
+- [Credentials](../website/src/content/docs/docs/operations/credentials.md)
+- [Workspaces](../website/src/content/docs/docs/operations/workspaces.md)
+- [Worker host pinning](../website/src/content/docs/docs/operations/worker-host-pinning.md)
 
 ## Configuration
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `RUNHELM_ORCHESTRATOR_HTTP_URL` | `http://127.0.0.1:3001` | Worker API base URL used for worker registration, task claiming, and task completion. |
-| `RUNHELM_WORKER_HOST_ID` | required | Stable host identity sent during registration. Use the same value for workers that share durable workspace and session roots. |
-| `RUNHELM_WORKSPACE_ROOT` | `$HOME/.cache/runhelm/workspaces` | Root directory where dispatched `workspace_path_suffix` values are materialized before task execution. The Docker Compose worker sets this to `/workspaces`. |
-| `WORKER_ID` | hostname plus process id | Worker id sent during registration. |
-| `RUNHELM_FUNCTION_TIMEOUT_MS` | `300000` | Timeout for Function dependency install and Function execution. |
-| `RUNHELM_TASK_TIMEOUT_SECS` | `300` | Orchestrator fallback timeout for tasks that do not set `timeout_secs`. |
-| `RUNHELM_AGENT_EXTENSION_PATHS` | unset | Comma-separated Pi extension files, directories, or package roots to load in addition to auto-discovered installed Pi packages. Relative paths are resolved from the worker process cwd. |
-| `RUNHELM_PI_AGENT_DIR` | `$HOME/.pi/agent` | Pi resource-loader agent directory used for user-level extension discovery metadata. |
+| `RUNHELM_ORCHESTRATOR_HTTP_URL` | `http://127.0.0.1:3001` | Worker API base URL used for registration, task claiming, and task completion. |
+| `RUNHELM_WORKER_HOST_ID` | required | Stable host identity. Workers sharing durable workspace and session roots must use the same value. |
+| `RUNHELM_WORKSPACE_ROOT` | `$HOME/.cache/runhelm/workspaces` | Root for task workspaces. The Docker Compose worker uses `/workspaces`. |
+| `WORKER_ID` | hostname plus process ID | Worker identity sent during registration. |
+| `RUNHELM_FUNCTION_TIMEOUT_MS` | `300000` | Timeout for Function dependency installation and execution. |
+| `RUNHELM_TASK_TIMEOUT_SECS` | `300` | Fallback timeout for tasks without `timeout_secs`. |
+| `RUNHELM_AGENT_EXTENSION_PATHS` | unset | Comma-separated Pi extension files, directories, or package roots. Relative paths resolve from the worker process directory. |
+| `RUNHELM_PI_AGENT_DIR` | `$HOME/.pi/agent` | Pi resource-loader directory used for user-level extension discovery metadata. |
 
-Credentials named in `required_credentials` are read from `~/.runhelm/file_credentials.json` and exposed as uppercase environment variables during task execution. Pi can also use provider-standard variables already present in the worker environment.
-Agent session JSONL files are stored under `$HOME/.cache/runhelm/file_session_store`. This worker-local cache is used to reuse Agent sessions across attempts handled by the same live worker container.
+Agent session JSONL files are stored under
+`$HOME/.cache/runhelm/file_session_store`. This worker-local cache allows Agent
+sessions to be reused across attempts handled by the same live worker
+container.
 
 ## Docker
 
-Build the worker image:
+Build the worker image from the repository root:
 
 ```bash
 docker build -t runhelm-worker worker
 ```
 
-The worker image installs Pi resource packages separately from `worker/package.json`. By default it includes `@ogulcancelik/pi-web-browse@1.0.6` for the example agent workflow. Override the image-only package list with:
+The image installs Pi resource packages separately from `worker/package.json`.
+By default, it includes `@ogulcancelik/pi-web-browse@1.0.6`. Override the
+image-only package list with:
 
 ```bash
 docker build \
@@ -598,47 +122,20 @@ docker build \
   -t runhelm-worker worker
 ```
 
-Use an empty build arg to produce an image with no extra Pi packages:
+Use an empty build argument to include no extra Pi packages:
 
 ```bash
 docker build --build-arg RUNHELM_PI_PACKAGES= -t runhelm-worker worker
 ```
 
-Run the worker container with access to the orchestrator worker API:
+Run the worker with access to the orchestrator worker API:
 
 ```bash
 docker run --rm \
   -e RUNHELM_ORCHESTRATOR_HTTP_URL=http://host.docker.internal:3001 \
+  -e RUNHELM_WORKER_HOST_ID=local-docker-host \
   -v ~/.runhelm:/home/runhelm/.runhelm:ro \
   runhelm-worker
 ```
 
-Mount `~/.runhelm` read-only in containers. It must contain `file_credentials.json`.
-
-## Project Structure
-
-```text
-worker/
-├── src/
-│   ├── adapters/
-│   │   ├── FileCredentialsAdapter.ts
-│   │   ├── executors/
-│   │   │   ├── AgentExecutor.ts
-│   │   │   ├── ApiCallExecutor.ts
-│   │   │   └── FunctionExecutor.ts
-│   │   └── InMemoryCredentialsAdapter.ts
-│   ├── core/
-│   │   ├── models/
-│   │   │   └── TaskDef.ts
-│   │   └── ports/
-│   └── index.ts
-├── Dockerfile
-├── examples/
-│   ├── example_input.yaml
-│   ├── example_mailgun_dispatcher_workflow.yaml
-│   ├── example_workflow.yaml
-│   ├── example_workflow_agent.yaml
-│   └── example_workspace_download_workflow.yaml
-├── package.json
-└── tsconfig.json
-```
+The read-only `~/.runhelm` mount must contain `file_credentials.json`.

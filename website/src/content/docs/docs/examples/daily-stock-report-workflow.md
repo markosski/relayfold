@@ -3,7 +3,7 @@ title: Daily Stock Report Workflow
 description: Research stock prices and recent news, assess short-term trajectories, and email an HTML snapshot through Mailgun.
 ---
 
-[`worker/examples/example_daily_stock_report_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_daily_stock_report_workflow.yaml)
+[`examples/example_daily_stock_report_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_daily_stock_report_workflow.yaml)
 is a multi-agent example that builds and emails a dated stock report.
 
 ## Example output
@@ -78,7 +78,7 @@ fails the task instead of reporting a successful delivery.
 The trajectory is a description of recent historical prices, not investment
 advice or a prediction of future performance.
 
-## Register and run
+## Register the workflow
 
 The root `fetch-market-data` and `research-recent-news` tasks each declare the
 same object input schema. RunHelm validates the invocation body against those
@@ -87,13 +87,27 @@ schemas and exposes it to both tasks as `inputs[0]`.
 ```bash
 export RUNHELM_URL=http://localhost:3000
 
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
-  --data-binary @worker/examples/example_daily_stock_report_workflow.yaml
+curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_daily_stock_report_workflow.yaml \
+  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+      --data-binary @-
+```
 
-curl -sS -X POST "$RUNHELM_URL/workflow-def/daily-stock-report-workflow" \
+## Execute the workflow
+
+```bash
+curl -fsS -X POST "$RUNHELM_URL/workflow-def/daily-stock-report-workflow" \
   -H 'content-type: application/json' \
   -d '{
     "tickers": ["AAPL", "MSFT"],
     "recipient_email": "analyst@example.com"
   }'
+```
+
+## Check the output
+
+After the workflow completes, replace `<workflow_id>` with the `id` returned
+when you executed it and read the result of its final task:
+
+```bash
+curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/send-report-email"
 ```

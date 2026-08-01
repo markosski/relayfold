@@ -3,7 +3,7 @@ title: GitHub Issue to Pull Request Workflow
 description: Example agentic workflow that fetches a GitHub issue, implements a change, verifies it, and creates a pull request.
 ---
 
-[`worker/examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_github_issue_pr_workflow.yaml)
+[`examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_github_issue_pr_workflow.yaml)
 demonstrates an agentic workflow that fetches a GitHub issue, implements the requested change, uses a verifier loop to review the implementation, and creates a pull request.
 
 ## Worker image tooling
@@ -71,3 +71,38 @@ flowchart TD
 4. `create-pull-request` runs after the verifier accepts the implementation, commits and pushes the branch, and creates the PR with `gh pr create`.
 
 All tasks use the same `workspace.group_name: repo` so files produced or edited by one step are visible to later steps.
+
+## Register the workflow
+
+Download and register the ready-to-run example directly from GitHub:
+
+```bash
+export RUNHELM_URL=http://localhost:3000
+
+curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_github_issue_pr_workflow.yaml \
+  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+      --data-binary @-
+```
+
+## Execute the workflow
+
+Replace the repository and issue number with the issue you want the workflow to
+implement:
+
+```bash
+curl -fsS -X POST "$RUNHELM_URL/workflow-def/github-issue-pr-workflow" \
+  -H 'content-type: application/json' \
+  -d '{
+    "repository": "markosski/runhelm",
+    "issue_number": 46
+  }'
+```
+
+## Check the output
+
+After the workflow completes, replace `<workflow_id>` with the `id` returned
+when you executed it and read the final issue-update result:
+
+```bash
+curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/update-github-issue"
+```
