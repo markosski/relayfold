@@ -23,6 +23,17 @@ development images.
 terminal. Press `Ctrl+C` to stop the containers. Run commands such as
 `runhelm status` from another terminal while RunHelm is running.
 
+## Try an example
+
+Once RunHelm is running, start with the
+[Simple Function Workflow](/runhelm/docs/examples/simple-function-workflow/) to
+register and execute a minimal workflow through the HTTP API.
+
+For more complete patterns, try the
+[Human Input Workflow](/runhelm/docs/examples/human-input-workflow/),
+[GitHub Issue to PR workflow](/runhelm/docs/examples/github-issue-pr-workflow/),
+or [Daily Stock Report workflow](/runhelm/docs/examples/daily-stock-report-workflow/).
+
 ## Local files
 
 `runhelm init` creates local state under:
