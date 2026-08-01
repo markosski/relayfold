@@ -1,0 +1,35 @@
+id: simple-function-workflow
+description: Greet a user and return their normalized name with one inline Function task.
+tasks:
+  - id: greeter
+    kind:
+      Function:
+        dependencies: []
+        code: |
+          export default async function run({ inputs }) {
+            const user = inputs[0] ?? {};
+            const name = user.name ?? "friend";
+
+            return {
+              response: `Hello, ${name}!`,
+              normalizedName: String(name).trim().toLowerCase()
+            };
+          }
+    input_schemas:
+      - type: object
+        properties:
+          name:
+            type: string
+    output_schema:
+      type: object
+      required:
+        - response
+        - normalizedName
+      properties:
+        response:
+          type: string
+        normalizedName:
+          type: string
+    required_credentials: []
+
+data_bindings: []

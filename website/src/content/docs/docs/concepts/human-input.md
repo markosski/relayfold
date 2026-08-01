@@ -37,20 +37,22 @@ in the task's `tools` list:
 
 ```yaml
 tasks:
-  - id: collect-release-preference
+  - id: release-announcement
     kind:
       agent:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |
-          Prepare a release summary.
+          Prepare an announcement from these release facts:
+          - Added reusable Agent sessions.
+          - Added human input for missing workflow decisions.
 
-          If the release channel is missing, call ask_user with:
-          "Which release channel should this summary target: stable, beta, or nightly?"
+          Every announcement must target exactly one release channel: stable,
+          beta, or nightly. Do not choose a channel on the operator's behalf.
 
-          If a user response is present, use it as the channel and return:
+          Return:
           {
-            "response": "Release summary prepared for <channel> channel.",
+            "response": "<a concise announcement appropriate for the channel>",
             "channel": "<channel>"
           }
         tools: []
@@ -68,6 +70,10 @@ tasks:
           type: string
         channel:
           type: string
+          enum:
+            - stable
+            - beta
+            - nightly
     required_credentials:
       - gemini_api_key
 ```
@@ -76,6 +82,12 @@ When `ask` is false, `ask_user` remains unavailable even if `tools` contains
 `ask_user` or `"_all_"`. When the enabled Agent calls `ask_user`, the task
 returns `input_needed` instead of normal output. The workflow instance moves to
 `InputNeeded`.
+
+The task prompt should describe the goal, required information, and constraints.
+It does not need to tell the Agent how to detect a submitted response or script
+when to call `ask_user`. When the Agent finds that essential information is
+missing, the capability provided by `ask: true` lets it gather that information
+and continue naturally after the operator responds.
 
 ## Inspecting the request
 
@@ -88,7 +100,7 @@ curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000"
 Task results expose the question as `input_request`:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/collect-release-preference"
+curl -sS "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement"
 ```
 
 Example response:
@@ -98,8 +110,8 @@ Example response:
   "status": "input_needed",
   "input": [],
   "input_request": "Which release channel should this summary target: stable, beta, or nightly?",
-  "task_def_id": "collect-release-preference",
-  "task_attempt_id": "collect-release-preference[1]",
+  "task_def_id": "release-announcement",
+  "task_attempt_id": "release-announcement[1]",
   "satisfaction": "Unsatisfied",
   "generation_index": 1
 }
@@ -110,7 +122,7 @@ Example response:
 Submit the human response to the waiting logical task:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/collect-release-preference/human-input" \
+curl -sS -X POST "$RUNHELM_URL/workflows/human-input-agent-workflow-1780000000000000000/tasks/release-announcement/human-input" \
   -H 'content-type: application/json' \
   -d '{ "input": "stable" }'
 ```
@@ -121,7 +133,7 @@ Response:
 {
   "status": "queued",
   "workflow_instance_id": "human-input-agent-workflow-1780000000000000000",
-  "task_attempt_id": "collect-release-preference[2]"
+  "task_attempt_id": "release-announcement[2]"
 }
 ```
 

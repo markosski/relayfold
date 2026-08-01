@@ -72,7 +72,7 @@ Registers a workflow definition.
 Example:
 
 ```bash
-yq -o=json worker/examples/example_workflow.yaml \
+yq -o=json worker/examples/example_simple_function_workflow.yaml \
   | curl -sS -X POST http://localhost:3000/workflow-def \
       -H 'content-type: application/json' \
       --data-binary @-
@@ -152,7 +152,7 @@ Executes a task from a registered workflow definition in isolation. This bypasse
 Example:
 
 ```bash
-curl -sS -X POST http://localhost:3000/workflow-def/simple-function-workflow/tasks/summarize_user \
+curl -sS -X POST http://localhost:3000/workflow-def/simple-function-workflow/tasks/greeter \
   -H 'content-type: application/json' \
   -d '{ "inputs": [] }'
 ```
@@ -163,7 +163,8 @@ Response:
 {
   "status": "success",
   "output": {
-    "response": "hello world"
+    "response": "Hello, friend!",
+    "normalizedName": "friend"
   }
 }
 ```
@@ -187,7 +188,7 @@ Response shape:
   "status": "Completed",
   "tasks": [
     {
-      "task_id": "summarize_user",
+      "task_id": "greeter",
       "status": "Completed",
       "has_output": true
     }
@@ -212,7 +213,7 @@ Example response:
   "workflow_instance_id": "simple-function-workflow-1780000000000000000",
   "tasks": [
     {
-      "task_id": "summarize_user[1]",
+      "task_id": "greeter[1]",
       "result": {
         "status": "success",
         "input": [
@@ -221,10 +222,11 @@ Example response:
           }
         ],
         "output": {
-          "response": "hello world"
+          "response": "Hello, Ada!",
+          "normalizedName": "ada"
         },
-        "requested_task_id": "summarize_user[1]",
-        "resolved_attempt_id": "summarize_user[1]"
+        "requested_task_id": "greeter[1]",
+        "resolved_attempt_id": "greeter[1]"
       }
     }
   ]
@@ -240,7 +242,7 @@ Task result responses include `status`, `input`, and status-specific fields such
 Example:
 
 ```bash
-curl -sS http://localhost:3000/workflows/simple-function-workflow-1780000000000000000/tasks/summarize_user
+curl -sS http://localhost:3000/workflows/simple-function-workflow-1780000000000000000/tasks/greeter
 ```
 
 Example response:
@@ -254,10 +256,11 @@ Example response:
     }
   ],
   "output": {
-    "response": "hello world"
+    "response": "Hello, Ada!",
+    "normalizedName": "ada"
   },
-  "requested_task_id": "summarize_user",
-  "resolved_attempt_id": "summarize_user[1]"
+  "requested_task_id": "greeter",
+  "resolved_attempt_id": "greeter[1]"
 }
 ```
 
