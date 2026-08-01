@@ -95,6 +95,32 @@ data_bindings:
 
 When `verify-report` returns `continue`, RunHelm records the feedback and creates another generation starting at `draft-report`. When it returns `complete`, downstream tasks consume the accepted generation.
 
+## Task satisfaction
+
+RunHelm tracks a task attempt's execution `status` separately from its
+`satisfaction`. Status describes whether the attempt is pending, running,
+completed, or failed. Satisfaction determines whether the attempt is accepted
+as a source of data for downstream tasks.
+
+For tasks outside a verifier-controlled rerun slice, successful execution with
+schema-valid output automatically marks the attempt as `satisfied`. A verifier
+is not required for this normal execution path.
+
+Inside a verifier-controlled rerun slice, successful execution can leave an
+attempt `completed` while its satisfaction is still pending. The verifier's
+decision then applies to the entire generation:
+
+| Verifier outcome | Generation satisfaction | Result |
+| --- | --- | --- |
+| `complete` | `satisfied` | Downstream tasks can consume the generation. |
+| `continue` with iterations remaining | `unsatisfied` | RunHelm retains the rejected generation and creates the next one. |
+| `continue` at the limit with `on_exhausted_continue: true` | `satisfied` | Downstream tasks consume the latest schema-valid generation. |
+| `continue` at the limit with `on_exhausted_continue: false` | `unsatisfied` | The workflow fails. |
+
+Satisfaction is therefore an orchestration state, not a quality score. The
+verifier's Agent prompt or Function logic defines the actual acceptance
+criteria.
+
 ## Agent vs Function verifiers
 
 Use an Agent verifier when acceptance depends on judgment:
