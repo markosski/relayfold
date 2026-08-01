@@ -7,7 +7,7 @@ tasks:
   - id: download-page
     kind:
       agent:
-        model_id: "google/gemini-2.5-flash"
+        model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
           Download https://example.com/ and save the complete HTML page content
@@ -42,7 +42,7 @@ tasks:
   - id: read-downloaded-page
     kind:
       agent:
-        model_id: "google/gemini-2.5-flash"
+        model_id: "google/gemini-3-flash-preview"
         provider_url: ""
         prompt: |
           Read the file provided in the input

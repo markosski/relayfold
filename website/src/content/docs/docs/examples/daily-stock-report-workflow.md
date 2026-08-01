@@ -3,13 +3,17 @@ title: Daily Stock Report Workflow
 description: Research stock prices and recent news, assess short-term trajectories, and email an HTML snapshot through Mailgun.
 ---
 
-`worker/examples/example_daily_stock_report_workflow.yaml` is a multi-agent
-example that builds and sends a dated stock report.
+[`worker/examples/example_daily_stock_report_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/worker/examples/example_daily_stock_report_workflow.yaml)
+is a multi-agent example that builds and emails a dated stock report.
+
+## Example output
+
+[![Example daily stock report for Tesla showing its latest price, recent closes, trajectory, and news.](/runhelm/stock-report-tsla.png)](https://github.com/markosski/runhelm/blob/main/website/public/stock-report-tsla.png)
 
 ## Inputs
 
-Start each run with an object containing one to four ticker symbols and the
-report recipient:
+Start each run with an object containing one or more ticker symbols and the
+report recipient email address:
 
 ```json
 {
@@ -17,10 +21,6 @@ report recipient:
   "recipient_email": "analyst@example.com"
 }
 ```
-
-Ticker symbols must begin with a letter and may contain letters, numbers, dots,
-or hyphens. The recipient belongs in the run input so the same registered
-workflow can deliver reports to different people.
 
 ## Credentials
 
@@ -66,7 +66,7 @@ then describes the observed short-term trajectory from those closes. The news
 task runs independently and collects up to three recent, sourced items per
 ticker through browser search.
 
-The Twelve Data Basic plan allows eight API credits per minute. Each ticker
+The Twelve Data Basic (free) plan allows eight API credits per minute. Each ticker
 uses two credits, so this demonstration intentionally accepts at most four
 tickers and fetches them in parallel without rate-limit batching.
 
