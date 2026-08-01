@@ -5,11 +5,11 @@ import { logger } from '../../utils/logger.js';
 
 export class ApiCallExecutor implements TaskExecutor {
     async execute(payload: TaskExecutionPayload, credentialsPort: CredentialsPort): Promise<TaskExecutionResult> {
-        if (!('ApiCall' in payload.task.kind)) {
+        if (!('apiCall' in payload.task.kind)) {
             return { status: 'error', message: 'ApiCallExecutor received a non-ApiCall task' };
         }
 
-        const apiCallDef = payload.task.kind.ApiCall;
+        const apiCallDef = payload.task.kind.apiCall;
         logger.info(`[ApiCallExecutor] Calling API: ${apiCallDef.method} ${apiCallDef.url}`);
         // Simulate API call
         return { 

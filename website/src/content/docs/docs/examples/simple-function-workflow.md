@@ -16,7 +16,7 @@ id: simple-function-workflow
 tasks:
   - id: greeter
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs }) {

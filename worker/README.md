@@ -417,7 +417,7 @@ Functions may be declared inline for small tasks:
 
 ```yaml
 kind:
-  Function:
+  function:
     dependencies:
       - name: left-pad
         version: 1.3.0
@@ -435,7 +435,7 @@ Or referenced from a registered function definition:
 
 ```yaml
 kind:
-  Function:
+  function:
     ref: mailgun.fetch_inbound_mail
 ```
 
@@ -463,7 +463,7 @@ Use a task-specific timeout when execution duration differs from the global defa
 id: summarize_user
 timeout_secs: 60
 kind:
-  Function:
+  function:
     dependencies: []
     code: |
       export default async function run() {
@@ -561,7 +561,7 @@ Currently simulated by the worker.
 
 ```yaml
 kind:
-  ApiCall:
+  apiCall:
     url: "http://localhost:3000/health"
     method: "GET"
 ```

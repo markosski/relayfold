@@ -67,7 +67,7 @@ tasks:
 
   - id: verify-report
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs }) {

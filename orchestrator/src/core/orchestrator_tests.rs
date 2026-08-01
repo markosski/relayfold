@@ -470,7 +470,7 @@ async fn create_workflow_def_accepts_missing_input_schemas() {
             {
                 "id": "taska",
                 "kind": {
-                    "Function": {
+                    "function": {
                         "dependencies": [],
                         "code": "export default async function run() { return {}; }"
                     }
@@ -507,7 +507,7 @@ async fn workflow_without_control_verifier_deserializes_and_executes() {
             {
                 "id": "taska",
                 "kind": {
-                    "Function": {
+                    "function": {
                         "dependencies": [],
                         "code": "export default async function run() { return {}; }"
                     }

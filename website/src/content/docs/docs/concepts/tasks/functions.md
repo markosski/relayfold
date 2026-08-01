@@ -39,7 +39,7 @@ Inline functions keep small task-local code directly inside the workflow definit
 tasks:
   - id: normalize-user
     kind:
-      Function:
+      function:
         dependencies: []
         code: |
           export default async function run({ inputs }) {
@@ -65,7 +65,7 @@ Registered functions let workflows reference reusable code:
 tasks:
   - id: fetch-inbound-mail
     kind:
-      Function:
+      function:
         ref: mailgun.fetch_inbound_mail
     required_credentials:
       - mailgun_api_key
@@ -82,7 +82,7 @@ Function dependencies are npm packages declared by name and version:
 
 ```yaml
 kind:
-  Function:
+  function:
     dependencies:
       - name: lodash-es
         version: 4.17.21

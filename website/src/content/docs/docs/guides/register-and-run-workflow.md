@@ -63,7 +63,7 @@ curl -sS -X POST "$RUNHELM_URL/workflow-def" \
       {
         "id": "hello",
         "kind": {
-          "Function": {
+          "function": {
             "dependencies": [],
             "code": "export default async function run({ inputs }) { const name = inputs[0]?.name ?? \"friend\"; return { response: `Hello, ${name}!` }; }"
           }

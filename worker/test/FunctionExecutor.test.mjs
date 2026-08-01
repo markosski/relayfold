@@ -12,7 +12,7 @@ test('passes selected workspace path to inline function context', async () => {
             task: {
                 id: 'build-report',
                 kind: {
-                    Function: {
+                    function: {
                         code: `
 export default async function run(context) {
   return {
@@ -52,7 +52,7 @@ test('maps required_credentials to child process environment', async () => {
             task: {
                 id: 'read-gh-token',
                 kind: {
-                    Function: {
+                    function: {
                         code: `
 export default async function run() {
   return { ghToken: process.env.GH_TOKEN };

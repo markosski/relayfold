@@ -20,7 +20,7 @@ test('materializes dispatched workspace suffix under worker root', async () => {
             workflow_inst_id: 'workflow-1',
             task: {
                 id: 'draft',
-                kind: { Function: { code: 'return {};', dependencies: [] } },
+                kind: { function: { code: 'return {};', dependencies: [] } },
                 required_credentials: [],
             },
             workspace_path_suffix: '550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-draft',
@@ -57,7 +57,7 @@ test('isolates identical workflow and task workspaces by namespace', async () =>
                     workflow_inst_id: 'workflow-1',
                     task: {
                         id: 'draft',
-                        kind: { Function: { code: 'return {};', dependencies: [] } },
+                        kind: { function: { code: 'return {};', dependencies: [] } },
                         required_credentials: [],
                     },
                     workspace_path_suffix,
