@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
-install_dir="${RUNHELM_INSTALL_DIR:-$HOME/.local/bin}"
+install_dir="${RELAYFOLD_INSTALL_DIR:-$HOME/.local/bin}"
 source_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-install_ref="${RUNHELM_INSTALL_REF:-main}"
-raw_base="${RUNHELM_RAW_BASE:-https://raw.githubusercontent.com/markosski/runhelm/$install_ref}"
+install_ref="${RELAYFOLD_INSTALL_REF:-main}"
+raw_base="${RELAYFOLD_RAW_BASE:-https://raw.githubusercontent.com/markosski/relayfold/$install_ref}"
 
 mkdir -p "$install_dir"
 
@@ -27,12 +27,12 @@ install_packaging_file() {
   chmod "$mode" "$target"
 }
 
-install_packaging_file runhelm "$install_dir/runhelm" 755
+install_packaging_file relayfold "$install_dir/relayfold" 755
 install_packaging_file build-images.sh "$install_dir/build-images.sh" 755
 install_packaging_file docker-compose.release.yml "$install_dir/docker-compose.release.yml" 644
 
-echo "Installed runhelm to $install_dir/runhelm"
+echo "Installed relayfold to $install_dir/relayfold"
 case ":$PATH:" in
   *":$install_dir:"*) ;;
-  *) echo "Add $install_dir to PATH to run runhelm from any directory." ;;
+  *) echo "Add $install_dir to PATH to run relayfold from any directory." ;;
 esac

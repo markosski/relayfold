@@ -6,64 +6,64 @@ Defines namespace identity, public request namespace selection, resource ownersh
 ## Requirements
 
 ### Requirement: Validated Namespace Identity
-RunHelm SHALL represent namespace identity as the exact built-in string `global-namespace` or a UUID in canonical hyphenated form.
+Relayfold SHALL represent namespace identity as the exact built-in string `global-namespace` or a UUID in canonical hyphenated form.
 
 #### Scenario: Built-in global namespace is accepted
-- **WHEN** RunHelm uses the built-in `global-namespace`
-- **THEN** RunHelm constructs and serializes the namespace as that exact string
+- **WHEN** Relayfold uses the built-in `global-namespace`
+- **THEN** Relayfold constructs and serializes the namespace as that exact string
 
 #### Scenario: Valid namespace is accepted
 - **WHEN** a canonical UUID string such as `550e8400-e29b-41d4-a716-446655440000` is supplied by a namespace resolver
-- **THEN** RunHelm constructs the namespace value
+- **THEN** Relayfold constructs the namespace value
 - **AND** internal contracts serialize the namespace as that string
 
 #### Scenario: Invalid namespace is rejected
 - **WHEN** a non-empty namespace value is neither `global-namespace` nor a canonical hyphenated UUID string
-- **THEN** RunHelm rejects the namespace text before performing a resource action
+- **THEN** Relayfold rejects the namespace text before performing a resource action
 
 ### Requirement: Public Request Namespace Selection
-RunHelm SHALL resolve a namespace context before each public resource handler performs an action and SHALL keep health checks namespace-independent.
+Relayfold SHALL resolve a namespace context before each public resource handler performs an action and SHALL keep health checks namespace-independent.
 
 #### Scenario: Enabled global namespace takes precedence
-- **WHEN** `RUNHELM_USE_GLOBAL_NAMESPACE=true`
+- **WHEN** `RELAYFOLD_USE_GLOBAL_NAMESPACE=true`
 - **AND** a public resource request includes any authorization header or no authorization header
-- **THEN** RunHelm selects `global-namespace`
+- **THEN** Relayfold selects `global-namespace`
 - **AND** the namespace resolver does not use the supplied API key
 
 #### Scenario: Global namespace mode defaults to disabled
-- **WHEN** `RUNHELM_USE_GLOBAL_NAMESPACE` is absent or set to `false`
-- **THEN** RunHelm does not select `global-namespace`
+- **WHEN** `RELAYFOLD_USE_GLOBAL_NAMESPACE` is absent or set to `false`
+- **THEN** Relayfold does not select `global-namespace`
 - **AND** namespace selection requires bearer resolution
 
 #### Scenario: Invalid global namespace mode
-- **WHEN** `RUNHELM_USE_GLOBAL_NAMESPACE` is set to a value other than `true` or `false`
-- **THEN** RunHelm fails namespace resolution before performing a resource action
+- **WHEN** `RELAYFOLD_USE_GLOBAL_NAMESPACE` is set to a value other than `true` or `false`
+- **THEN** Relayfold fails namespace resolution before performing a resource action
 
 #### Scenario: Missing bearer credential
 - **WHEN** global namespace mode is disabled
 - **AND** a public resource request omits `Authorization: Bearer <api-key>`
-- **THEN** RunHelm returns `401 Unauthorized`
+- **THEN** Relayfold returns `401 Unauthorized`
 - **AND** no resource action occurs
 
 #### Scenario: Malformed bearer credential
 - **WHEN** global namespace mode is disabled
 - **AND** a public resource request supplies a malformed or empty bearer credential
-- **THEN** RunHelm returns `401 Unauthorized`
+- **THEN** Relayfold returns `401 Unauthorized`
 - **AND** no resource action occurs
 
 #### Scenario: Presented API key reaches deferred resolver
 - **WHEN** global namespace mode is disabled
 - **AND** a public resource request supplies a well-formed `Authorization: Bearer <api-key>` credential
-- **THEN** RunHelm passes the API key to a namespace resolver that owns the active storage port
+- **THEN** Relayfold passes the API key to a namespace resolver that owns the active storage port
 - **AND** the resolver deliberately panics as not implemented in this story
-- **AND** RunHelm does not select a fallback namespace
+- **AND** Relayfold does not select a fallback namespace
 
 #### Scenario: Health check without namespace context
 - **WHEN** a caller invokes a health-check endpoint without global namespace mode or authorization
-- **THEN** RunHelm returns the health response without invoking namespace resolution
+- **THEN** Relayfold returns the health response without invoking namespace resolution
 
 ### Requirement: Namespace Ownership Boundary
-RunHelm SHALL evaluate every definition, workflow instance, task, verifier state, event, queue entry, and related mutation using the selected namespace as part of resource identity.
+Relayfold SHALL evaluate every definition, workflow instance, task, verifier state, event, queue entry, and related mutation using the selected namespace as part of resource identity.
 
 #### Scenario: Identical IDs in separate namespaces
 - **WHEN** two namespaces create resources of the same kind with the same identifier
@@ -72,7 +72,7 @@ RunHelm SHALL evaluate every definition, workflow instance, task, verifier state
 
 #### Scenario: Cross-namespace point access is absent
 - **WHEN** a namespace requests or mutates an identifier that exists only in another namespace
-- **THEN** RunHelm behaves as if the identifier does not exist in the selected namespace
+- **THEN** Relayfold behaves as if the identifier does not exist in the selected namespace
 - **AND** the response does not reveal the other namespace's resource
 
 #### Scenario: Namespace-scoped collection
@@ -81,7 +81,7 @@ RunHelm SHALL evaluate every definition, workflow instance, task, verifier state
 
 #### Scenario: Resource payload cannot select namespace
 - **WHEN** a caller submits a definition or action payload
-- **THEN** RunHelm derives namespace only from request context
+- **THEN** Relayfold derives namespace only from request context
 - **AND** public resource fields cannot override the selected namespace
 
 ### Requirement: Namespace-Scoped Storage Adapters
@@ -113,7 +113,7 @@ Every active storage adapter SHALL encode namespace ownership in authoritative k
 - **THEN** optimistic version validation is evaluated only against the instance in that namespace
 
 ### Requirement: Destructive Namespace Schema Boundary
-RunHelm SHALL define namespace ownership in a reset SQL initial schema and SHALL NOT migrate a pre-namespace database as part of this change.
+Relayfold SHALL define namespace ownership in a reset SQL initial schema and SHALL NOT migrate a pre-namespace database as part of this change.
 
 #### Scenario: Fresh SQL database initialization
 - **WHEN** SQL storage starts with a fresh database

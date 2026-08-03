@@ -9,26 +9,26 @@ Use registered functions for shared integrations, common transformations, or any
 
 ## Create a function
 
-Give your coding agent access to the current RunHelm function implementations
-and documentation. If you have not already done so, add RunHelm to your
+Give your coding agent access to the current Relayfold function implementations
+and documentation. If you have not already done so, add Relayfold to your
 application repository as a Git submodule:
 
 ```bash
 cd path/to/your-application
-git submodule add https://github.com/markosski/runhelm.git runhelm
+git submodule add https://github.com/markosski/relayfold.git relayfold
 ```
 
 Open your application repository in your coding agent, then adapt this prompt:
 
 ```text
-Create a reusable RunHelm function that [describe what the function should do].
+Create a reusable Relayfold function that [describe what the function should do].
 
-Use the implementations and build tooling in runhelm/functions/ and the
-documentation in runhelm/website/src/content/docs/docs/ as the authoritative
+Use the implementations and build tooling in relayfold/functions/ and the
+documentation in relayfold/website/src/content/docs/docs/ as the authoritative
 references. Ensure to understand the function's inputs, output and credential 
 requirements.
 
-Create the function under [path and package name]. Follow the existing RunHelm
+Create the function under [path and package name]. Follow the existing Relayfold
 source, build, and test patterns. Keep the implementation and its dependencies
 as small as possible, pin every runtime dependency to a specific version, and
 do not invent fields that are not supported by the current examples or
@@ -38,7 +38,7 @@ Add tests for the function's behavior and generate the registry-ready JSON and
 YAML artifacts. Run the tests and build, then explain the function ID, inputs,
 output, dependencies, and credentials that a referencing workflow task must
 declare. Give me the curl command to register the JSON artifact against
-$RUNHELM_URL.
+$RELAYFOLD_URL.
 ```
 
 Replace the bracketed text with the desired behavior and output location. Review
@@ -66,9 +66,9 @@ Fields:
 ## Register a function
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 
-curl -sS -X POST "$RUNHELM_URL/function-def" \
+curl -sS -X POST "$RELAYFOLD_URL/function-def" \
   -d '{
     "id": "format.hello",
     "dependencies": [],
@@ -111,7 +111,7 @@ The orchestrator resolves the function reference before dispatching the task to 
 ## Delete a function
 
 ```bash
-curl -i -X DELETE "$RUNHELM_URL/function-def/format.hello"
+curl -i -X DELETE "$RELAYFOLD_URL/function-def/format.hello"
 ```
 
 Successful deletion returns `204 No Content`.
@@ -138,14 +138,14 @@ functions/example/dist/example.example.yaml
 Register the JSON artifact:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/function-def" \
+curl -sS -X POST "$RELAYFOLD_URL/function-def" \
   --data-binary @functions/example/dist/example.example.json
 ```
 
 Register a YAML artifact directly without converting it:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/function-def" \
+curl -sS -X POST "$RELAYFOLD_URL/function-def" \
   --data-binary @functions/example/dist/example.yaml
 ```
 

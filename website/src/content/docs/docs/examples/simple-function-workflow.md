@@ -6,7 +6,7 @@ description: A minimal workflow that uses one inline Function task.
 This example shows a single Function task that reads trigger input and returns structured output.
 
 The ready-to-run definition is
-[`examples/example_simple_function_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_simple_function_workflow.yaml)
+[`examples/example_simple_function_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_simple_function_workflow.yaml)
 
 ## Workflow definition
 
@@ -54,17 +54,17 @@ The API accepts JSON and YAML. Download and register the ready-to-run example
 directly from GitHub:
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_simple_function_workflow.yaml \
-  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_simple_function_workflow.yaml \
+  | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```
 
 ## Execute the workflow
 
 ```bash
-curl -fsS -X POST "$RUNHELM_URL/workflow-def/simple-function-workflow" \
+curl -fsS -X POST "$RELAYFOLD_URL/workflow-def/simple-function-workflow" \
   -H 'content-type: application/json' \
   -d '{ "name": "Ada Lovelace" }'
 ```
@@ -84,7 +84,7 @@ Example response:
 Replace `<workflow_id>` with the `id` returned when you executed the workflow:
 
 ```bash
-curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/greeter"
+curl -fsS "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/greeter"
 ```
 
 Example response:
@@ -110,7 +110,7 @@ Example response:
 
 ## Why this is useful
 
-This pattern is the smallest RunHelm workflow shape:
+This pattern is the smallest Relayfold workflow shape:
 
 - trigger input becomes the Function task input
 - task output is validated with `output_schema`

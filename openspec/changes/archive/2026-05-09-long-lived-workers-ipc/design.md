@@ -1,6 +1,6 @@
 ## Context
 
-RunHelm currently uses an ephemeral container model where each task execution spins up a fresh Docker container and Node.js environment. This results in several seconds of latency per task. This design introduces a persistent IPC-based worker pool to eliminate this overhead.
+Relayfold currently uses an ephemeral container model where each task execution spins up a fresh Docker container and Node.js environment. This results in several seconds of latency per task. This design introduces a persistent IPC-based worker pool to eliminate this overhead.
 
 ## Goals / Non-Goals
 
@@ -41,7 +41,7 @@ RunHelm currently uses an ephemeral container model where each task execution sp
 
 - **[Risk] Orchestrator Restart Persistence** → **[Mitigation]**: The Orchestrator treats the database as the **Source of Truth.** Upon startup, it scans for `PENDING` or `EXECUTING` tasks and re-populates its internal async queue.
 - **[Risk] Worker Crash during Execution** → **[Mitigation]**: If the IPC connection is severed while a task is in progress, the Orchestrator catches the `BrokenPipe` error, removes the worker from the pool, and updates the task status in the database to allow for retry.
-- **[Risk] Socket Permissions** → **[Mitigation]**: Ensure the `docker-compose` setup correctly sets ownership of the `/tmp/runhelm.sock` so both the Orchestrator container and Worker containers have read/write access.
+- **[Risk] Socket Permissions** → **[Mitigation]**: Ensure the `docker-compose` setup correctly sets ownership of the `/tmp/relayfold.sock` so both the Orchestrator container and Worker containers have read/write access.
 - **[Risk] Zombie Processes** → **[Mitigation]**: If a worker hangs, the Orchestrator will eventually timeout the task. Since we are reusing workers, the Orchestrator will "evict" the connection and ignore any late results, while the infrastructure (Docker) will eventually recycle the container if health checks fail.
 
 ## Reliability Architecture: The "Truth" vs. "Performance"

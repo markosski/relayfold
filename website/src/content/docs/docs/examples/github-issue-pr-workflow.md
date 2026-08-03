@@ -3,7 +3,7 @@ title: GitHub Issue to Pull Request Workflow
 description: Example agentic workflow that fetches a GitHub issue, implements a change, verifies it, and creates a pull request.
 ---
 
-[`examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_github_issue_pr_workflow.yaml)
+[`examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_github_issue_pr_workflow.yaml)
 demonstrates an agentic workflow that fetches a GitHub issue, implements the requested change, uses a verifier loop to review the implementation, and creates a pull request.
 
 ## Worker image tooling
@@ -35,7 +35,7 @@ The first task requires one input object with the issue identifiers:
 
 ```json
 {
-  "repository": "markosski/runhelm",
+  "repository": "markosski/relayfold",
   "issue_number": 46
 }
 ```
@@ -67,7 +67,7 @@ flowchart TD
 
 1. `fetch-issue` uses `gh issue view` through the agent `bash` tool and returns structured issue details.
 2. `implement-change` receives the issue details, updates the checkout in the shared `repo` workspace, runs relevant checks, and can pause for clarification when the issue is underspecified.
-3. `review-implementation` checks the implementation against the issue criteria and test results. It can return `continue` with feedback, causing RunHelm to rerun from `implement-change` up to the bounded loop limit.
+3. `review-implementation` checks the implementation against the issue criteria and test results. It can return `continue` with feedback, causing Relayfold to rerun from `implement-change` up to the bounded loop limit.
 4. `create-pull-request` runs after the verifier accepts the implementation, commits and pushes the branch, and creates the PR with `gh pr create`.
 
 All tasks use the same `workspace.group_name: repo` so files produced or edited by one step are visible to later steps.
@@ -77,10 +77,10 @@ All tasks use the same `workspace.group_name: repo` so files produced or edited 
 Download and register the ready-to-run example directly from GitHub:
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_github_issue_pr_workflow.yaml \
-  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_github_issue_pr_workflow.yaml \
+  | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```
 
@@ -90,10 +90,10 @@ Replace the repository and issue number with the issue you want the workflow to
 implement:
 
 ```bash
-curl -fsS -X POST "$RUNHELM_URL/workflow-def/github-issue-pr-workflow" \
+curl -fsS -X POST "$RELAYFOLD_URL/workflow-def/github-issue-pr-workflow" \
   -H 'content-type: application/json' \
   -d '{
-    "repository": "markosski/runhelm",
+    "repository": "markosski/relayfold",
     "issue_number": 46
   }'
 ```
@@ -104,5 +104,5 @@ After the workflow completes, replace `<workflow_id>` with the `id` returned
 when you executed it and read the final issue-update result:
 
 ```bash
-curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/update-github-issue"
+curl -fsS "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/update-github-issue"
 ```

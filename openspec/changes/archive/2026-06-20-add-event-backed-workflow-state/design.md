@@ -2,7 +2,7 @@
 
 The current orchestrator treats `WorkflowInstance` as both the current-state read model and the write model. The engine mutates task status, workflow status, verifier state, input mapping, output data, and satisfaction fields directly, then persists the whole instance through `StoragePort::save_workflow_instance`.
 
-That approach is practical while storage is in-memory, but it weakens observability of how a workflow reached its current state. RunHelm benefits from a middle ground before adopting full event sourcing: persist explicit events for audit/debugging while still persisting snapshots for cheap reads and simple list operations.
+That approach is practical while storage is in-memory, but it weakens observability of how a workflow reached its current state. Relayfold benefits from a middle ground before adopting full event sourcing: persist explicit events for audit/debugging while still persisting snapshots for cheap reads and simple list operations.
 
 ## Goals / Non-Goals
 
@@ -32,7 +32,7 @@ That approach is practical while storage is in-memory, but it weakens observabil
 
 The first implementation should commit workflow instance events together with the resulting snapshot. Reads continue to use snapshots.
 
-This gives RunHelm transition history without paying the complexity cost of replay-based reads, projections, checkpointing, and event-version migration before durable storage exists.
+This gives Relayfold transition history without paying the complexity cost of replay-based reads, projections, checkpointing, and event-version migration before durable storage exists.
 
 Alternatives considered:
 

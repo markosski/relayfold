@@ -1,9 +1,9 @@
 ---
 title: Architecture
-description: Learn how RunHelm separates orchestration and task execution.
+description: Learn how Relayfold separates orchestration and task execution.
 ---
 
-RunHelm separates control-plane concerns from execution concerns.
+Relayfold separates control-plane concerns from execution concerns.
 
 ## Orchestrator
 
@@ -41,6 +41,6 @@ Side effects live behind ports and adapters. Storage, workflow queues, task disp
 
 ## Scaling the deployment
 
-RunHelm scales task execution by adding workers to an orchestrator's worker pool. At a larger deployment size, workloads can be partitioned across independent orchestrators with dedicated worker pools.
+Relayfold scales task execution by adding workers to an orchestrator's worker pool. At a larger deployment size, workloads can be partitioned across independent orchestrators with dedicated worker pools.
 
-See [Scaling](/runhelm/docs/operations/scaling/) for deployment guidance and the distinction between worker scaling and orchestrator partitioning.
+See [Scaling](/relayfold/docs/operations/scaling/) for deployment guidance and the distinction between worker scaling and orchestrator partitioning.

@@ -54,7 +54,7 @@ The system SHALL allow a task to declare `workspace.group_name` to replace its d
 - **THEN** the task receives exactly one selected workspace path
 
 ### Requirement: Worker-Local Workspace Directories
-The system SHALL create workspace directories under the executing worker's configured worker-local workspace root using RunHelm-owned path construction.
+The system SHALL create workspace directories under the executing worker's configured worker-local workspace root using Relayfold-owned path construction.
 
 #### Scenario: Private workspace key is derived
 - **WHEN** a task without `workspace.group_name` is prepared for execution
@@ -81,7 +81,7 @@ The system SHALL create workspace directories under the executing worker's confi
 - **THEN** the workspace includes a `.timestamp` marker usable by later stale-directory cleanup
 
 ### Requirement: Workspace Manager Lifecycle
-The system SHALL provide workspace management components for deriving workspace keys, resolving workflow-instance group workspaces, materializing worker-local workspaces, and cleaning RunHelm-owned workspaces.
+The system SHALL provide workspace management components for deriving workspace keys, resolving workflow-instance group workspaces, materializing worker-local workspaces, and cleaning Relayfold-owned workspaces.
 
 #### Scenario: Workspace manager derives task workspace
 - **WHEN** a task execution is prepared
@@ -100,19 +100,19 @@ The system SHALL provide workspace management components for deriving workspace 
 - **THEN** the worker creates or resolves the selected workspace directory under its local workspace root
 
 #### Scenario: Workspace manager cleans workspace
-- **WHEN** cleanup is requested for a RunHelm-owned workspace
+- **WHEN** cleanup is requested for a Relayfold-owned workspace
 - **THEN** workspace management attempts to remove that workspace directory only when cleanup policy allows it
 
 ### Requirement: Workspace TTL Cleanup
 The system SHALL support configurable workspace TTL cleanup while preserving workspaces required by non-terminal workflows.
 
 #### Scenario: Expired terminal workspace is cleaned
-- **WHEN** a RunHelm-owned workspace is older than the configured TTL
+- **WHEN** a Relayfold-owned workspace is older than the configured TTL
 - **AND** the owning workflow instance is terminal
 - **THEN** workspace cleanup may remove that workspace
 
 #### Scenario: Active workflow workspace is retained
-- **WHEN** a RunHelm-owned workspace belongs to a workflow instance in `Pending`, `Running`, or `InputNeeded`
+- **WHEN** a Relayfold-owned workspace belongs to a workflow instance in `Pending`, `Running`, or `InputNeeded`
 - **THEN** workspace cleanup MUST NOT remove that workspace only because its timestamp is older than the configured TTL
 
 #### Scenario: Caller-driven cleanup checks eligibility

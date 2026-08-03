@@ -1,11 +1,11 @@
 ## Why
 
-RunHelm needs a first-class way for a workflow to revise a bounded slice of prior work when a verifier task decides the current result is not good enough. For example, a workflow may run `A -> B -> C -> D`, where `D` evaluates the result and asks RunHelm to rerun from `B`, producing `B[2] -> C[2] -> D[2]` before downstream tasks continue.
+Relayfold needs a first-class way for a workflow to revise a bounded slice of prior work when a verifier task decides the current result is not good enough. For example, a workflow may run `A -> B -> C -> D`, where `D` evaluates the result and asks Relayfold to rerun from `B`, producing `B[2] -> C[2] -> D[2]` before downstream tasks continue.
 
 ## What Changes
 
 - Add `control.verifier` to task definitions with `max_iterations`, `on_exhausted_continue`, and optional `rerun_from_task_id`.
-- Treat verifier task output as the verifier decision; RunHelm injects the verifier decision `output_schema` and rejects custom verifier `output_schema` declarations.
+- Treat verifier task output as the verifier decision; Relayfold injects the verifier decision `output_schema` and rejects custom verifier `output_schema` declarations.
 - Treat verifier `continue` as a bounded backedge to `rerun_from_task_id`, or as a self-rerun when `rerun_from_task_id` is omitted.
 - Materialize runtime attempts as stable `task[1]`, `task[2]`, etc. records with original task definition ID, satisfaction state, generation index, and input lineage.
 - Track rejected generations as observable completed attempts that are unsatisfied for downstream binding.

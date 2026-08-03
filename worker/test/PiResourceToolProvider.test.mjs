@@ -12,7 +12,7 @@ function skillNamed(resources, name) {
 }
 
 test('loads a TypeScript Pi extension tool through the Pi resource loader', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-pi-ts-extension-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-pi-ts-extension-'));
     const extensionPath = join(dir, 'extension.ts');
 
     try {
@@ -45,8 +45,8 @@ test('loads a TypeScript Pi extension tool through the Pi resource loader', asyn
 
         assert.deepEqual(tools.map((tool) => tool.name), ['hello_ts_tool']);
 
-        const result = await tools[0].execute('call-1', { name: 'RunHelm' });
-        assert.equal(result.content[0].text, 'hello RunHelm');
+        const result = await tools[0].execute('call-1', { name: 'Relayfold' });
+        assert.equal(result.content[0].text, 'hello Relayfold');
         assert.equal(result.details.cwd, dir);
         assert.equal(result.details.hasUI, false);
     } finally {
@@ -55,7 +55,7 @@ test('loads a TypeScript Pi extension tool through the Pi resource loader', asyn
 });
 
 test('auto-discovers preinstalled Pi packages from node_modules', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-pi-package-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-pi-package-'));
     const packageRoot = join(dir, 'node_modules', '@acme', 'pi-tools');
     const extensionsDir = join(packageRoot, 'extensions');
 
@@ -95,7 +95,7 @@ test('auto-discovers preinstalled Pi packages from node_modules', async () => {
 });
 
 test('loads skills from preinstalled Pi packages', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-pi-package-skills-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-pi-package-skills-'));
     const packageRoot = join(dir, 'node_modules', '@acme', 'pi-skills');
     const skillDir = join(packageRoot, 'skills', 'ticket-triage');
 
@@ -131,8 +131,8 @@ Assign priority and route the ticket.
     }
 });
 
-test('loads mounted RunHelm skills', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-mounted-skill-'));
+test('loads mounted Relayfold skills', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-mounted-skill-'));
     const skillDir = join(dir, '.pi-agent', 'skills', 'ticket-triage');
 
     try {
@@ -157,7 +157,7 @@ description: Triage support tickets by severity and owner.
 });
 
 test('mounted skills take priority over package skills with the same name', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-skill-collision-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-skill-collision-'));
     const skillDir = join(dir, '.pi-agent', 'skills', 'ticket-triage');
     const packageRoot = join(dir, 'node_modules', '@acme', 'pi-skills');
     const packageSkillDir = join(packageRoot, 'skills', 'ticket-triage');
@@ -200,7 +200,7 @@ description: Package ticket triage skill.
 });
 
 test('skips broken Pi extensions while loading valid tools', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-pi-broken-extension-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-pi-broken-extension-'));
     const validPath = join(dir, 'valid.ts');
     const brokenPath = join(dir, 'broken.ts');
 

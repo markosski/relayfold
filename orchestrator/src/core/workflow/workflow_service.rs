@@ -1363,7 +1363,7 @@ mod tests {
             .await
             .unwrap();
 
-        let input = json!({ "repository": "markosski/runhelm" });
+        let input = json!({ "repository": "markosski/relayfold" });
         let instance_id = service
             .create_workflow_instance_for_def(
                 &crate::core::namespace::test_namespace(),

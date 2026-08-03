@@ -3,7 +3,7 @@ title: Reliability and Side Effects
 description: Design workflow tasks for at-least-once execution, retries, verifier reruns, and worker recovery.
 ---
 
-RunHelm protects workflow state from stale worker results, but task execution is currently at least once. A task may run more than once after retries, verifier reruns, lease timeouts, worker loss, or orchestrator restart.
+Relayfold protects workflow state from stale worker results, but task execution is currently at least once. A task may run more than once after retries, verifier reruns, lease timeouts, worker loss, or orchestrator restart.
 
 Design side-effecting tasks with that behavior in mind.
 
@@ -15,14 +15,14 @@ A logical task attempt can be duplicated when:
 - a verifier returns `continue` and reruns a slice
 - a worker loses its lease or misses heartbeats
 - the orchestrator restarts before a worker reports a result
-- a late worker result arrives after RunHelm has already recovered and dispatched replacement work
+- a late worker result arrives after Relayfold has already recovered and dispatched replacement work
 
-RunHelm ignores late or untracked results for workflow-state advancement, but it cannot undo side effects performed by task code.
+Relayfold ignores late or untracked results for workflow-state advancement, but it cannot undo side effects performed by task code.
 
 ## Startup recovery
 
-At startup, RunHelm discovers unfinished workflows across every stored
-namespace, regardless of whether `RUNHELM_USE_GLOBAL_NAMESPACE` is enabled.
+At startup, Relayfold discovers unfinished workflows across every stored
+namespace, regardless of whether `RELAYFOLD_USE_GLOBAL_NAMESPACE` is enabled.
 Recovery retains each workflow's stored namespace while resetting abandoned
 running work and requeueing runnable instances.
 
@@ -59,7 +59,7 @@ If a verifier can reject a slice, every task inside that slice may run again. Ke
 
 Workspaces are execution storage, not application storage. A workspace may survive retries on the same pinned host, but workflows should copy durable artifacts to an external system when the result must outlive the worker environment.
 
-See [Task Workspaces](/runhelm/docs/operations/workspaces/) for workspace behavior.
+See [Task Workspaces](/relayfold/docs/operations/workspaces/) for workspace behavior.
 
 ## Retries and local context
 

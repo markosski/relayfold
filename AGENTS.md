@@ -1,14 +1,14 @@
-# Runhelm Project
+# Relayfold Project
 
 This is instructions to the agent on how to do work in this project.
 
 ## Project Description
 
-* RunHelm is a agentic workflow orchestrator. It focuses on composing workflows from agents and tools, and executing them in a reliable and observable way.
+* Relayfold is a agentic workflow orchestrator. It focuses on composing workflows from agents and tools, and executing them in a reliable and observable way.
 
 ## Github integration
 
-* This project is maintained in private repo at this URL -> https://github.com/markosski/runhelm
+* This project is maintained in private repo at this URL -> https://github.com/markosski/relayfold
 * User may request for agent to implement specific Github issue, in this case use built in capabilities or command line tools to lookup Github issue content and work with the user to implement it.
 * User may request for agent to create a new Github issue based on the recent discussion. Agent should use it's capabilities like Github plugin or command line tools to create the issue with well describe content and acceptance criteria. Issue should contain following sections:
     * Problem - descxribe issue and provide scenario explainer
@@ -18,7 +18,7 @@ This is instructions to the agent on how to do work in this project.
 
 ## Important!
 - Always update existing website documentation with most recent changes made, contents are located in website/ directory, using Starling framework for documentation hosting.
-    - Have in mind the website is geared towards software developers who are users of RunHelm and not the RunHelm code contributors - it should not include too much details about internals unless those details are needed to use RunHelm effectively.
+    - Have in mind the website is geared towards software developers who are users of Relayfold and not the Relayfold code contributors - it should not include too much details about internals unless those details are needed to use Relayfold effectively.
 - Any changes to the project that deviate from established specification defined in openspec/specs/ directory, should be called out and with agreements from user specs should be updated together with code change
 - Focus on minimum or reasonable necessary code changes and functionality, i.e. do not add code to future proof design
 - When making changes to existing code favor simplicity over backwards compatibility

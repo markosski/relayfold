@@ -8,7 +8,7 @@
 
 ## 2. Worker Registration and Affinity-Aware Dispatch
 
-- [x] 2.1 Require `RUNHELM_WORKER_HOST_ID` during worker startup and include it as `host_id` in worker registration payloads
+- [x] 2.1 Require `RELAYFOLD_WORKER_HOST_ID` during worker startup and include it as `host_id` in worker registration payloads
 - [x] 2.2 Preserve worker process identity separately from host identity in `WorkerPool`
 - [x] 2.3 Implement heartbeat join-or-renew semantics and deregister workers after the configured missed heartbeat threshold
 - [x] 2.4 Add workflow pin constraints to pending task dispatch state
@@ -45,9 +45,9 @@
 
 - [x] 5.1 Update workspace cleanup so TTL deletion skips workspaces owned by `Pending`, `Running`, or `InputNeeded` workflow instances
 - [x] 5.2 Allow cleanup of expired workspaces only for terminal workflow instances or explicit administrative deletion
-- [x] 5.3 Document required `RUNHELM_WORKER_HOST_ID` configuration, first-claim workflow pinning, and single-host compatibility behavior
+- [x] 5.3 Document required `RELAYFOLD_WORKER_HOST_ID` configuration, first-claim workflow pinning, and single-host compatibility behavior
 - [x] 5.4 Update `docs/` with remote-worker workflow pinning, heartbeat liveness, Agent session behavior under pins, pause/resume, pinned-host failure, default retry, force retry reassignment, lease recovery, and cleanup behavior
-- [x] 5.5 Document that workers missing `RUNHELM_WORKER_HOST_ID` fail startup or registration instead of falling back to auto-detected identity
+- [x] 5.5 Document that workers missing `RELAYFOLD_WORKER_HOST_ID` fail startup or registration instead of falling back to auto-detected identity
 
 ## 6. Validation
 

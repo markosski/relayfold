@@ -3,12 +3,12 @@ title: Daily Stock Report Workflow
 description: Research stock prices and recent news, assess short-term trajectories, and email an HTML snapshot through Mailgun.
 ---
 
-[`examples/example_daily_stock_report_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_daily_stock_report_workflow.yaml)
+[`examples/example_daily_stock_report_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_daily_stock_report_workflow.yaml)
 is a multi-agent example that builds and emails a dated stock report.
 
 ## Example output
 
-[![Example daily stock report for Tesla showing its latest price, recent closes, trajectory, and news.](/runhelm/stock-report-tsla.png)](https://github.com/markosski/runhelm/blob/main/website/public/stock-report-tsla.png)
+[![Example daily stock report for Tesla showing its latest price, recent closes, trajectory, and news.](/relayfold/stock-report-tsla.png)](https://github.com/markosski/relayfold/blob/main/website/public/stock-report-tsla.png)
 
 ## Inputs
 
@@ -33,7 +33,7 @@ store:
   "twelve_data": "...",
   "mailgun_api_key": "...",
   "mailgun_domain": "mg.example.com",
-  "mailgun_from": "RunHelm Reports <reports@mg.example.com>"
+  "mailgun_from": "Relayfold Reports <reports@mg.example.com>"
 }
 ```
 
@@ -81,21 +81,21 @@ advice or a prediction of future performance.
 ## Register the workflow
 
 The root `fetch-market-data` and `research-recent-news` tasks each declare the
-same object input schema. RunHelm validates the invocation body against those
+same object input schema. Relayfold validates the invocation body against those
 schemas and exposes it to both tasks as `inputs[0]`.
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_daily_stock_report_workflow.yaml \
-  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_daily_stock_report_workflow.yaml \
+  | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```
 
 ## Execute the workflow
 
 ```bash
-curl -fsS -X POST "$RUNHELM_URL/workflow-def/daily-stock-report-workflow" \
+curl -fsS -X POST "$RELAYFOLD_URL/workflow-def/daily-stock-report-workflow" \
   -H 'content-type: application/json' \
   -d '{
     "tickers": ["AAPL", "MSFT"],
@@ -109,5 +109,5 @@ After the workflow completes, replace `<workflow_id>` with the `id` returned
 when you executed it and read the result of its final task:
 
 ```bash
-curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/send-report-email"
+curl -fsS "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/send-report-email"
 ```

@@ -1,6 +1,6 @@
 # Project Website
 
-The `website/` directory contains the static RunHelm website and documentation site. It uses Astro with Starlight.
+The `website/` directory contains the static Relayfold website and documentation site. It uses Astro with Starlight.
 
 ## Structure
 
@@ -9,7 +9,7 @@ website/
   astro.config.mjs
   package.json
   public/
-    runhelm-logo.png
+    relayfold-logo.png
   src/
     pages/
       index.astro
@@ -75,7 +75,7 @@ No server-side runtime is required for the website or docs search. The site is s
 
 ### GitHub Pages
 
-The Astro configuration publishes the project site under `/runhelm`. Homepage links use Astro's configured base URL, and documentation cross-links include the same project path.
+The Astro configuration publishes the project site under `/relayfold`. Homepage links use Astro's configured base URL, and documentation cross-links include the same project path.
 
 Publish the generated site to the `gh-pages` branch:
 
@@ -87,7 +87,7 @@ npm run deploy
 
 The deploy command adds a `.nojekyll` marker to the published branch so GitHub Pages serves Astro's underscore-prefixed `_astro` asset directory.
 
-In the repository's GitHub Pages settings, select **Deploy from a branch**, choose `gh-pages`, and publish from `/(root)`. The site is available at `https://markosski.github.io/runhelm/`.
+In the repository's GitHub Pages settings, select **Deploy from a branch**, choose `gh-pages`, and publish from `/(root)`. The site is available at `https://markosski.github.io/relayfold/`.
 
 Example S3 upload:
 

@@ -1,10 +1,10 @@
-# RunHelm Architectural TODOs
+# Relayfold Architectural TODOs
 
 ## MVP Solidification
 
 - [ ] **Add durable local storage**
   - *Issue:* The orchestrator currently wires `MemoryStorage`, so workflow definitions, function definitions, workflow instances, task state, and task results are lost when the process restarts.
-  - *Action:* Add a durable `StoragePort` implementation, preferably SQLite first, with data stored under `~/.runhelm/` for local MVP installs. Keep the existing in-memory adapter for tests and lightweight development.
+  - *Action:* Add a durable `StoragePort` implementation, preferably SQLite first, with data stored under `~/.relayfold/` for local MVP installs. Keep the existing in-memory adapter for tests and lightweight development.
 
 - [ ] **Make workflow trigger payloads first-class run inputs**
   - *Issue:* `POST /workflow-def/{def_id}` accepts a JSON payload but currently ignores it, so workflow runs cannot be meaningfully parameterized by caller-provided input.
@@ -19,8 +19,8 @@
   - *Action:* Connect the UI to the orchestrator APIs for workflow lists, run lists, queue state, task status, and task result inspection. Keep the first integrated UI narrow and focused on observing existing workflows rather than designing new ones.
 
 - [ ] **Implement local install and distribution path**
-  - *Issue:* Local installation is documented, but users still need repository knowledge and local build tooling to run RunHelm.
-  - *Action:* Implement the Docker-first local distribution plan: release Compose file, versioned service images, `runhelm init`, `runhelm up`, `runhelm down`, `runhelm status`, `runhelm logs`, and `runhelm doctor`.
+  - *Issue:* Local installation is documented, but users still need repository knowledge and local build tooling to run Relayfold.
+  - *Action:* Implement the Docker-first local distribution plan: release Compose file, versioned service images, `relayfold init`, `relayfold up`, `relayfold down`, `relayfold status`, `relayfold logs`, and `relayfold doctor`.
 
 ## Scalability & Performance Bottlenecks
 
@@ -42,7 +42,7 @@
 
 - [ ] **Cache function task dependencies on the host**
   - *Issue:* Function-type tasks with dependencies may reinstall packages repeatedly, increasing execution latency and wasting network and disk work.
-  - *Action:* Ensure dependencies are cached on the host machine at `/tmp/runhelm/npm/<workflow_def_name>/<task_id>/` when executing function-type tasks with dependencies.
+  - *Action:* Ensure dependencies are cached on the host machine at `/tmp/relayfold/npm/<workflow_def_name>/<task_id>/` when executing function-type tasks with dependencies.
 
 ## Workflow Orchestration Capabilities
 
@@ -58,9 +58,9 @@
 
 ## Installation & Distribution
 
-- [ ] **Make RunHelm easy to install locally**
+- [ ] **Make Relayfold easy to install locally**
   - *Issue:* Users currently need to understand the repository layout and manually run the orchestrator, worker, frontend, and supporting services.
-  - *Action:* Add the packaging, installer scripts, default configuration, dependency checks, documentation, and startup commands needed for users to install and run RunHelm on their own computer with minimal manual setup.
+  - *Action:* Add the packaging, installer scripts, default configuration, dependency checks, documentation, and startup commands needed for users to install and run Relayfold on their own computer with minimal manual setup.
 
 ## Dismissed Tasks
 
@@ -68,4 +68,4 @@ Tasks that were considered but later deemed unnecessary.
 
 - [x] **Execute workflows on a schedule**
   - *Issue:* The orchestrator can execute workflows on demand, but it cannot currently trigger workflows automatically on a recurring schedule.
-  - *Dismissal reason:* RunHelm exposes an API, so recurring scheduling should be handled by external applications such as `crontab`.
+  - *Dismissal reason:* Relayfold exposes an API, so recurring scheduling should be handled by external applications such as `crontab`.

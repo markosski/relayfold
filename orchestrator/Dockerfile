@@ -9,19 +9,19 @@ RUN cargo build --release
 
 FROM alpine:3.22
 
-ENV HOME=/home/runhelm
+ENV HOME=/home/relayfold
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/runhelm" \
-      org.opencontainers.image.description="RunHelm orchestrator" \
+LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+      org.opencontainers.image.description="Relayfold orchestrator" \
       org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache ca-certificates \
-    && addgroup -g 10001 runhelm \
-    && adduser -D -h /home/runhelm -u 10001 -G runhelm runhelm \
-    && mkdir -p /var/lib/runhelm /workspaces \
-    && chown runhelm:runhelm /var/lib/runhelm /workspaces
+    && addgroup -g 10001 relayfold \
+    && adduser -D -h /home/relayfold -u 10001 -G relayfold relayfold \
+    && mkdir -p /var/lib/relayfold /workspaces \
+    && chown relayfold:relayfold /var/lib/relayfold /workspaces
 COPY --from=builder /app/target/release/orchestrator /usr/local/bin/orchestrator
-USER runhelm
+USER relayfold
 
 EXPOSE 3000 3001
 ENTRYPOINT ["/usr/local/bin/orchestrator"]

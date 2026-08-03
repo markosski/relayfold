@@ -7,17 +7,17 @@
 
 ## 2. Worker Startup Integration
 
-- [x] 2.1 Resolve the default credential file path to `~/.runhelm/file_credentials.json` during worker startup.
+- [x] 2.1 Resolve the default credential file path to `~/.relayfold/file_credentials.json` during worker startup.
 - [x] 2.2 Replace hardcoded `InMemoryCredentialsAdapter` construction in `worker/src/index.ts` with the file-backed adapter.
 - [x] 2.3 Update local types so `processTask` accepts the `CredentialsPort` interface instead of a concrete in-memory adapter.
 - [x] 2.4 Ensure startup fails before IPC registration when credential configuration is invalid.
-- [x] 2.5 Keep IPC socket configuration separate from the credential directory and continue using `RUNHELM_SOCKET_PATH`/`/tmp/runhelm.sock`.
+- [x] 2.5 Keep IPC socket configuration separate from the credential directory and continue using `RELAYFOLD_SOCKET_PATH`/`/tmp/relayfold.sock`.
 
 ## 3. Documentation
 
-- [x] 3.1 Update `worker/README.md` configuration docs for `~/.runhelm/file_credentials.json`.
+- [x] 3.1 Update `worker/README.md` configuration docs for `~/.relayfold/file_credentials.json`.
 - [x] 3.2 Document the required flat JSON structure with an example.
-- [x] 3.3 Document mounting `~/.runhelm` read-only for containerized workers.
+- [x] 3.3 Document mounting `~/.relayfold` read-only for containerized workers.
 - [x] 3.4 Remove documentation for hardcoded credential fallback defaults.
 
 ## 4. Verification

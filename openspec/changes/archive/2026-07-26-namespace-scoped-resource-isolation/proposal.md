@@ -1,11 +1,11 @@
 ## Why
 
-RunHelm currently treats definitions, workflow instances, task state, events, queue entries, and worker execution as globally addressable, so reused identifiers can collide and operational paths can cross tenant boundaries. Namespace-scoped identity is required before API keys can safely select tenants in a shared deployment.
+Relayfold currently treats definitions, workflow instances, task state, events, queue entries, and worker execution as globally addressable, so reused identifiers can collide and operational paths can cross tenant boundaries. Namespace-scoped identity is required before API keys can safely select tenants in a shared deployment.
 
 ## What Changes
 
 - Add a validated namespace value that accepts the readable built-in value `global-namespace`, and request-scoped namespace context without global mutable state.
-- Resolve public API namespace context as `global-namespace` when `RUNHELM_USE_GLOBAL_NAMESPACE=true`; otherwise use a standard `Authorization: Bearer <api-key>` credential boundary. Health checks remain namespace-independent.
+- Resolve public API namespace context as `global-namespace` when `RELAYFOLD_USE_GLOBAL_NAMESPACE=true`; otherwise use a standard `Authorization: Bearer <api-key>` credential boundary. Health checks remain namespace-independent.
 - Make enabled global-namespace mode authoritative and ignore any supplied API key when it is enabled.
 - Require a well-formed bearer credential when global-namespace mode is disabled or unset, while deliberately leaving key-to-namespace resolution as a not-implemented panic in this story.
 - Scope all public and resource-specific definition, workflow-instance, task, event, queue, reconciliation, dispatch, and result operations by namespace.
@@ -13,7 +13,7 @@ RunHelm currently treats definitions, workflow instances, task state, events, qu
 - Update memory and SQL storage identities and queries so the same resource identifier can exist independently in multiple namespaces.
 - Reset the SQL initial schema rather than migrating existing pre-namespace databases.
 - Retain namespace identity in persisted and queued work so background and worker execution never depends on ambient request configuration.
-- **BREAKING** Require `RUNHELM_USE_GLOBAL_NAMESPACE=true` for usable single-tenant deployments until API-key resolution is implemented, and require SQL databases to be recreated with the namespace-aware initial schema.
+- **BREAKING** Require `RELAYFOLD_USE_GLOBAL_NAMESPACE=true` for usable single-tenant deployments until API-key resolution is implemented, and require SQL databases to be recreated with the namespace-aware initial schema.
 
 ## Capabilities
 

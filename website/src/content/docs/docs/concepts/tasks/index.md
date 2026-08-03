@@ -1,15 +1,15 @@
 ---
 title: Tasks
-description: Understand the task types that make up RunHelm workflows.
+description: Understand the task types that make up Relayfold workflows.
 ---
 
-Tasks are the executable nodes in a RunHelm workflow. Each task receives structured inputs, runs on a worker runtime, and returns structured output for downstream tasks.
+Tasks are the executable nodes in a Relayfold workflow. Each task receives structured inputs, runs on a worker runtime, and returns structured output for downstream tasks.
 
 A workflow can combine different task kinds in one run:
 
-- [Agent tasks](/runhelm/docs/concepts/tasks/agents/) use an AI model, prompt, approved tools, selected skills, and optional human input.
-- [Function tasks](/runhelm/docs/concepts/tasks/functions/) run JavaScript code for deterministic logic, integration glue, parsing, validation, and file work.
-- [API call tasks](/runhelm/docs/concepts/tasks/api-calls/) make direct HTTP-style calls when a workflow step does not need model reasoning or custom code.
+- [Agent tasks](/relayfold/docs/concepts/tasks/agents/) use an AI model, prompt, approved tools, selected skills, and optional human input.
+- [Function tasks](/relayfold/docs/concepts/tasks/functions/) run JavaScript code for deterministic logic, integration glue, parsing, validation, and file work.
+- [API call tasks](/relayfold/docs/concepts/tasks/api-calls/) make direct HTTP-style calls when a workflow step does not need model reasoning or custom code.
 
 ## Shared task fields
 

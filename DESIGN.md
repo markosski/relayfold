@@ -33,7 +33,7 @@ State persistence, workflow definitions, and the internal durable queue for task
 
 ## Integrations 
 
-Integrations (e.g., Kafka, SQS, RDBMS, Mailgun) will be facilitated through the Orchestrator API. Users will stand up their own infrastructure pieces that either poll from or submit data to RunHelm's API.
+Integrations (e.g., Kafka, SQS, RDBMS, Mailgun) will be facilitated through the Orchestrator API. Users will stand up their own infrastructure pieces that either poll from or submit data to Relayfold's API.
 
 ## Task Components
 
@@ -57,7 +57,7 @@ Integrations (e.g., Kafka, SQS, RDBMS, Mailgun) will be facilitated through the 
 
 **Programming languages:**
 - Orchestrator is developed using Rust, leveraging strong concurrency model using Tokio
-- Workers are code deployed in containers with RunHelm TypeScript package, leveraging its dynamic nature of code execution and package distribution for extensions
+- Workers are code deployed in containers with Relayfold TypeScript package, leveraging its dynamic nature of code execution and package distribution for extensions
 
 **Worker Backends:** 
 - Workers are executed on different backends, e.g. AWS Lambda, AWS Fargate with container isolation. Orchestrator worker interface allows to dispatch to different worker backends. For the MVP we will try to target AWS Lambda as a first backend - negotiable, goal is to first pick easiest to deploy on compute backend.

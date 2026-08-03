@@ -6,7 +6,7 @@ usage() {
 Usage:
   packaging/build-images.sh [--ref REF] [--tag-prefix PREFIX] [--version VERSION] [--push]
 
-Build RunHelm runtime images from the current checkout or from a git ref.
+Build Relayfold runtime images from the current checkout or from a git ref.
 
 Options:
   --ref REF             Git ref to archive and build, for example v0.3.1.
@@ -15,8 +15,8 @@ Options:
   --push                Push images after building.
 
 Examples:
-  packaging/build-images.sh --version dev --tag-prefix localhost/runhelm
-  packaging/build-images.sh --ref v0.3.1 --tag-prefix registry.example.com/runhelm --push
+  packaging/build-images.sh --version dev --tag-prefix localhost/relayfold
+  packaging/build-images.sh --ref v0.3.1 --tag-prefix registry.example.com/relayfold --push
 USAGE
 }
 
@@ -91,7 +91,7 @@ build_image() {
   name="$1"
   dockerfile="$2"
   docker_context="$3"
-  tag="$tag_prefix/runhelm-$name:$version"
+  tag="$tag_prefix/relayfold-$name:$version"
 
   echo "Building $tag"
   docker build -f "$dockerfile" -t "$tag" "$docker_context"

@@ -1,6 +1,6 @@
 # Core Service Boundaries
 
-RunHelm's orchestrator core separates queue/execution coordination, workflow lifecycle operations, workflow execution, and side-effect adapters into distinct services.
+Relayfold's orchestrator core separates queue/execution coordination, workflow lifecycle operations, workflow execution, and side-effect adapters into distinct services.
 
 ## Orchestrator
 

@@ -40,7 +40,7 @@ export class PiResourceToolProvider {
 
     async loadResources(): Promise<PiResourceLoadResult> {
         const cwd = this.options.cwd ?? process.cwd();
-        const agentDir = this.options.agentDir ?? process.env.RUNHELM_PI_AGENT_DIR ?? join(process.env.HOME ?? cwd, '.pi', 'agent');
+        const agentDir = this.options.agentDir ?? process.env.RELAYFOLD_PI_AGENT_DIR ?? join(process.env.HOME ?? cwd, '.pi', 'agent');
         const nodeModulesDir = this.options.nodeModulesDir ?? join(cwd, 'node_modules');
         const extensionPaths = [
             ...await discoverPiPackageRoots(nodeModulesDir),
@@ -179,7 +179,7 @@ function normalizeExtensionPaths(cwd: string, extensionPaths: string[]): string[
 }
 
 function parseExtensionPathsEnv(): string[] {
-    const raw = process.env.RUNHELM_AGENT_EXTENSION_PATHS;
+    const raw = process.env.RELAYFOLD_AGENT_EXTENSION_PATHS;
     if (!raw) {
         return [];
     }

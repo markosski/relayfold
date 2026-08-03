@@ -11,8 +11,8 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/runhelm" \
-      org.opencontainers.image.description="RunHelm frontend" \
+LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+      org.opencontainers.image.description="Relayfold frontend" \
       org.opencontainers.image.licenses="MIT"
 
 COPY --from=builder /app/dist /usr/share/nginx/html

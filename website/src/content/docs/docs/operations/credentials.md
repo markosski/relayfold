@@ -11,7 +11,7 @@ required_credentials:
   - gh_token
 ```
 
-With the file credential adapter, the worker reads those names from `~/.runhelm/file_credentials.json`:
+With the file credential adapter, the worker reads those names from `~/.relayfold/file_credentials.json`:
 
 ```json
 {
@@ -50,7 +50,7 @@ Common mappings include:
 | `gemini_api_key` | `GEMINI_API_KEY` | `google/...` |
 | `anthropic_api_key` | `ANTHROPIC_API_KEY` | `anthropic/...` |
 
-RunHelm currently supports Agent model authentication through
+Relayfold currently supports Agent model authentication through
 provider-standard API-key environment variables. It does not create a Pi
 runtime override from `required_credentials`, and it does not manage
 persistent Pi or OAuth authentication.

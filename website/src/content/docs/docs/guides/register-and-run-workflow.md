@@ -3,7 +3,7 @@ title: Register and Run a Workflow
 description: Register a workflow definition, start a run, inspect status, and read task output.
 ---
 
-This guide walks through the smallest useful RunHelm API flow:
+This guide walks through the smallest useful Relayfold API flow:
 
 1. Create a workflow definition.
 2. Register a workflow definition.
@@ -14,38 +14,38 @@ This guide walks through the smallest useful RunHelm API flow:
 Set the local API URL:
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 ```
 
 ## Create a workflow
 
 The quickest way to create a workflow is to give your coding agent access to the
-RunHelm repository. Add RunHelm to your application repository as a Git
+Relayfold repository. Add Relayfold to your application repository as a Git
 submodule so the agent can inspect the current examples and documentation while
 it works:
 
 ```bash
 cd path/to/your-application
-git submodule add https://github.com/markosski/runhelm.git runhelm
+git submodule add https://github.com/markosski/relayfold.git relayfold
 ```
 
 Open your application repository in your coding agent, then adapt this prompt:
 
 ```text
-Create a RunHelm workflow that [describe the outcome you want].
+Create a Relayfold workflow that [describe the outcome you want].
 
-Use the workflow examples in `runhelm/examples/` and the documentation in
-runhelm/website/src/content/docs/docs/ as the authoritative references. Inspect
+Use the workflow examples in `relayfold/examples/` and the documentation in
+relayfold/website/src/content/docs/docs/ as the authoritative references. Inspect
 my application to understand the inputs, outputs, APIs, and credentials the
 workflow needs.
 
 Keep the workflow as small as possible. Define only the required tasks, data
 bindings, input and output schemas, and credentials. Do not invent fields that
-are not supported by the current RunHelm examples or documentation.
+are not supported by the current Relayfold examples or documentation.
 
 Save an API-ready JSON or YAML workflow definition to [path and filename]. Then explain
 the workflow, list the inputs and credentials I must provide, and give me the
-curl commands to register and run it against $RUNHELM_URL.
+curl commands to register and run it against $RELAYFOLD_URL.
 ```
 
 Replace the bracketed text with your desired outcome and output path. Review the
@@ -56,7 +56,7 @@ generated definition and its credential requirements before registering it.
 Register a one-task Function workflow:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
   -d '{
     "id": "hello-workflow",
     "tasks": [
@@ -95,17 +95,17 @@ Response:
 If the definition is a YAML file, register it directly:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
   --data-binary @hello-workflow.yaml
 ```
 
 You can register an updated definition under the same ID until its first
 workflow instance is created. After an instance exists in any state, including
-`Completed` or `Failed`, RunHelm keeps the definition immutable and rejects an
+`Completed` or `Failed`, Relayfold keeps the definition immutable and rejects an
 overwrite with `409 Conflict`. Register the update under a new ID instead, for
 example `hello-workflow_v2`.
 
-The `_v2` suffix is only a suggested naming convention. RunHelm does not require
+The `_v2` suffix is only a suggested naming convention. Relayfold does not require
 or interpret workflow definition versions.
 
 ## Start a run
@@ -113,7 +113,7 @@ or interpret workflow definition versions.
 Start a workflow instance from the registered definition:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def/hello-workflow" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def/hello-workflow" \
   -H 'content-type: application/json' \
   -d '{ "name": "Ada" }'
 ```
@@ -135,7 +135,7 @@ If the API returns `503 Service Unavailable`, no eligible worker host is registe
 ## Check status
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000"
 ```
 
 Example completed response:
@@ -163,13 +163,13 @@ Example completed response:
 List all materialized task results:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks"
 ```
 
 Read one logical task result:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks/hello"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks/hello"
 ```
 
 Example response:
@@ -194,4 +194,4 @@ Example response:
 
 ## Next steps
 
-Use the [Workflow YAML Reference](/runhelm/docs/concepts/workflow-yaml/) when building larger definitions, and the [API Reference](/runhelm/docs/api-reference/) for the full endpoint list.
+Use the [Workflow YAML Reference](/relayfold/docs/concepts/workflow-yaml/) when building larger definitions, and the [API Reference](/relayfold/docs/api-reference/) for the full endpoint list.

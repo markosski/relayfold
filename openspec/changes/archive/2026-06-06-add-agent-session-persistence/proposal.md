@@ -1,6 +1,6 @@
 ## Why
 
-Agent retries currently depend on reconstructing context through injected prompts and execution metadata. Durable agent sessions let RunHelm preserve conversational continuity across human-input resumes, verifier-guided retries, worker restarts, and future distributed worker deployments without turning the orchestrator into a prompt-history manager.
+Agent retries currently depend on reconstructing context through injected prompts and execution metadata. Durable agent sessions let Relayfold preserve conversational continuity across human-input resumes, verifier-guided retries, worker restarts, and future distributed worker deployments without turning the orchestrator into a prompt-history manager.
 
 ## What Changes
 

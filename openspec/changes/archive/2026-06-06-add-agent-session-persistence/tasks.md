@@ -21,8 +21,8 @@
 
 - [x] 3.1 Add a worker-side Agent session store interface for create, load, and persist operations.
 - [x] 3.2 Implement a file-backed Agent session store compatible with Pi persistent session files.
-- [x] 3.3 Use a fixed worker-local file-backed session storage location under `$HOME/.cache/runhelm/file_session_store`.
-- [x] 3.4 Resolve stable RunHelm session keys to worker-local Pi session files without exposing raw worker-local paths.
+- [x] 3.3 Use a fixed worker-local file-backed session storage location under `$HOME/.cache/relayfold/file_session_store`.
+- [x] 3.4 Resolve stable Relayfold session keys to worker-local Pi session files without exposing raw worker-local paths.
 - [x] 3.5 Add missing-session and unreadable-session diagnostics that include the failed session key.
 
 ## 4. Agent Executor Integration

@@ -13,7 +13,7 @@ The system SHALL allow task definitions to declare `control.verifier` with `max_
 
 #### Scenario: Verifier task declares output schema
 - **WHEN** a task definition contains `control.verifier` and also declares `output_schema`
-- **THEN** the workflow definition is rejected because RunHelm owns the verifier decision schema
+- **THEN** the workflow definition is rejected because Relayfold owns the verifier decision schema
 
 #### Scenario: Verifier decision schema is injected
 - **WHEN** a task definition contains `control.verifier` and omits `output_schema`

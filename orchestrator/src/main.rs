@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env().add_directive("info".parse()?))
         .init();
-    info!("Starting RunHelm Orchestrator...");
+    info!("Starting Relayfold Orchestrator...");
 
     // Initialize dependencies (Adapters)
     let storage = create_storage().await?;
@@ -86,7 +86,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn max_concurrent_workflows() -> usize {
-    std::env::var("RUNHELM_MAX_CONCURRENT_WORKFLOWS")
+    std::env::var("RELAYFOLD_MAX_CONCURRENT_WORKFLOWS")
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
         .filter(|value| *value > 0)
@@ -94,7 +94,7 @@ fn max_concurrent_workflows() -> usize {
 }
 
 fn workflow_queue_capacity() -> usize {
-    std::env::var("RUNHELM_WORKFLOW_QUEUE_CAPACITY")
+    std::env::var("RELAYFOLD_WORKFLOW_QUEUE_CAPACITY")
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
         .filter(|value| *value > 0)
@@ -124,7 +124,7 @@ fn load_storage_config() -> anyhow::Result<StorageConfig> {
 fn load_storage_config_with(
     mut read: impl FnMut(&str) -> Option<String>,
 ) -> anyhow::Result<StorageConfig> {
-    match read("RUNHELM_STORAGE").as_deref().unwrap_or("memory") {
+    match read("RELAYFOLD_STORAGE").as_deref().unwrap_or("memory") {
         "memory" => Ok(StorageConfig::Memory),
         "sqlite" => Ok(StorageConfig::Sqlite {
             database_path: required_config_value(&mut read, sqlite_storage::ENV_PATH)?.into(),
@@ -146,7 +146,7 @@ fn load_storage_config_with(
 
             let database_env = mysql_storage::ENV_DATABASE;
             let database = match read(database_env) {
-                None => "runhelm".to_string(),
+                None => "relayfold".to_string(),
                 Some(value) if value.trim().is_empty() => {
                     anyhow::bail!("{database_env} must not be empty")
                 }
@@ -162,7 +162,7 @@ fn load_storage_config_with(
             }))
         }
         value => anyhow::bail!(
-            "unsupported RUNHELM_STORAGE value {value}; expected memory, sqlite, or mysql"
+            "unsupported RELAYFOLD_STORAGE value {value}; expected memory, sqlite, or mysql"
         ),
     }
 }
@@ -193,9 +193,9 @@ mod storage_config_tests {
 
     fn mysql_required_values() -> Vec<(&'static str, &'static str)> {
         vec![
-            ("RUNHELM_STORAGE", "mysql"),
+            ("RELAYFOLD_STORAGE", "mysql"),
             (mysql_storage::ENV_HOST, "mysql.internal"),
-            (mysql_storage::ENV_USERNAME, "runhelm-user"),
+            (mysql_storage::ENV_USERNAME, "relayfold-user"),
             (mysql_storage::ENV_PASSWORD, "secret"),
         ]
     }
@@ -208,7 +208,7 @@ mod storage_config_tests {
     #[test]
     fn selects_memory_storage_explicitly() {
         assert!(matches!(
-            parse(&[("RUNHELM_STORAGE", "memory")]).unwrap(),
+            parse(&[("RELAYFOLD_STORAGE", "memory")]).unwrap(),
             StorageConfig::Memory
         ));
     }
@@ -216,23 +216,23 @@ mod storage_config_tests {
     #[test]
     fn configures_sqlite_from_path() {
         let config = parse(&[
-            ("RUNHELM_STORAGE", "sqlite"),
-            (sqlite_storage::ENV_PATH, "/data/runhelm.db"),
+            ("RELAYFOLD_STORAGE", "sqlite"),
+            (sqlite_storage::ENV_PATH, "/data/relayfold.db"),
         ])
         .unwrap();
 
         let StorageConfig::Sqlite { database_path } = config else {
             panic!("expected SQLite storage");
         };
-        assert_eq!(database_path, PathBuf::from("/data/runhelm.db"));
+        assert_eq!(database_path, PathBuf::from("/data/relayfold.db"));
     }
 
     #[test]
     fn sqlite_requires_a_non_empty_path() {
         for values in [
-            vec![("RUNHELM_STORAGE", "sqlite")],
+            vec![("RELAYFOLD_STORAGE", "sqlite")],
             vec![
-                ("RUNHELM_STORAGE", "sqlite"),
+                ("RELAYFOLD_STORAGE", "sqlite"),
                 (sqlite_storage::ENV_PATH, "  "),
             ],
         ] {
@@ -249,8 +249,8 @@ mod storage_config_tests {
 
         assert_eq!(config.host, "mysql.internal");
         assert_eq!(config.port, 3306);
-        assert_eq!(config.database, "runhelm");
-        assert_eq!(config.username, "runhelm-user");
+        assert_eq!(config.database, "relayfold");
+        assert_eq!(config.username, "relayfold-user");
         assert_eq!(config.password, "secret");
     }
 
@@ -319,21 +319,21 @@ mod storage_config_tests {
     #[test]
     fn rejects_unknown_and_legacy_storage_values() {
         for value in ["postgres", "sql", ""] {
-            let error = parse(&[("RUNHELM_STORAGE", value)])
+            let error = parse(&[("RELAYFOLD_STORAGE", value)])
                 .err()
                 .unwrap()
                 .to_string();
-            assert!(error.contains("unsupported RUNHELM_STORAGE"));
+            assert!(error.contains("unsupported RELAYFOLD_STORAGE"));
         }
     }
 }
 
 fn resolve_public_http_addr() -> String {
-    std::env::var("RUNHELM_PUBLIC_HTTP_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string())
+    std::env::var("RELAYFOLD_PUBLIC_HTTP_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string())
 }
 
 fn resolve_worker_http_addr() -> String {
-    std::env::var("RUNHELM_WORKER_HTTP_ADDR").unwrap_or_else(|_| "127.0.0.1:3001".to_string())
+    std::env::var("RELAYFOLD_WORKER_HTTP_ADDR").unwrap_or_else(|_| "127.0.0.1:3001".to_string())
 }
 
 fn start_pinned_host_loss_monitor(

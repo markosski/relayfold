@@ -13,13 +13,13 @@ Usage:
 Build and run the local debug orchestrator binary without Docker.
 
 Environment:
-  RUNHELM_PUBLIC_HTTP_ADDR defaults to 127.0.0.1:3000.
-  RUNHELM_WORKER_HTTP_ADDR defaults to 127.0.0.1:3001.
-  RUNHELM_STORAGE selects memory (default), sqlite, or mysql.
-  SQLite requires RUNHELM_STORE_SQLITE_PATH.
-  MySQL requires RUNHELM_STORE_MYSQL_HOST, RUNHELM_STORE_MYSQL_USERNAME, and
-  RUNHELM_STORE_MYSQL_PASSWORD. RUNHELM_STORE_MYSQL_DATABASE defaults to
-  runhelm and RUNHELM_STORE_MYSQL_PORT defaults to 3306.
+  RELAYFOLD_PUBLIC_HTTP_ADDR defaults to 127.0.0.1:3000.
+  RELAYFOLD_WORKER_HTTP_ADDR defaults to 127.0.0.1:3001.
+  RELAYFOLD_STORAGE selects memory (default), sqlite, or mysql.
+  SQLite requires RELAYFOLD_STORE_SQLITE_PATH.
+  MySQL requires RELAYFOLD_STORE_MYSQL_HOST, RELAYFOLD_STORE_MYSQL_USERNAME, and
+  RELAYFOLD_STORE_MYSQL_PASSWORD. RELAYFOLD_STORE_MYSQL_DATABASE defaults to
+  relayfold and RELAYFOLD_STORE_MYSQL_PORT defaults to 3306.
   RUST_LOG defaults to info.
 USAGE
 }
@@ -51,8 +51,8 @@ elif [[ ! -x "$binary" ]]; then
   exit 1
 fi
 
-export RUNHELM_PUBLIC_HTTP_ADDR="${RUNHELM_PUBLIC_HTTP_ADDR:-127.0.0.1:3000}"
-export RUNHELM_WORKER_HTTP_ADDR="${RUNHELM_WORKER_HTTP_ADDR:-127.0.0.1:3001}"
+export RELAYFOLD_PUBLIC_HTTP_ADDR="${RELAYFOLD_PUBLIC_HTTP_ADDR:-127.0.0.1:3000}"
+export RELAYFOLD_WORKER_HTTP_ADDR="${RELAYFOLD_WORKER_HTTP_ADDR:-127.0.0.1:3001}"
 export RUST_LOG="${RUST_LOG:-info}"
 
 exec "$binary"

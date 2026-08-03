@@ -13,10 +13,10 @@ Usage:
 Build and run one local worker process without Docker.
 
 Environment:
-  RUNHELM_ORCHESTRATOR_HTTP_URL defaults to http://127.0.0.1:3001.
-  RUNHELM_WORKER_HOST_ID defaults to local-dev-host.
+  RELAYFOLD_ORCHESTRATOR_HTTP_URL defaults to http://127.0.0.1:3001.
+  RELAYFOLD_WORKER_HOST_ID defaults to local-dev-host.
   WORKER_ID defaults to local-dev-worker-<pid>.
-  RUNHELM_WORKSPACE_ROOT defaults to ~/.cache/runhelm/workspaces.
+  RELAYFOLD_WORKSPACE_ROOT defaults to ~/.cache/relayfold/workspaces.
 USAGE
 }
 
@@ -47,8 +47,8 @@ elif [[ ! -f "$entrypoint" ]]; then
   exit 1
 fi
 
-export RUNHELM_ORCHESTRATOR_HTTP_URL="${RUNHELM_ORCHESTRATOR_HTTP_URL:-http://127.0.0.1:3001}"
-export RUNHELM_WORKER_HOST_ID="${RUNHELM_WORKER_HOST_ID:-local-dev-host}"
+export RELAYFOLD_ORCHESTRATOR_HTTP_URL="${RELAYFOLD_ORCHESTRATOR_HTTP_URL:-http://127.0.0.1:3001}"
+export RELAYFOLD_WORKER_HOST_ID="${RELAYFOLD_WORKER_HOST_ID:-local-dev-host}"
 export WORKER_ID="${WORKER_ID:-local-dev-worker-$$}"
 
 exec node "$entrypoint"

@@ -1,7 +1,7 @@
 id: workspace-download-workflow
 
 # Two Agent task example that stores downloaded page content in a shared
-# RunHelm workspace, then reads that file from a later task.
+# Relayfold workspace, then reads that file from a later task.
 
 tasks:
   - id: download-page

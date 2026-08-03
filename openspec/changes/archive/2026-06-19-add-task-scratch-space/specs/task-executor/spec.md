@@ -55,5 +55,5 @@ Executors SHALL provide selected workspace path guidance without claiming strict
 - **THEN** the executor does not claim per-task selected workspace mount isolation
 
 #### Scenario: Future strict containment
-- **WHEN** RunHelm adds owned file tools, per-task containers, or another sandbox
+- **WHEN** Relayfold adds owned file tools, per-task containers, or another sandbox
 - **THEN** that future design may validate file paths against the selected workspace before filesystem access

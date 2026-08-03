@@ -1,6 +1,6 @@
 ## Context
 
-RunHelm currently has three related persistence boundaries:
+Relayfold currently has three related persistence boundaries:
 
 - Workflow state is moving toward event-backed snapshots through `WorkflowStateManager` and `StoragePort`.
 - Workspace paths are derived by `WorkspaceManager` under the orchestrator process' configured local root.
@@ -8,7 +8,7 @@ RunHelm currently has three related persistence boundaries:
 
 That shape is adequate for a single-machine deployment, but remote workers make the path meaningless unless they share the same filesystem. Paused workflows and orchestrator restarts create the same class of problem: a workflow can resume later, but its workspace or Agent session may exist only on the host that ran the previous task attempt.
 
-The design should treat workspace/session continuity as a workflow-instance scheduling decision, not as an incidental local path. To keep the first distributed-worker implementation simple, RunHelm pins every workflow instance to one host when the workflow instance is created for execution. The orchestrator owns logical workflow state and pinning constraints. Workers own host-local materialization of workspaces and session stores.
+The design should treat workspace/session continuity as a workflow-instance scheduling decision, not as an incidental local path. To keep the first distributed-worker implementation simple, Relayfold pins every workflow instance to one host when the workflow instance is created for execution. The orchestrator owns logical workflow state and pinning constraints. Workers own host-local materialization of workspaces and session stores.
 
 ## Goals / Non-Goals
 
@@ -46,7 +46,7 @@ Alternative considered: pin only workflow instances that use workspace groups. T
 
 ### Worker Registration Requires Configured Host Identity
 
-Workers must be configured with `RUNHELM_WORKER_HOST_ID`. Worker startup or registration fails when this value is missing or empty. Registration includes stable host identity, and keeps worker identity separate:
+Workers must be configured with `RELAYFOLD_WORKER_HOST_ID`. Worker startup or registration fails when this value is missing or empty. Registration includes stable host identity, and keeps worker identity separate:
 
 - `worker_id`: identifies one worker process or connection and may change when the process restarts.
 - `host_id`: identifies the machine or node whose local workspace/session store contains durable state.
@@ -137,7 +137,7 @@ Alternative considered: increase the default TTL. That reduces but does not remo
 
 - Pinned host becomes unavailable -> Worker registrations are removed after missed heartbeats; the workflow instance is marked failed only after host loss policy determines the pinned host has no recoverable workers.
 - Pending queue scan may become inefficient with many pinned tasks -> Start with a simple scan, then add host-indexed pending queues if load requires it.
-- Workers may register unstable `host_id` values -> Require explicit `RUNHELM_WORKER_HOST_ID` configuration and document that it must identify the durable execution state domain, not the container process.
+- Workers may register unstable `host_id` values -> Require explicit `RELAYFOLD_WORKER_HOST_ID` configuration and document that it must identify the durable execution state domain, not the container process.
 - Local workspace/session state can still be lost if the host disk is lost -> Treat replication/snapshotting as a future capability, not a hidden guarantee.
 - More state must be kept consistent across workflow events and queue leases -> Keep `pinned_host_id` in the workflow snapshot and write tests around claim, crash recovery, host loss, and human-input resume flows.
 
@@ -145,7 +145,7 @@ Alternative considered: increase the default TTL. That reduces but does not remo
 
 1. Add schema/model types for worker host identity, workflow instance `pinned_host_id`, in-memory worker heartbeat state, and in-memory dispatch leases.
 2. Preserve `pinned_host_id` through workflow snapshots and keep worker registration and dispatch lease state inside `WorkerPool`.
-3. Extend worker startup, registration, and dispatch payloads to require `RUNHELM_WORKER_HOST_ID`.
+3. Extend worker startup, registration, and dispatch payloads to require `RELAYFOLD_WORKER_HOST_ID`.
 4. Move workspace materialization for dispatched worker tasks to the worker side, while preserving local fake/executor behavior for tests.
 5. Update workflow instance creation to establish pins from registered worker hosts, and update execution to preserve workflow pins across retries, verifier reruns, and human-input resumes.
 6. Update workspace cleanup to consult workflow status and placement ownership before deleting directories.

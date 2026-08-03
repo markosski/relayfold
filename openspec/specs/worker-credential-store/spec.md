@@ -6,30 +6,30 @@ Defines how worker processes load, validate, and expose externally configured cr
 ## Requirements
 
 ### Requirement: File-backed credential loading
-The worker SHALL support a credential store implementation that loads credentials from `~/.runhelm/file_credentials.json`.
+The worker SHALL support a credential store implementation that loads credentials from `~/.relayfold/file_credentials.json`.
 
 #### Scenario: Worker loads credentials from default file
-- **WHEN** `~/.runhelm/file_credentials.json` exists and contains a flat object of string keys and string values
+- **WHEN** `~/.relayfold/file_credentials.json` exists and contains a flat object of string keys and string values
 - **THEN** the worker SHALL make each key available through `CredentialsPort.getCredential`
 
 #### Scenario: Worker startup fails without credential file
-- **WHEN** the worker starts and `~/.runhelm/file_credentials.json` does not exist
+- **WHEN** the worker starts and `~/.relayfold/file_credentials.json` does not exist
 - **THEN** the worker SHALL fail startup with a clear credential file error
 
 #### Scenario: Worker startup fails for unreadable file
-- **WHEN** `~/.runhelm/file_credentials.json` exists but cannot be read
+- **WHEN** `~/.relayfold/file_credentials.json` exists but cannot be read
 - **THEN** the worker SHALL fail startup with an error that identifies the credential file path
 
 ### Requirement: Read-only credential mount
-Containerized worker deployments SHALL mount `~/.runhelm` as a read-only directory containing `file_credentials.json`.
+Containerized worker deployments SHALL mount `~/.relayfold` as a read-only directory containing `file_credentials.json`.
 
 #### Scenario: Worker container receives credential mount
 - **WHEN** the worker is run in a container
-- **THEN** the deployment SHALL mount `~/.runhelm` read-only and provide `file_credentials.json` inside that directory
+- **THEN** the deployment SHALL mount `~/.relayfold` read-only and provide `file_credentials.json` inside that directory
 
 #### Scenario: Runtime state is not written to credential mount
 - **WHEN** the worker or orchestrator needs runtime IPC files such as sockets
-- **THEN** those files SHALL NOT be created under the read-only `~/.runhelm` credential mount
+- **THEN** those files SHALL NOT be created under the read-only `~/.relayfold` credential mount
 
 ### Requirement: Credential file format validation
 The credential file MUST contain valid JSON whose top-level value is an object mapping credential names to string values.
@@ -84,7 +84,7 @@ Worker startup MUST NOT define hardcoded credential values or development fallba
 
 #### Scenario: Worker credentials are configured externally
 - **WHEN** the worker process starts
-- **THEN** credential values SHALL come from `~/.runhelm/file_credentials.json` rather than source-code literals
+- **THEN** credential values SHALL come from `~/.relayfold/file_credentials.json` rather than source-code literals
 
 #### Scenario: Credential errors avoid secret disclosure
 - **WHEN** worker startup reports a credential file error

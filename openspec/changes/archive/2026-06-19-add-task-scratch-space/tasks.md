@@ -11,7 +11,7 @@
 - [x] 2.2 Implement `WorkspaceManager` creation/resolution for default logical-task workspaces using a stable key derived from workflow instance ID and task ID.
 - [x] 2.3 Implement `WorkspaceManager` creation/resolution for workflow-instance workspace groups using a stable key derived from workflow instance ID and normalized workspace group name.
 - [x] 2.4 Ensure each workspace records a timestamp marker usable by stale cleanup.
-- [x] 2.5 Implement explicit cleanup for RunHelm-owned workspace directories without adding the background TTL monitor yet.
+- [x] 2.5 Implement explicit cleanup for Relayfold-owned workspace directories without adding the background TTL monitor yet.
 - [x] 2.6 Add unit tests for workspace key derivation, path construction, stable task workspace reuse across attempts, stable group workspace reuse across tasks, and cleanup.
 
 ## 3. Executor Payload Contract
@@ -33,7 +33,7 @@
 ## 5. File Access Scope
 
 - [x] 5.1 Identify file read/write surfaces available to Agent, Function, and Docker-backed execution.
-- [x] 5.2 Document which file access surfaces are guidance-only versus enforceable by RunHelm-owned code.
+- [x] 5.2 Document which file access surfaces are guidance-only versus enforceable by Relayfold-owned code.
 - [x] 5.3 Confirm the current implementation exposes one selected workspace path but does not enforce selected-workspace-only access for arbitrary task code.
 - [x] 5.4 Defer strict path containment for file tools to a future sandbox, per-task container, or validated file-tool design.
 
@@ -52,7 +52,7 @@
 
 - [x] 8.1 Implement the `WorkspaceManager` background TTL monitor after workspace creation and executor payloads are complete.
 - [x] 8.2 Make the TTL monitor wake interval and workspace TTL configurable.
-- [x] 8.3 Ensure the TTL monitor only removes RunHelm-owned expired workspace directories under the configured workspace root.
+- [x] 8.3 Ensure the TTL monitor only removes Relayfold-owned expired workspace directories under the configured workspace root.
 
 ## 9. Verification
 

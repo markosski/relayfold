@@ -27,8 +27,8 @@ Agent tasks receive workspace context in their prompt so the agent knows where t
 ## Workspace root and layout
 
 The worker uses a configured workspace root. In Docker-based local installs, the workspace directory is mounted into worker containers so files can persist across task executions for the same workflow workspace group.
-The packaged worker uses the numeric UID and GID recorded by `runhelm init`, so
-workspace files have the same ownership as the user who initialized RunHelm.
+The packaged worker uses the numeric UID and GID recorded by `relayfold init`, so
+workspace files have the same ownership as the user who initialized Relayfold.
 
 Workspace paths include the workflow namespace before the workflow instance and
 task or group identity. Identical workflow and task IDs in separate namespaces
@@ -41,4 +41,4 @@ Workspaces are scoped to the execution environment and intended to isolate task 
 
 Workspace cleanup is a lifecycle concern for the worker environment. Do not treat workspaces as durable application storage unless a workflow explicitly copies artifacts to an external system.
 
-See [Worker Host Pinning](/runhelm/docs/operations/worker-host-pinning/) for how RunHelm keeps workflow tasks on the host that owns workspace state, and [Reliability and Side Effects](/runhelm/docs/operations/reliability/) for retry and idempotency guidance.
+See [Worker Host Pinning](/relayfold/docs/operations/worker-host-pinning/) for how Relayfold keeps workflow tasks on the host that owns workspace state, and [Reliability and Side Effects](/relayfold/docs/operations/reliability/) for retry and idempotency guidance.
