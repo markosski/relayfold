@@ -16,7 +16,7 @@ runhelm up`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="RunHelm is a distributed workflow orchestrator that scales AI and automation runs across workers and independent orchestrator partitions."
+      content="RunHelm is a durable runtime for autonomous software, with observable, resumable workflows and isolated execution."
     />
     <title>RunHelm</title>
     <style>
@@ -246,6 +246,50 @@ runhelm up`;
         color: var(--muted);
       }
 
+      .fit-panel {
+        margin-top: 28px;
+        padding: clamp(24px, 5vw, 48px);
+        border-radius: 8px;
+        background: #111923;
+        color: #eef5fb;
+      }
+
+      .fit-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 28px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .fit-list li {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        font-size: 18px;
+      }
+
+      .fit-list li::before {
+        content: "✓";
+        flex: 0 0 auto;
+        color: #65d6b8;
+        font-weight: 900;
+      }
+
+      .fit-conclusion {
+        max-width: 760px;
+        margin-top: 30px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(238, 245, 251, 0.18);
+        color: #c9d7e4;
+        font-size: 20px;
+      }
+
+      .fit-conclusion strong {
+        color: #fff;
+      }
+
       .install {
         display: grid;
         grid-template-columns: minmax(0, 0.8fr) minmax(320px, 1fr);
@@ -309,6 +353,10 @@ runhelm up`;
         .feature-grid {
           grid-template-columns: 1fr;
         }
+
+        .fit-list {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -331,9 +379,9 @@ runhelm up`;
       <section class="hero">
         <div>
           <!--<p class="eyebrow">Distributed, provider-agnostic agentic workflows</p>-->
-          <h1>Scale reliable AI and automation workflows.</h1>
+          <h1>RunHelm is a durable runtime for autonomous software.</h1>
           <p class="hero-copy">
-            RunHelm composes AI agents, and code execution into
+            Compose AI agents, API calls, and code execution into
             observable, reusable workflow runs with explicit data flow, typed task
             contracts, resumable state, and isolated workers.
           </p>
@@ -392,6 +440,27 @@ runhelm up`;
               pause for input, resume, retry, and continue after feedback.
             </p>
           </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Is RunHelm the right fit for you?</h2>
+        <p>
+          RunHelm may be a good fit if <strong>you need to:</strong>
+        </p>
+
+        <div class="fit-panel">
+          <ul class="fit-list">
+            <li>Have full ownership over runtime environment?</li>
+            <li>Resume after failure?</li>
+            <li>Debug what happened?</li>
+            <li>Inspect every step of the workflow?</li>
+            <li>Provide credentials to tasks only at runtime?</li>
+            <li>Verify AI agents are doing the right thing and self-correct?</li>
+          </ul>
+          <p class="fit-conclusion">
+            If your answer is <strong>yes</strong> to these questions, RunHelm is for you!
+          </p>
         </div>
       </section>
 
