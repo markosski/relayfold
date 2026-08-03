@@ -14,7 +14,7 @@ const sessionKey = {
 };
 
 test('returns null when a session file does not exist', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-sessions-'));
 
     try {
         const store = new FileSessionStore(dir);
@@ -26,7 +26,7 @@ test('returns null when a session file does not exist', async () => {
 });
 
 test('round-trips JSONL session content exactly', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-sessions-'));
     const session = '{"type":"user","message":"hello"}\n{"type":"assistant","message":"world"}\n';
 
     try {
@@ -41,7 +41,7 @@ test('round-trips JSONL session content exactly', async () => {
 });
 
 test('encodes logical keys into one session file', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-sessions-'));
 
     try {
         const store = new FileSessionStore(dir);
@@ -61,7 +61,7 @@ test('encodes logical keys into one session file', async () => {
 });
 
 test('overwrites existing session content', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-sessions-'));
 
     try {
         const store = new FileSessionStore(dir);
@@ -76,7 +76,7 @@ test('overwrites existing session content', async () => {
 });
 
 test('throws a typed session store error when a session cannot be read', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-sessions-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-sessions-'));
     const serializedSessionKey = `${namespace}$workflow$task`;
     const sessionPath = join(
         dir,
@@ -103,7 +103,7 @@ test('throws a typed session store error when a session cannot be read', async (
 });
 
 test('throws a typed session store error when a session cannot be written', async () => {
-    const rootPath = join(tmpdir(), `runhelm-session-store-file-${process.pid}-${Date.now()}`);
+    const rootPath = join(tmpdir(), `relayfold-session-store-file-${process.pid}-${Date.now()}`);
 
     try {
         await writeFile(rootPath, 'not a directory');
@@ -125,5 +125,5 @@ test('throws a typed session store error when a session cannot be written', asyn
 });
 
 test('default store path uses worker-local cache instead of credential directory', () => {
-    assert.match(defaultSessionStoreDir(), /\/\.cache\/runhelm\/file_session_store$/);
+    assert.match(defaultSessionStoreDir(), /\/\.cache\/relayfold\/file_session_store$/);
 });

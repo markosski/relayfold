@@ -24,7 +24,7 @@ pub struct SqliteStorage {
     pool: SqlitePool,
 }
 
-pub const ENV_PATH: &str = "RUNHELM_STORE_SQLITE_PATH";
+pub const ENV_PATH: &str = "RELAYFOLD_STORE_SQLITE_PATH";
 
 impl SqliteStorage {
     pub async fn connect(database_path: impl AsRef<Path>) -> anyhow::Result<Self> {

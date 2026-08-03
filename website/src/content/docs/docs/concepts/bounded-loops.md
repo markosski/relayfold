@@ -3,7 +3,7 @@ title: Bounded Loops
 description: Use verifier-controlled reruns to revise part of a workflow without creating cyclic workflow definitions.
 ---
 
-Bounded loops let a verifier task reject a generation, provide feedback, and ask RunHelm to rerun a configured upstream slice. The workflow definition stays acyclic; `control.verifier` adds a bounded control edge with an explicit iteration limit.
+Bounded loops let a verifier task reject a generation, provide feedback, and ask RelayFold to rerun a configured upstream slice. The workflow definition stays acyclic; `control.verifier` adds a bounded control edge with an explicit iteration limit.
 
 Use bounded loops when a workflow should improve a result before downstream tasks consume it. Common examples include implementation and review, report drafting and validation, extraction and schema checks, or any workflow where a verifier can decide whether a previous step should try again.
 
@@ -21,7 +21,7 @@ flowchart TB
 
 ## Verifier task contract
 
-Any task kind can be a verifier task. That means the verifier itself can be an [Agent task](/runhelm/docs/concepts/tasks/agents/), [Function task](/runhelm/docs/concepts/tasks/functions/), or API Call task.
+Any task kind can be a verifier task. That means the verifier itself can be an [Agent task](/relayfold/docs/concepts/tasks/agents/), [Function task](/relayfold/docs/concepts/tasks/functions/), or API Call task.
 
 A verifier returns control output, not corrected business data:
 
@@ -38,7 +38,7 @@ or:
 }
 ```
 
-`continue` requires non-empty `feedback`. A task with `control.verifier` must not declare its own `output_schema`; RunHelm injects the verifier decision schema during workflow registration.
+`continue` requires non-empty `feedback`. A task with `control.verifier` must not declare its own `output_schema`; RelayFold injects the verifier decision schema during workflow registration.
 
 ## Workflow YAML
 
@@ -93,11 +93,11 @@ data_bindings:
     target_task_id: verify-report
 ```
 
-When `verify-report` returns `continue`, RunHelm records the feedback and creates another generation starting at `draft-report`. When it returns `complete`, downstream tasks consume the accepted generation.
+When `verify-report` returns `continue`, RelayFold records the feedback and creates another generation starting at `draft-report`. When it returns `complete`, downstream tasks consume the accepted generation.
 
 ## Task satisfaction
 
-RunHelm tracks a task attempt's execution `status` separately from its
+RelayFold tracks a task attempt's execution `status` separately from its
 `satisfaction`. Status describes whether the attempt is pending, running,
 completed, or failed. Satisfaction determines whether the attempt is accepted
 as a source of data for downstream tasks.
@@ -113,7 +113,7 @@ decision then applies to the entire generation:
 | Verifier outcome | Generation satisfaction | Result |
 | --- | --- | --- |
 | `complete` | `satisfied` | Downstream tasks can consume the generation. |
-| `continue` with iterations remaining | `unsatisfied` | RunHelm retains the rejected generation and creates the next one. |
+| `continue` with iterations remaining | `unsatisfied` | RelayFold retains the rejected generation and creates the next one. |
 | `continue` at the limit with `on_exhausted_continue: true` | `satisfied` | Downstream tasks consume the latest schema-valid generation. |
 | `continue` at the limit with `on_exhausted_continue: false` | `unsatisfied` | The workflow fails. |
 
@@ -147,7 +147,7 @@ If `rerun_from_task_id` is omitted, only the verifier task reruns. Use that for 
 
 ## Exhaustion behavior
 
-`max_iterations` limits how many generations RunHelm will attempt.
+`max_iterations` limits how many generations RelayFold will attempt.
 
 When the verifier reaches that limit and still returns `continue`:
 

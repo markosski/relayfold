@@ -9,7 +9,7 @@ recognize that it cannot complete the task without inventing information and ask
 the operator for the missing decision.
 
 The ready-to-run definition is
-[`examples/example_human_input_workflow.yaml`](https://github.com/markosski/runhelm/blob/main/examples/example_human_input_workflow.yaml)
+[`examples/example_human_input_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_human_input_workflow.yaml)
 
 ## Workflow definition
 
@@ -23,7 +23,7 @@ tasks:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |
-          You are a release coordinator preparing an announcement for RunHelm 1.4.0.
+          You are a release coordinator preparing an announcement for RelayFold 1.4.0.
 
           Release facts:
           - Added reusable Agent sessions.
@@ -64,12 +64,12 @@ tasks:
 data_bindings: []
 ```
 
-`ask: true` automatically enables RunHelm's built-in `ask_user` tool. It does
+`ask: true` automatically enables RelayFold's built-in `ask_user` tool. It does
 not need to be listed in `tools`.
 
 ## Configure credentials
 
-Add the model credential to `~/.runhelm/file_credentials.json`:
+Add the model credential to `~/.relayfold/file_credentials.json`:
 
 ```json
 {
@@ -82,17 +82,17 @@ Add the model credential to `~/.runhelm/file_credentials.json`:
 Download and register the example YAML directly from GitHub:
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/examples/example_human_input_workflow.yaml \
-  | curl -fsS -X POST "$RUNHELM_URL/workflow-def" \
+curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_human_input_workflow.yaml \
+  | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```
 
 ## Execute the workflow
 
 ```bash
-curl -fsS -X POST "$RUNHELM_URL/workflow-def/human-input-agent-workflow" \
+curl -fsS -X POST "$RELAYFOLD_URL/workflow-def/human-input-agent-workflow" \
   -H 'content-type: application/json' \
   -d '{}'
 ```
@@ -109,7 +109,7 @@ Replace `<workflow_id>` with the `id` returned when you executed the workflow,
 then read the task result:
 
 ```bash
-curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement"
+curl -fsS "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/release-announcement"
 ```
 
 Example response (the exact wording is chosen by the Agent):
@@ -129,7 +129,7 @@ Example response (the exact wording is chosen by the Agent):
 ## Submit the answer
 
 ```bash
-curl -fsS -X POST "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement/human-input" \
+curl -fsS -X POST "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/release-announcement/human-input" \
   -H 'content-type: application/json' \
   -d '{ "input": "stable" }'
 ```
@@ -149,7 +149,7 @@ Response:
 After the continuation runs, read the task result again:
 
 ```bash
-curl -fsS "$RUNHELM_URL/workflows/<workflow_id>/tasks/release-announcement"
+curl -fsS "$RELAYFOLD_URL/workflows/<workflow_id>/tasks/release-announcement"
 ```
 
 Example output:
@@ -159,7 +159,7 @@ Example output:
   "status": "success",
   "input": [],
   "output": {
-    "response": "RunHelm 1.4.0 is now live on the stable channel. This update introduces reusable Agent sessions, enables human input for workflow decisions, and resolves a bug causing duplicate task attempts when resuming workflows.",
+    "response": "RelayFold 1.4.0 is now live on the stable channel. This update introduces reusable Agent sessions, enables human input for workflow decisions, and resolves a bug causing duplicate task attempts when resuming workflows.",
     "channel": "stable"
   },
   "task_def_id": "release-announcement",
@@ -169,4 +169,4 @@ Example output:
 }
 ```
 
-See [Human Input](/runhelm/docs/concepts/human-input/) for the full behavior and design guidance.
+See [Human Input](/relayfold/docs/concepts/human-input/) for the full behavior and design guidance.

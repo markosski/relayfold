@@ -42,7 +42,7 @@ test('session load diagnostics include session key and attempt', () => {
 test('fresh initial prompt includes task prompt and upstream inputs', () => {
     const parts = buildAgentPromptParts({
         prompt: 'Draft the response.',
-        workspacePath: '/tmp/runhelm/workflow-1/taskid-draft',
+        workspacePath: '/tmp/relayfold/workflow-1/taskid-draft',
         inputs: [{ customer: 'Ada' }],
         ask: false,
         sessionReused: false,
@@ -55,13 +55,13 @@ test('fresh initial prompt includes task prompt and upstream inputs', () => {
     assert.match(parts.finalPrompt, /Upstream task data/);
     assert.match(parts.finalPrompt, /"customer": "Ada"/);
     assert.match(parts.finalPrompt, /WORKSPACE/);
-    assert.match(parts.finalPrompt, /\/tmp\/runhelm\/workflow-1\/taskid-draft/);
+    assert.match(parts.finalPrompt, /\/tmp\/relayfold\/workflow-1\/taskid-draft/);
 });
 
 test('loaded human-input continuation includes workspace and submitted response event', () => {
     const parts = buildAgentPromptParts({
         prompt: 'Original prompt should already be in the session.',
-        workspacePath: '/tmp/runhelm/workflow-1/taskid-draft',
+        workspacePath: '/tmp/relayfold/workflow-1/taskid-draft',
         inputs: [{ customer: 'Ada' }],
         inputProvided: 'The customer prefers a concise answer.',
         ask: true,
@@ -74,7 +74,7 @@ test('loaded human-input continuation includes workspace and submitted response 
     assert.match(parts.finalPrompt, /USER RESPONSE TO PREVIOUS INQUIRY/);
     assert.match(parts.finalPrompt, /concise answer/);
     assert.match(parts.finalPrompt, /WORKSPACE/);
-    assert.match(parts.finalPrompt, /\/tmp\/runhelm\/workflow-1\/taskid-draft/);
+    assert.match(parts.finalPrompt, /\/tmp\/relayfold\/workflow-1\/taskid-draft/);
     assert.doesNotMatch(parts.finalPrompt, /Original prompt should already be in the session/);
     assert.doesNotMatch(parts.finalPrompt, /Upstream task data/);
 });
@@ -82,7 +82,7 @@ test('loaded human-input continuation includes workspace and submitted response 
 test('loaded verifier continuation includes workspace and latest feedback without replaying history', () => {
     const parts = buildAgentPromptParts({
         prompt: 'Original task prompt.',
-        workspacePath: '/tmp/runhelm/workflow-1/taskid-draft',
+        workspacePath: '/tmp/relayfold/workflow-1/taskid-draft',
         inputs: [{ source: 'upstream' }],
         loopContext: {
             generation: 3,
@@ -102,7 +102,7 @@ test('loaded verifier continuation includes workspace and latest feedback withou
 
     assert.match(parts.finalPrompt, /Fix the latest issue/);
     assert.match(parts.finalPrompt, /WORKSPACE/);
-    assert.match(parts.finalPrompt, /\/tmp\/runhelm\/workflow-1\/taskid-draft/);
+    assert.match(parts.finalPrompt, /\/tmp\/relayfold\/workflow-1\/taskid-draft/);
     assert.doesNotMatch(parts.finalPrompt, /Prior verifier feedback history/);
     assert.doesNotMatch(parts.finalPrompt, /Generation 1: Prior feedback/);
     assert.doesNotMatch(parts.finalPrompt, /previous output/);
@@ -113,7 +113,7 @@ test('loaded verifier continuation includes workspace and latest feedback withou
 test('fresh verifier fallback rebuilds full context and current event', () => {
     const parts = buildAgentPromptParts({
         prompt: 'Original task prompt.',
-        workspacePath: '/tmp/runhelm/workflow-1/taskid-draft',
+        workspacePath: '/tmp/relayfold/workflow-1/taskid-draft',
         inputs: [{ source: 'upstream' }],
         loopContext: {
             generation: 3,
@@ -138,7 +138,7 @@ test('fresh verifier fallback rebuilds full context and current event', () => {
     assert.match(parts.finalPrompt, /previous output/);
     assert.match(parts.finalPrompt, /Fix the latest issue/);
     assert.match(parts.finalPrompt, /WORKSPACE/);
-    assert.match(parts.finalPrompt, /\/tmp\/runhelm\/workflow-1\/taskid-draft/);
+    assert.match(parts.finalPrompt, /\/tmp\/relayfold\/workflow-1\/taskid-draft/);
 });
 
 function payload(overrides) {

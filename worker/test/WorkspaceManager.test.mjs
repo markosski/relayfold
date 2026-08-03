@@ -12,7 +12,7 @@ import {
 } from '../dist/core/WorkspaceManager.js';
 
 test('materializes dispatched workspace suffix under worker root', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
 
     const payload = await materializeTaskWorkspace(
         {
@@ -43,7 +43,7 @@ test('materializes dispatched workspace suffix under worker root', async () => {
 });
 
 test('isolates identical workflow and task workspaces by namespace', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
     const suffixes = [
         '550e8400-e29b-41d4-a716-446655440000/workflow-1/taskid-draft',
         '550e8400-e29b-41d4-a716-446655440001/workflow-1/taskid-draft',
@@ -75,20 +75,20 @@ test('isolates identical workflow and task workspaces by namespace', async () =>
 
 test('rejects workspace suffix that escapes worker root', () => {
     assert.throws(
-        () => resolveWorkspacePath('/tmp/runhelm-workspaces', '../outside'),
+        () => resolveWorkspacePath('/tmp/relayfold-workspaces', '../outside'),
         /workspace_path_suffix must stay under the worker workspace root/
     );
 });
 
 test('rejects absolute workspace suffix', () => {
     assert.throws(
-        () => resolveWorkspacePath('/tmp/runhelm-workspaces', '/tmp/outside'),
+        () => resolveWorkspacePath('/tmp/relayfold-workspaces', '/tmp/outside'),
         /workspace_path_suffix must be a non-empty relative path/
     );
 });
 
 test('ttl cleanup retains expired active workflow workspaces', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
     await createWorkspace(root, namespacedSuffix('pending-workflow/taskid-draft'), 100);
     await createWorkspace(root, namespacedSuffix('running-workflow/taskid-draft'), 100);
     await createWorkspace(root, namespacedSuffix('input-workflow/taskid-draft'), 100);
@@ -110,7 +110,7 @@ test('ttl cleanup retains expired active workflow workspaces', async () => {
 });
 
 test('ttl cleanup removes only expired terminal workflow workspaces', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
     await createWorkspace(root, namespacedSuffix('completed-workflow/taskid-old'), 100);
     await createWorkspace(root, namespacedSuffix('failed-workflow/taskid-old'), 100);
     await createWorkspace(root, namespacedSuffix('completed-workflow/taskid-fresh'), 195);
@@ -131,7 +131,7 @@ test('ttl cleanup removes only expired terminal workflow workspaces', async () =
 });
 
 test('ttl cleanup retains paused and unknown workflow workspaces', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
     await createWorkspace(root, namespacedSuffix('paused-workflow/taskid-draft'), 100);
     await createWorkspace(root, namespacedSuffix('unknown-workflow/taskid-draft'), 100);
 
@@ -149,7 +149,7 @@ test('ttl cleanup retains paused and unknown workflow workspaces', async () => {
 });
 
 test('explicit workspace deletion removes a validated workspace regardless of workflow status', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'runhelm-worker-workspace-'));
+    const root = await mkdtemp(path.join(tmpdir(), 'relayfold-worker-workspace-'));
     const suffix = namespacedSuffix('running-workflow/taskid-draft');
     const workspacePath = await createWorkspace(root, suffix, 100);
 

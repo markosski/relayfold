@@ -1,9 +1,9 @@
 ---
 title: Scaling
-description: Scale RunHelm by adding workers and partitioning workloads across independent orchestrators.
+description: Scale RelayFold by adding workers and partitioning workloads across independent orchestrators.
 ---
 
-RunHelm separates workflow orchestration from task execution. This gives you two
+RelayFold separates workflow orchestration from task execution. This gives you two
 ways to add capacity:
 
 1. add workers to an orchestrator's worker pool
@@ -23,7 +23,7 @@ flowchart LR
     C["Workflow clients"]
 
     subgraph OM["Orchestrator machine"]
-        O["RunHelm orchestrator"]
+        O["RelayFold orchestrator"]
         S[("Workflow storage")]
         O --- S
     end
@@ -69,7 +69,7 @@ Configure every worker in the pool with the worker API URL for the same
 orchestrator:
 
 ```bash
-RUNHELM_ORCHESTRATOR_HTTP_URL=http://orchestrator:3001
+RELAYFOLD_ORCHESTRATOR_HTTP_URL=http://orchestrator:3001
 ```
 
 For a Docker Compose installation, scale the worker service from the directory
@@ -79,22 +79,22 @@ that contains the generated Compose file:
 docker compose up -d --scale worker=4
 ```
 
-Worker processes need unique worker IDs. By default, RunHelm derives an ID from
+Worker processes need unique worker IDs. By default, RelayFold derives an ID from
 the worker hostname and process ID. Set `WORKER_ID` explicitly only when your
 runtime cannot provide unique values.
 
 ### Host identity and shared state
 
-`RUNHELM_WORKER_HOST_ID` identifies the durable state domain that owns task
+`RELAYFOLD_WORKER_HOST_ID` identifies the durable state domain that owns task
 workspaces and Agent sessions. It is not the identity of an individual worker
 process.
 
 Use the same host ID for workers only when they can access the same workspace
 and session roots. Workers that do not share those roots need different host
-IDs. RunHelm pins each workflow instance to one eligible host, and workers
+IDs. RelayFold pins each workflow instance to one eligible host, and workers
 registered for that host can execute its tasks.
 
-See [Worker Host Pinning](/runhelm/docs/operations/worker-host-pinning/) for the
+See [Worker Host Pinning](/relayfold/docs/operations/worker-host-pinning/) for the
 continuity and retry behavior that follows from host identity.
 
 ### Worker scaling limits
@@ -104,7 +104,7 @@ capacity of the orchestrator's scheduling, API, queue, or storage path. Monitor
 both task throughput and orchestrator load to decide when to add workers and
 when to create another partition.
 
-The local installation defaults `RUNHELM_MAX_CONCURRENT_WORKFLOWS` to `1`.
+The local installation defaults `RELAYFOLD_MAX_CONCURRENT_WORKFLOWS` to `1`.
 Increase it when you want the orchestrator to execute more workflow instances
 concurrently; otherwise additional workers may remain idle when only one
 workflow is runnable.
@@ -134,7 +134,7 @@ Each partition should have:
   orchestrator
 
 Orchestrator partitioning is horizontal sharding, not an active-active cluster.
-RunHelm does not automatically route, replicate, or rebalance workflows between
+RelayFold does not automatically route, replicate, or rebalance workflows between
 orchestrator instances. Do not point independent orchestrators at the same
 storage database as a substitute for clustering.
 
@@ -147,4 +147,4 @@ failure domains, or separate operational ownership.
 
 Prefer stable partition boundaries. Moving an in-progress workflow between
 partitions also means moving its persisted state and any host-local workspace
-or Agent session data; RunHelm does not perform that migration automatically.
+or Agent session data; RelayFold does not perform that migration automatically.

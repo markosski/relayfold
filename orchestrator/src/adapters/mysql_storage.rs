@@ -22,11 +22,11 @@ pub struct MySqlStorage {
     pool: MySqlPool,
 }
 
-pub const ENV_HOST: &str = "RUNHELM_STORE_MYSQL_HOST";
-pub const ENV_PORT: &str = "RUNHELM_STORE_MYSQL_PORT";
-pub const ENV_DATABASE: &str = "RUNHELM_STORE_MYSQL_DATABASE";
-pub const ENV_USERNAME: &str = "RUNHELM_STORE_MYSQL_USERNAME";
-pub const ENV_PASSWORD: &str = "RUNHELM_STORE_MYSQL_PASSWORD";
+pub const ENV_HOST: &str = "RELAYFOLD_STORE_MYSQL_HOST";
+pub const ENV_PORT: &str = "RELAYFOLD_STORE_MYSQL_PORT";
+pub const ENV_DATABASE: &str = "RELAYFOLD_STORE_MYSQL_DATABASE";
+pub const ENV_USERNAME: &str = "RELAYFOLD_STORE_MYSQL_USERNAME";
+pub const ENV_PASSWORD: &str = "RELAYFOLD_STORE_MYSQL_PASSWORD";
 
 pub struct MySqlStorageConfig {
     pub host: String,

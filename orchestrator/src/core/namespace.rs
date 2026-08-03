@@ -116,7 +116,7 @@ impl NamespaceResolverPort for NamespaceResolver {
     async fn resolve(&self, api_key: Option<&str>) -> anyhow::Result<Namespace> {
         self.resolve_with_global_setting_value(
             api_key,
-            std::env::var("RUNHELM_USE_GLOBAL_NAMESPACE").ok(),
+            std::env::var("RELAYFOLD_USE_GLOBAL_NAMESPACE").ok(),
         )
         .await
     }
@@ -126,7 +126,7 @@ fn use_global_namespace_from_value(value: Option<String>) -> anyhow::Result<bool
     match value.as_deref() {
         None | Some("false") => Ok(false),
         Some("true") => Ok(true),
-        Some(_) => anyhow::bail!("RUNHELM_USE_GLOBAL_NAMESPACE must be true or false"),
+        Some(_) => anyhow::bail!("RELAYFOLD_USE_GLOBAL_NAMESPACE must be true or false"),
     }
 }
 

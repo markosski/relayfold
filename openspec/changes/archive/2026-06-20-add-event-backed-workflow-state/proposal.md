@@ -1,6 +1,6 @@
 ## Why
 
-RunHelm currently records workflow execution progress by directly mutating a full `WorkflowInstance` snapshot and saving that snapshot after meaningful transitions. This is simple, but it leaves no durable transition history and makes future auditability, debugging, and durable storage semantics harder to add cleanly.
+RelayFold currently records workflow execution progress by directly mutating a full `WorkflowInstance` snapshot and saving that snapshot after meaningful transitions. This is simple, but it leaves no durable transition history and makes future auditability, debugging, and durable storage semantics harder to add cleanly.
 
 ## What Changes
 

@@ -505,7 +505,7 @@ fn test_root_task_uses_trigger_input_during_initial_materialization() {
         workflow_def_id: def.id.clone(),
         version: 0,
         status: WorkflowStatus::Running,
-        trigger_input: Some(json!({ "repository": "markosski/runhelm" })),
+        trigger_input: Some(json!({ "repository": "markosski/relayfold" })),
         pinned_worker_host: None,
         tasks: HashMap::new(),
         verifier_states: HashMap::new(),
@@ -513,7 +513,7 @@ fn test_root_task_uses_trigger_input_during_initial_materialization() {
 
     assert_eq!(
         initial_task_input_data(&instance, &def, &task),
-        vec![json!({ "repository": "markosski/runhelm" })]
+        vec![json!({ "repository": "markosski/relayfold" })]
     );
 }
 

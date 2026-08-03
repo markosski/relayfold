@@ -2,7 +2,7 @@
 
 Resource identifiers currently stand alone throughout HTTP handlers, services, storage, the workflow queue, startup recovery, and worker dispatch. The memory adapter keys maps by ID, and SQL uses globally unique IDs and ID-only relationships. That makes a namespace filter at the API insufficient: every identity-bearing boundary must carry the same namespace.
 
-For this change, a deployment can actually select only one usable namespace by setting `RUNHELM_USE_GLOBAL_NAMESPACE=true`, which selects the readable built-in value `global-namespace` for local or single-tenant use. When the flag is false or unset, the request path validates a bearer credential and reaches a resolver boundary that deliberately remains unimplemented. API-key storage, validation, and namespace lookup are follow-up work. Startup recovery is independent of request namespace selection and discovers unfinished work directly from storage.
+For this change, a deployment can actually select only one usable namespace by setting `RELAYFOLD_USE_GLOBAL_NAMESPACE=true`, which selects the readable built-in value `global-namespace` for local or single-tenant use. When the flag is false or unset, the request path validates a bearer credential and reaches a resolver boundary that deliberately remains unimplemented. API-key storage, validation, and namespace lookup are follow-up work. Startup recovery is independent of request namespace selection and discovers unfinished work directly from storage.
 
 ## Goals / Non-Goals
 
@@ -29,15 +29,15 @@ For this change, a deployment can actually select only one usable namespace by s
 
 Add a small `Namespace` string value type shared by core, ports, adapters, and API code. Its content must be the exact built-in value `global-namespace` or a valid UUID in canonical hyphenated form. It is serializable as a string for internal asynchronous contracts and exposes the validated string through an accessor/display implementation.
 
-Validation happens when a namespace is constructed from the built-in global value or from a namespace resolver result. `RUNHELM_USE_GLOBAL_NAMESPACE` accepts only `true` or `false`; an unset value defaults to `false`, while any other configured value fails namespace resolution before a resource action. Resource payload deserialization never constructs a namespace.
+Validation happens when a namespace is constructed from the built-in global value or from a namespace resolver result. `RELAYFOLD_USE_GLOBAL_NAMESPACE` accepts only `true` or `false`; an unset value defaults to `false`, while any other configured value fails namespace resolution before a resource action. Resource payload deserialization never constructs a namespace.
 
 Alternatives considered: unrestricted strings and DNS labels make namespace allocation dependent on naming conventions and permit identifiers with inconsistent representations. The single readable built-in value provides a convenient local namespace while canonical UUIDs remain available for resolver-selected identities until the final namespace-allocation format is decided.
 
 ### Namespace selection is an HTTP boundary with global-mode precedence
 
-Create a concrete `NamespaceResolver` behind an injectable `NamespaceResolverPort`. The concrete resolver owns the shared `StoragePort`, while its single `resolve` operation receives only an optional validated bearer credential and checks `RUNHELM_USE_GLOBAL_NAMESPACE` before deciding whether storage-backed API-key resolution is needed. Public resource handlers use a request extractor backed by that resolver in router state:
+Create a concrete `NamespaceResolver` behind an injectable `NamespaceResolverPort`. The concrete resolver owns the shared `StoragePort`, while its single `resolve` operation receives only an optional validated bearer credential and checks `RELAYFOLD_USE_GLOBAL_NAMESPACE` before deciding whether storage-backed API-key resolution is needed. Public resource handlers use a request extractor backed by that resolver in router state:
 
-1. If `RUNHELM_USE_GLOBAL_NAMESPACE=true`, return `global-namespace` without using the presented credential.
+1. If `RELAYFOLD_USE_GLOBAL_NAMESPACE=true`, return `global-namespace` without using the presented credential.
 2. If the flag is false or unset, require exactly one `Authorization: Bearer <api-key>` credential and return `401 Unauthorized` for missing, malformed, or empty credentials.
 3. Otherwise use the credential and resolver-owned storage port in the API-key path. That path deliberately invokes `todo!()` in this story; it never chooses a fallback namespace.
 
@@ -61,11 +61,11 @@ Replace ID-only queue values with a `WorkflowQueueItem { namespace, workflow_ins
 
 Task dispatch includes the owning namespace in `TaskDispatch`. Workers retain it while executing the claimed task so workspace/session identity derivation includes namespace and identical workflow IDs cannot share worker-local state. Worker results do not repeat namespace; result completion uses the globally unique dispatch ID to locate the authoritative in-flight lease and its namespace.
 
-Alternatives considered: reconstructing namespace from `RUNHELM_USE_GLOBAL_NAMESPACE` in the scheduler or worker is unsafe after configuration changes and cannot support future API-key-selected namespaces.
+Alternatives considered: reconstructing namespace from `RELAYFOLD_USE_GLOBAL_NAMESPACE` in the scheduler or worker is unsafe after configuration changes and cannot support future API-key-selected namespaces.
 
 ### One orchestrator process may serve multiple namespaces
 
-An orchestrator process may concurrently execute workflows from multiple namespaces. The workflow queue, task dispatcher, in-flight lease tracking, result waiters, and storage adapters are shared physical components whose resource identities and namespace-scoped operations retain the owning namespace. Correctness never relies on a process being assigned to only one namespace, even when a deployment enables `RUNHELM_USE_GLOBAL_NAMESPACE` and public requests currently select only the global namespace.
+An orchestrator process may concurrently execute workflows from multiple namespaces. The workflow queue, task dispatcher, in-flight lease tracking, result waiters, and storage adapters are shared physical components whose resource identities and namespace-scoped operations retain the owning namespace. Correctness never relies on a process being assigned to only one namespace, even when a deployment enables `RELAYFOLD_USE_GLOBAL_NAMESPACE` and public requests currently select only the global namespace.
 
 The shared workflow queue contains composite `WorkflowQueueItem` values rather than maintaining a separate queue instance per namespace. In-flight workflow checks compare `(namespace, workflow_instance_id)`, so the same workflow instance ID may execute independently in different namespaces. Dispatch IDs remain globally unique within their existing dispatch scope, while each dispatch and lease also retains namespace for execution ownership. Workers remain deployment-scoped and may claim work from different namespaces; the claimed payload, not worker configuration, determines the namespace.
 
@@ -84,9 +84,9 @@ Optimistic workflow version conflicts are evaluated against the namespaced insta
 
 ### Internal recovery and reconciliation discover work across namespaces
 
-At process startup, task synchronization and active-instance requeue call `list_workflow_info(None, ...)` to page through unfinished workflow information across all namespaces. Every returned `WorkflowInfo` carries its namespace, and all subsequent snapshot reads, state transitions, task synchronization, and queue operations use that explicit namespace. Recovery does not depend on `RUNHELM_USE_GLOBAL_NAMESPACE` and runs whether global mode is enabled or disabled.
+At process startup, task synchronization and active-instance requeue call `list_workflow_info(None, ...)` to page through unfinished workflow information across all namespaces. Every returned `WorkflowInfo` carries its namespace, and all subsequent snapshot reads, state transitions, task synchronization, and queue operations use that explicit namespace. Recovery does not depend on `RELAYFOLD_USE_GLOBAL_NAMESPACE` and runs whether global mode is enabled or disabled.
 
-When worker liveness detects lost hosts, reconciliation also calls `list_workflow_info(None, ...)` to discover non-terminal workflows across all namespaces. It then fetches each authoritative snapshot, checks its pinned host, commits any failure transition, and removes queued work using the namespace returned by storage. Host-loss monitoring therefore does not depend on `RUNHELM_USE_GLOBAL_NAMESPACE`.
+When worker liveness detects lost hosts, reconciliation also calls `list_workflow_info(None, ...)` to discover non-terminal workflows across all namespaces. It then fetches each authoritative snapshot, checks its pinned host, commits any failure transition, and removes queued work using the namespace returned by storage. Host-loss monitoring therefore does not depend on `RELAYFOLD_USE_GLOBAL_NAMESPACE`.
 
 The unscoped option is a narrow privileged exception for internal recovery and reconciliation discovery, not a general resource-access mode. Public handlers and workflow services always call `list_workflow_info(Some(namespace), ...)`, and all other storage operations require a namespace. SQL uses an indexed unfinished-status query rather than fetching complete tenant resources merely to filter them in application memory. Memory storage may iterate its in-process summaries for the equivalent test contract.
 
@@ -111,7 +111,7 @@ A point read or mutation for an ID owned by another namespace behaves exactly li
 
 1. Stop the orchestrator and workers.
 2. Back up any state needed for rollback; this change does not import it.
-3. Configure `RUNHELM_USE_GLOBAL_NAMESPACE=true`.
+3. Configure `RELAYFOLD_USE_GLOBAL_NAMESPACE=true`.
 4. Recreate the SQL database.
 5. Deploy matching orchestrator and worker versions together.
 6. Re-register definitions and start new workflow instances in the configured namespace.

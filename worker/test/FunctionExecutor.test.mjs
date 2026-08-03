@@ -3,7 +3,7 @@ import test from 'node:test';
 import { FunctionExecutor } from '../dist/adapters/executors/FunctionExecutor.js';
 
 test('passes selected workspace path to inline function context', async () => {
-    const selectedWorkspacePath = '/tmp/runhelm/workflow-1/taskid-build-report';
+    const selectedWorkspacePath = '/tmp/relayfold/workflow-1/taskid-build-report';
     const executor = new FunctionExecutor();
 
     const result = await executor.execute(
@@ -63,7 +63,7 @@ export default async function run() {
                 },
                 required_credentials: ['gh_token'],
             },
-            workspace_path: '/tmp/runhelm/workflow-1/taskid-read-gh-token',
+            workspace_path: '/tmp/relayfold/workflow-1/taskid-read-gh-token',
             inputs: [],
         },
         {

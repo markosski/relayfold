@@ -72,9 +72,9 @@ function createWorkerId(): string {
 }
 
 function requiredWorkerHostId(): string {
-    const hostId = process.env.RUNHELM_WORKER_HOST_ID?.trim();
+    const hostId = process.env.RELAYFOLD_WORKER_HOST_ID?.trim();
     if (!hostId) {
-        throw new Error('RUNHELM_WORKER_HOST_ID is required and must identify the worker host durable state domain');
+        throw new Error('RELAYFOLD_WORKER_HOST_ID is required and must identify the worker host durable state domain');
     }
 
     return hostId;
@@ -298,7 +298,7 @@ async function runWorker(
     sessionStore: SessionStore,
     ajv: Ajv
 ) {
-    const baseUrl = (process.env.RUNHELM_ORCHESTRATOR_HTTP_URL || DEFAULT_ORCHESTRATOR_HTTP_URL)
+    const baseUrl = (process.env.RELAYFOLD_ORCHESTRATOR_HTTP_URL || DEFAULT_ORCHESTRATOR_HTTP_URL)
         .replace(/\/$/, '');
     logger.info({ baseUrl, workerId, workerHostId }, "Connecting to orchestrator HTTP API");
 

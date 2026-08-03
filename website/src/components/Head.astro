@@ -67,7 +67,7 @@ import DefaultHead from '@astrojs/starlight/components/Head.astro';
       const diagram = source.textContent?.trim();
       if (!diagram) continue;
 
-      const id = `runhelm-mermaid-${Date.now()}-${index}`;
+      const id = `relayfold-mermaid-${Date.now()}-${index}`;
       const { svg, bindFunctions } = await mermaid.render(id, diagram);
       const wrapper = document.createElement('div');
       wrapper.className = 'mermaid-diagram';

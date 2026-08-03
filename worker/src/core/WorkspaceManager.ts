@@ -23,7 +23,7 @@ export type WorkspaceCleanupResult = {
 };
 
 export function configuredWorkspaceRoot(): string {
-    return process.env.RUNHELM_WORKSPACE_ROOT || path.join(homedir(), '.cache', 'runhelm', 'workspaces');
+    return process.env.RELAYFOLD_WORKSPACE_ROOT || path.join(homedir(), '.cache', 'relayfold', 'workspaces');
 }
 
 export function validateWorkspacePathSuffix(suffix: string): void {

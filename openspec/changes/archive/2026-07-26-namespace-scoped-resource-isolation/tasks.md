@@ -1,7 +1,7 @@
 ## 1. Namespace Foundation and HTTP Selection
 
 - [x] 1.1 Add the validated `Namespace` value type for the built-in `global-namespace` and canonical UUID strings, string serialization support for internal contracts, and unit tests for accepted and rejected values.
-- [x] 1.2 Add a testable `NamespaceResolver` boundary that owns `StoragePort`, checks `RUNHELM_USE_GLOBAL_NAMESPACE`, selects `global-namespace` when true, and deliberately panics for unimplemented storage-backed API-key resolution when false or unset.
+- [x] 1.2 Add a testable `NamespaceResolver` boundary that owns `StoragePort`, checks `RELAYFOLD_USE_GLOBAL_NAMESPACE`, selects `global-namespace` when true, and deliberately panics for unimplemented storage-backed API-key resolution when false or unset.
 - [x] 1.3 Add the public request namespace extractor with global-mode precedence, `Authorization: Bearer` validation, `401 Unauthorized` failures, and health-check exemption tests.
 - [x] 1.4 Require namespace context in every public resource handler without adding namespace routing fields to public definition payloads.
 
@@ -49,7 +49,7 @@
 
 ## 8. Documentation and Verification
 
-- [x] 8.1 Update website installation, API, storage, and operational documentation for `RUNHELM_USE_GLOBAL_NAMESPACE`, bearer behavior, deferred resolver panic, cross-namespace startup recovery, and SQL recreation.
+- [x] 8.1 Update website installation, API, storage, and operational documentation for `RELAYFOLD_USE_GLOBAL_NAMESPACE`, bearer behavior, deferred resolver panic, cross-namespace startup recovery, and SQL recreation.
 - [x] 8.2 Update relevant examples and local-development configuration to enable the readable built-in `global-namespace`.
 - [x] 8.3 Run Rust formatting and the complete orchestrator test suite, then run worker formatting/type checks and tests.
 - [x] 8.4 Run the website build and strict OpenSpec validation, review the diff for accidental public namespace fields or unscoped identity paths, and resolve all failures.

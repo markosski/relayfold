@@ -1,6 +1,6 @@
 ## 1. Orchestrator IPC Server
 
-- [x] 1.1 Implement `tokio::net::UnixListener` in the Orchestrator to bind to `/tmp/runhelm.sock`.
+- [x] 1.1 Implement `tokio::net::UnixListener` in the Orchestrator to bind to `/tmp/relayfold.sock`.
 - [x] 1.2 Define the NDJSON message types for registration and task dispatch.
 - [x] 1.3 Create a thread-safe `WorkerPool` registry to manage active connections.
 - [x] 1.4 Implement a connection handler that processes worker registration and adds them to the pool.

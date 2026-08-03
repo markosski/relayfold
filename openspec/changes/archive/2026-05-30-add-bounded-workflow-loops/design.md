@@ -1,8 +1,8 @@
 ## Context
 
-RunHelm models a workflow definition as task definitions plus data bindings, and a workflow instance as materialized `TaskInstance` attempts. A normal workflow creates generation-1 attempts such as `a[1]` and `b[1]`; each attempt records its logical task definition ID and the concrete upstream attempts consumed through `input_mapping`.
+RelayFold models a workflow definition as task definitions plus data bindings, and a workflow instance as materialized `TaskInstance` attempts. A normal workflow creates generation-1 attempts such as `a[1]` and `b[1]`; each attempt records its logical task definition ID and the concrete upstream attempts consumed through `input_mapping`.
 
-Some workflows need bounded revision across more than one task. For example, a workflow may run `A -> B -> C -> D`, where verifier task `D` reviews the result and may decide that the workflow should go back to `B`. In that case RunHelm should re-execute `B -> C -> D` as a new bounded generation while preserving `A`.
+Some workflows need bounded revision across more than one task. For example, a workflow may run `A -> B -> C -> D`, where verifier task `D` reviews the result and may decide that the workflow should go back to `B`. In that case RelayFold should re-execute `B -> C -> D` as a new bounded generation while preserving `A`.
 
 The bounded-loop control point is explicit in workflow definition, but it is not a separate nested `Loop` body. A `control.verifier` block on any task kind defines a bounded control edge to itself or to a previous task in the dependency chain.
 
@@ -36,7 +36,7 @@ control:
     rerun_from_task_id: bar
 ```
 
-The verifier task must not declare its own `output_schema`. During workflow registration, RunHelm injects the decision schema requiring `decision: "complete" | "continue"` and allowing `feedback`.
+The verifier task must not declare its own `output_schema`. During workflow registration, RelayFold injects the decision schema requiring `decision: "complete" | "continue"` and allowing `feedback`.
 
 The verifier task output is the verifier decision:
 
@@ -46,7 +46,7 @@ The verifier task output is the verifier decision:
 
 The verifier decision is control output, not corrected business data. If a Function or Agent needs to transform data, model that as a normal task; use `control.verifier` only to decide whether the selected rerun slice should run again.
 
-`on_exhausted_continue: true` means that if the verifier asks to continue after `max_iterations` is reached, RunHelm finalizes the latest schema-valid generation and proceeds through normal downstream bindings.
+`on_exhausted_continue: true` means that if the verifier asks to continue after `max_iterations` is reached, RelayFold finalizes the latest schema-valid generation and proceeds through normal downstream bindings.
 
 `on_exhausted_continue: false` means exhaustion fails the workflow.
 
@@ -80,13 +80,13 @@ Within a rerun generation, bindings between tasks in the rerun slice consume out
 
 **6. Carry rerun feedback as dedicated execution metadata**
 
-When a verifier returns `continue`, RunHelm persists the feedback and creates the next generation with orchestrator-owned loop context containing generation, max iterations, ordered feedback history, and previous same-task output. This context is passed as dedicated execution metadata, not as an extra user-declared input.
+When a verifier returns `continue`, RelayFold persists the feedback and creates the next generation with orchestrator-owned loop context containing generation, max iterations, ordered feedback history, and previous same-task output. This context is passed as dedicated execution metadata, not as an extra user-declared input.
 
 Agent workers append loop context to the prompt. Function and API tasks receive the execution metadata on the normal executor path; executors may decide how much of that metadata to use.
 
 **7. Preserve observability**
 
-Rejected generations remain observable. A schema-valid task attempt in a rejected generation still has lifecycle status `Completed`; `satisfaction_status` records whether the attempt may satisfy downstream bindings. RunHelm does not roll back side effects from rejected generations.
+Rejected generations remain observable. A schema-valid task attempt in a rejected generation still has lifecycle status `Completed`; `satisfaction_status` records whether the attempt may satisfy downstream bindings. RelayFold does not roll back side effects from rejected generations.
 
 **8. Normalize workflow and task definition IDs before persistence**
 

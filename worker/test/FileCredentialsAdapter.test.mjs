@@ -6,7 +6,7 @@ import test from 'node:test';
 import { FileCredentialsAdapter } from '../dist/adapters/FileCredentialsAdapter.js';
 
 test('loads string credentials from a JSON file', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-credentials-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-credentials-'));
     const filePath = join(dir, 'file_credentials.json');
 
     try {
@@ -83,7 +83,7 @@ test('rejects non-string credential values without exposing the value', async ()
 });
 
 async function writeCredentialFile(contents) {
-    const dir = await mkdtemp(join(tmpdir(), 'runhelm-credentials-'));
+    const dir = await mkdtemp(join(tmpdir(), 'relayfold-credentials-'));
     const filePath = join(dir, 'file_credentials.json');
     await writeFile(filePath, contents);
     return { dir, filePath };

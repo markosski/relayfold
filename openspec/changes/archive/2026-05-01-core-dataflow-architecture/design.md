@@ -1,6 +1,6 @@
 ## Context
 
-The RunHelm Orchestrator is currently structured using Ports and Adapters but lacks a concrete workflow execution engine. To support complex, non-deterministic agentic workflows effectively, we need to transition to a dataflow-centric architecture where tasks run dynamically based on data availability, rather than a rigid linear pipeline.
+The RelayFold Orchestrator is currently structured using Ports and Adapters but lacks a concrete workflow execution engine. To support complex, non-deterministic agentic workflows effectively, we need to transition to a dataflow-centric architecture where tasks run dynamically based on data availability, rather than a rigid linear pipeline.
 
 ## Goals / Non-Goals
 

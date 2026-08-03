@@ -6,10 +6,10 @@ import { readFile } from 'fs/promises';
 import type { AgentSession } from '@earendil-works/pi-coding-agent';
 import { serializeAgentSessionKey, type AgentSessionKey } from '../models/AgentSession.js';
 
-export const RUNHELM_DIR = '.runhelm';
+export const RELAYFOLD_DIR = '.relayfold';
 export const SESSION_FILE_EXTENSION = '.jsonl';
 const CACHE_DIR = '.cache';
-const RUNHELM_CACHE_DIR = 'runhelm';
+const RELAYFOLD_CACHE_DIR = 'relayfold';
 const TEMP_SESSIONS_DIR = 'temp_session';
 const NATIVE_SESSIONS_DIR = 'native_session';
 
@@ -39,11 +39,11 @@ export function encodeSessionKey(sessionKey: string): string {
 
 // Path for temporary session store to load into Pi Session Manager
 export function tempSessionDir(): string {
-    return join(homedir(), CACHE_DIR, RUNHELM_CACHE_DIR, TEMP_SESSIONS_DIR);
+    return join(homedir(), CACHE_DIR, RELAYFOLD_CACHE_DIR, TEMP_SESSIONS_DIR);
 }
 
 export function nativeSessionDir(): string {
-    return join(homedir(), CACHE_DIR, RUNHELM_CACHE_DIR, NATIVE_SESSIONS_DIR);
+    return join(homedir(), CACHE_DIR, RELAYFOLD_CACHE_DIR, NATIVE_SESSIONS_DIR);
 }
 
 export async function materializePiSessionFile(session_key: AgentSessionKey, contents: string): Promise<string> {

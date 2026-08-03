@@ -3,11 +3,11 @@ import { homedir } from 'os';
 import { join } from 'path';
 import type { CredentialName, CredentialsPort } from '../core/ports/CredentialsPort.js';
 
-const RUNHELM_DIR = '.runhelm';
+const RELAYFOLD_DIR = '.relayfold';
 const CREDENTIALS_FILE = 'file_credentials.json';
 
 export function defaultCredentialsFilePath(): string {
-    return join(homedir(), RUNHELM_DIR, CREDENTIALS_FILE);
+    return join(homedir(), RELAYFOLD_DIR, CREDENTIALS_FILE);
 }
 
 export class FileCredentialsAdapter implements CredentialsPort {

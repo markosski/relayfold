@@ -14,18 +14,18 @@ use orchestrator::ports::storage::{
 };
 use serde_json::json;
 
-const TEST_ENV_HOST: &str = "RUNHELM_STORE_MYSQL_TEST_HOST";
-const TEST_ENV_PORT: &str = "RUNHELM_STORE_MYSQL_TEST_PORT";
-const TEST_ENV_DATABASE: &str = "RUNHELM_STORE_MYSQL_TEST_DATABASE";
-const TEST_ENV_USERNAME: &str = "RUNHELM_STORE_MYSQL_TEST_USERNAME";
-const TEST_ENV_PASSWORD: &str = "RUNHELM_STORE_MYSQL_TEST_PASSWORD";
+const TEST_ENV_HOST: &str = "RELAYFOLD_STORE_MYSQL_TEST_HOST";
+const TEST_ENV_PORT: &str = "RELAYFOLD_STORE_MYSQL_TEST_PORT";
+const TEST_ENV_DATABASE: &str = "RELAYFOLD_STORE_MYSQL_TEST_DATABASE";
+const TEST_ENV_USERNAME: &str = "RELAYFOLD_STORE_MYSQL_TEST_USERNAME";
+const TEST_ENV_PASSWORD: &str = "RELAYFOLD_STORE_MYSQL_TEST_PASSWORD";
 
 fn required_test_env(name: &str) -> String {
     std::env::var(name).unwrap_or_else(|_| panic!("{name} must be set"))
 }
 
 #[tokio::test]
-#[ignore = "requires RUNHELM_STORE_MYSQL_TEST_* and a dedicated MySQL database"]
+#[ignore = "requires RELAYFOLD_STORE_MYSQL_TEST_* and a dedicated MySQL database"]
 async fn persists_and_reconstructs_workflow_state() {
     let port = std::env::var(TEST_ENV_PORT)
         .map(|value| {
