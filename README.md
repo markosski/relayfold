@@ -1,7 +1,7 @@
 # RelayFold
 
 <p align="center">
-  <img src="relayfold_logo_large.png" alt="RelayFold logo" width="670">
+  <img src="resources/relayfold_logo.png" alt="RelayFold logo" width="670">
 </p>
 
 RelayFold is an agentic workflow orchestrator for composing AI agents, JavaScript
