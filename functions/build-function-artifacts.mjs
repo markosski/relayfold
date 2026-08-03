@@ -8,22 +8,31 @@ const functionsRoot = dirname(fileURLToPath(import.meta.url));
 
 export async function buildFunctionArtifacts({ root, functions }) {
   const distDir = join(root, "dist");
+  const packageDependencies = await readPackageDependencies(root);
   await mkdir(distDir, { recursive: true });
 
   for (const def of functions) {
     const code = await readFunctionCode(root, def.source);
+    const dependencies = def.dependencies ?? packageDependencies;
     const functionDef = {
       id: def.id,
-      dependencies: def.dependencies,
+      dependencies,
       code: code.trimEnd(),
     };
-    const dependencyYaml = def.dependencies.length === 0
+    const dependencyYaml = dependencies.length === 0
       ? ["dependencies: []"]
-      : ["dependencies:", ...dependencyLines(def.dependencies)];
+      : ["dependencies:", ...dependencyLines(dependencies)];
     const yaml = [`id: ${def.id}`, ...dependencyYaml, "code: |", indent(code.trimEnd(), 2), ""].join("\n");
     await writeFile(join(distDir, `${def.id}.yaml`), yaml, "utf8");
     await writeFile(join(distDir, `${def.id}.json`), `${JSON.stringify(functionDef, null, 2)}\n`, "utf8");
   }
+}
+
+async function readPackageDependencies(root) {
+  const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+  return Object.entries(packageJson.dependencies ?? {})
+    .map(([name, version]) => ({ name, version }))
+    .sort((left, right) => left.name.localeCompare(right.name));
 }
 
 async function readFunctionCode(root, source) {

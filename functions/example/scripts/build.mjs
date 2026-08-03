@@ -8,7 +8,6 @@ const functions = [
   {
     id: "example.example",
     source: "src/example.ts",
-    dependencies: [],
   }
 ];
 
