@@ -45,8 +45,8 @@ test('loads a TypeScript Pi extension tool through the Pi resource loader', asyn
 
         assert.deepEqual(tools.map((tool) => tool.name), ['hello_ts_tool']);
 
-        const result = await tools[0].execute('call-1', { name: 'Relayfold' });
-        assert.equal(result.content[0].text, 'hello Relayfold');
+        const result = await tools[0].execute('call-1', { name: 'RelayFold' });
+        assert.equal(result.content[0].text, 'hello RelayFold');
         assert.equal(result.details.cwd, dir);
         assert.equal(result.details.hasUI, false);
     } finally {
@@ -131,7 +131,7 @@ Assign priority and route the ticket.
     }
 });
 
-test('loads mounted Relayfold skills', async () => {
+test('loads mounted RelayFold skills', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'relayfold-mounted-skill-'));
     const skillDir = join(dir, '.pi-agent', 'skills', 'ticket-triage');
 

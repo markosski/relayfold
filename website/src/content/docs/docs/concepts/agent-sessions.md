@@ -5,7 +5,7 @@ description: Understand how Agent tasks reuse conversation state across retries,
 
 Agent tasks can persist conversation sessions on the worker. A session contains Agent conversation state such as messages, tool calls, compaction entries, and provider-specific details. It does not replace workflow state.
 
-Relayfold keeps workflow state separate from Agent transcripts. The orchestrator remains the source of truth for workflow status, task attempts, verifier generations, input mappings, `InputNeeded` questions, and downstream data binding.
+RelayFold keeps workflow state separate from Agent transcripts. The orchestrator remains the source of truth for workflow status, task attempts, verifier generations, input mappings, `InputNeeded` questions, and downstream data binding.
 
 ## Reuse policy
 
@@ -23,7 +23,7 @@ kind:
     reuse_session: true
 ```
 
-When `reuse_session` is omitted, Relayfold treats it as enabled.
+When `reuse_session` is omitted, RelayFold treats it as enabled.
 
 When `reuse_session: true`, the worker derives a session key from the claimed
 namespace, workflow instance ID, and logical task ID. Later attempts for the same
@@ -64,7 +64,7 @@ If a reusable session cannot be loaded, the worker creates a fresh session and r
 
 The default worker file session store is worker-local. It persists across attempts handled by the same worker environment, but it is not durable application storage.
 
-Relayfold does not expose session file paths through task payloads, task results, or orchestrator state. Function and API Call tasks do not receive Agent session keys or transcript contents.
+RelayFold does not expose session file paths through task payloads, task results, or orchestrator state. Function and API Call tasks do not receive Agent session keys or transcript contents.
 
 ## Relationship to data bindings
 

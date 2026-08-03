@@ -1,16 +1,16 @@
 ---
-title: Relayfold Documentation
-description: Learn what Relayfold is and how its orchestrator, workers, and workflow model fit together.
+title: RelayFold Documentation
+description: Learn what RelayFold is and how its orchestrator, workers, and workflow model fit together.
 ---
 
-Relayfold is an agentic workflow orchestrator for teams that want to compose AI agents, API calls, and code execution into reliable multi-step runs. Agent tasks use a provider-agnostic model interface, so each task can select the model provider that fits its role without changing the workflow execution model.
+RelayFold is an agentic workflow orchestrator for teams that want to compose AI agents, API calls, and code execution into reliable multi-step runs. Agent tasks use a provider-agnostic model interface, so each task can select the model provider that fits its role without changing the workflow execution model.
 
 It is built around a separation between the control plane and execution plane:
 
 - The **orchestrator** owns workflow definitions, run state, scheduling, and status APIs.
 - The **worker** executes individual task payloads in an isolated runtime with typed inputs and outputs.
 
-## Why Relayfold
+## Why RelayFold
 
 Most agent demos stop at "the model produced an answer." Real systems need more structure:
 
@@ -21,9 +21,9 @@ Most agent demos stop at "the model produced an answer." Real systems need more 
 - typed contracts between tasks
 - pluggable execution backends and credentials
 
-Relayfold treats an agent the same way it treats a function or API task: as a node in a workflow with declared inputs, outputs, and credentials.
+RelayFold treats an agent the same way it treats a function or API task: as a node in a workflow with declared inputs, outputs, and credentials.
 
-## Relayfold features
+## RelayFold features
 
 - **Provider-agnostic Agent tasks** — choose the model provider that fits each step without changing the workflow execution model.
 - **Mixed task workflows** — compose AI agents, JavaScript functions, and direct API calls in one workflow, with explicit data bindings and optional schema validation between steps.
@@ -35,7 +35,7 @@ Relayfold treats an agent the same way it treats a function or API task: as a no
 
 ## Current status
 
-> **Relayfold is still in an early development stage, expect bugs and breaking changes.**
+> **RelayFold is still in an early development stage, expect bugs and breaking changes.**
 
 ## Where to start?
 

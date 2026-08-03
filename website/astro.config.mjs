@@ -8,10 +8,10 @@ export default defineConfig({
   integrations: [
     react(),
     starlight({
-      title: 'Relayfold',
+      title: 'RelayFold',
       logo: {
         src: './public/relayfold-logo.png',
-        alt: 'Relayfold',
+        alt: 'RelayFold',
       },
       social: [
         {

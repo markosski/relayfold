@@ -1,9 +1,9 @@
 ---
 title: Workflow YAML Reference
-description: Reference the workflow definition fields used by Relayfold.
+description: Reference the workflow definition fields used by RelayFold.
 ---
 
-Relayfold workflow definitions are JSON or YAML documents. The API accepts either
+RelayFold workflow definitions are JSON or YAML documents. The API accepts either
 format directly and stores the definition canonically as JSON.
 
 ## Top-level fields
@@ -51,7 +51,7 @@ tasks:
 | `kind` | Yes | One of `agent`, `function`, or `apiCall`. |
 | `timeout_secs` | No | Task execution timeout. |
 | `input_schemas` | No | JSON Schemas for expected input slots. |
-| `output_schema` | No | JSON Schema for task output. Verifier tasks must omit this because Relayfold injects the decision schema. |
+| `output_schema` | No | JSON Schema for task output. Verifier tasks must omit this because RelayFold injects the decision schema. |
 | `workspace` | No | Workspace group assignment. |
 | `required_credentials` | Yes | Named credentials required before execution. Use `[]` when none are needed. |
 | `control` | No | Verifier control settings for bounded loops. |

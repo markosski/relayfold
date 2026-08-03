@@ -1,4 +1,4 @@
-# Canonical Compose template for release images and `relayfold init`.
+# Canonical Compose template for release images and `rf init`.
 services:
   orchestrator:
     image: ${RELAYFOLD_ORCHESTRATOR_IMAGE}

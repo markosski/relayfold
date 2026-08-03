@@ -1,9 +1,9 @@
 ---
 title: Use Cases
-description: Practical ways to compose Relayfold agents, functions, and APIs into reliable workflows.
+description: Practical ways to compose RelayFold agents, functions, and APIs into reliable workflows.
 ---
 
-Relayfold is useful when a job needs more than one model response: several specialized steps, explicit handoffs, validation, human input, or a durable record of what ran. The patterns below are starting points for workflows you can adapt to your tools and policies.
+RelayFold is useful when a job needs more than one model response: several specialized steps, explicit handoffs, validation, human input, or a durable record of what ran. The patterns below are starting points for workflows you can adapt to your tools and policies.
 
 ## Scan repositories for vulnerabilities
 

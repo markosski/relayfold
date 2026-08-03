@@ -1,6 +1,6 @@
 ## Why
 
-Relayfold currently treats definitions, workflow instances, task state, events, queue entries, and worker execution as globally addressable, so reused identifiers can collide and operational paths can cross tenant boundaries. Namespace-scoped identity is required before API keys can safely select tenants in a shared deployment.
+RelayFold currently treats definitions, workflow instances, task state, events, queue entries, and worker execution as globally addressable, so reused identifiers can collide and operational paths can cross tenant boundaries. Namespace-scoped identity is required before API keys can safely select tenants in a shared deployment.
 
 ## What Changes
 

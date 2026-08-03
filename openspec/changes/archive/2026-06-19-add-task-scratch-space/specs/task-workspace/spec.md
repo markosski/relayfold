@@ -32,7 +32,7 @@ The system SHALL allow a task to declare `workspace.group_name` to replace its d
 - **THEN** the task receives exactly one selected workspace path
 
 ### Requirement: Worker-Local Workspace Directories
-The system SHALL create workspace directories under a configured worker-local workspace root using Relayfold-owned path construction.
+The system SHALL create workspace directories under a configured worker-local workspace root using RelayFold-owned path construction.
 
 #### Scenario: Private workspace key is derived
 - **WHEN** a task without `workspace.group_name` is prepared for execution
@@ -55,7 +55,7 @@ The system SHALL create workspace directories under a configured worker-local wo
 - **THEN** the workspace includes a `.timestamp` marker usable by later stale-directory cleanup
 
 ### Requirement: Workspace Manager Lifecycle
-The system SHALL provide an orchestrator-side `WorkspaceManager` component for deriving workspace keys, creating selected workspaces, resolving workflow-instance group workspaces, and cleaning Relayfold-owned workspaces.
+The system SHALL provide an orchestrator-side `WorkspaceManager` component for deriving workspace keys, creating selected workspaces, resolving workflow-instance group workspaces, and cleaning RelayFold-owned workspaces.
 
 #### Scenario: Workspace manager creates task workspace
 - **WHEN** a task execution is prepared
@@ -66,14 +66,14 @@ The system SHALL provide an orchestrator-side `WorkspaceManager` component for d
 - **THEN** `WorkspaceManager` derives the same group workspace key and resolves the same selected workspace path
 
 #### Scenario: Workspace manager cleans workspace
-- **WHEN** cleanup is requested for a Relayfold-owned workspace
+- **WHEN** cleanup is requested for a RelayFold-owned workspace
 - **THEN** `WorkspaceManager` attempts to remove that workspace directory
 
 ### Requirement: Workspace TTL Cleanup
 The system SHALL support configurable workspace TTL cleanup through `WorkspaceManager`.
 
 #### Scenario: Expired workspace is cleaned
-- **WHEN** a Relayfold-owned workspace is older than the configured TTL
+- **WHEN** a RelayFold-owned workspace is older than the configured TTL
 - **THEN** `WorkspaceManager` cleanup may remove that workspace
 
 #### Scenario: Cleanup monitor runs periodically

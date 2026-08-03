@@ -1,6 +1,6 @@
 # Project Website
 
-The `website/` directory contains the static Relayfold website and documentation site. It uses Astro with Starlight.
+The `website/` directory contains the static RelayFold website and documentation site. It uses Astro with Starlight.
 
 ## Structure
 

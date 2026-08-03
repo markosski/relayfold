@@ -1,6 +1,6 @@
 ## Why
 
-Relayfold currently passes an orchestrator-local workspace path to whichever worker claims a task, which works only when orchestrator and workers share the same host and filesystem. Remote workers, paused workflows, and restarted orchestrators need persisted placement and session state so tasks that share local workspace or Agent session context resume on a compatible host instead of losing state.
+RelayFold currently passes an orchestrator-local workspace path to whichever worker claims a task, which works only when orchestrator and workers share the same host and filesystem. Remote workers, paused workflows, and restarted orchestrators need persisted placement and session state so tasks that share local workspace or Agent session context resume on a compatible host instead of losing state.
 
 ## What Changes
 

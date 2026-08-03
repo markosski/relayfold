@@ -110,7 +110,7 @@ Example response:
 
 ## Why this is useful
 
-This pattern is the smallest Relayfold workflow shape:
+This pattern is the smallest RelayFold workflow shape:
 
 - trigger input becomes the Function task input
 - task output is validated with `output_schema`

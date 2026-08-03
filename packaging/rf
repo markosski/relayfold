@@ -12,13 +12,13 @@ DEFAULT_VERSION="0"
 usage() {
   cat <<'USAGE'
 Usage:
-  relayfold init [--version VERSION] [--registry REGISTRY]
-  relayfold up
-  relayfold down
-  relayfold status
-  relayfold logs [SERVICE]
-  relayfold doctor
-  relayfold build [--ref REF] [--tag-prefix PREFIX] [--version VERSION] [--push]
+  rf init [--version VERSION] [--registry REGISTRY]
+  rf up
+  rf down
+  rf status
+  rf logs [SERVICE]
+  rf doctor
+  rf build [--ref REF] [--tag-prefix PREFIX] [--version VERSION] [--push]
 
 Environment:
   RELAYFOLD_HOME defaults to ~/.relayfold.
@@ -89,7 +89,7 @@ init_relayfold() {
   done
 
   if [ ! -f "$COMPOSE_TEMPLATE_FILE" ]; then
-    echo "Compose template was not found at $COMPOSE_TEMPLATE_FILE; reinstall Relayfold with packaging/install.sh." >&2
+    echo "Compose template was not found at $COMPOSE_TEMPLATE_FILE; reinstall RelayFold with packaging/install.sh." >&2
     exit 1
   fi
 
@@ -102,7 +102,7 @@ init_relayfold() {
   write_config "$version" "$registry"
   write_compose
 
-  echo "Initialized Relayfold local config in $RELAYFOLD_HOME"
+  echo "Initialized RelayFold local config in $RELAYFOLD_HOME"
   echo "Edit $RELAYFOLD_HOME/file_credentials.json before running workflows that require credentials."
 }
 
@@ -152,7 +152,7 @@ build_images() {
   elif [ -x "./packaging/build-images.sh" ]; then
     "./packaging/build-images.sh" "$@"
   else
-    echo "build-images.sh was not found. Run this command from a Relayfold checkout or install packaging/build-images.sh next to relayfold." >&2
+    echo "build-images.sh was not found. Run this command from a RelayFold checkout or install packaging/build-images.sh next to rf." >&2
     exit 1
   fi
 }

@@ -67,7 +67,7 @@ flowchart TD
 
 1. `fetch-issue` uses `gh issue view` through the agent `bash` tool and returns structured issue details.
 2. `implement-change` receives the issue details, updates the checkout in the shared `repo` workspace, runs relevant checks, and can pause for clarification when the issue is underspecified.
-3. `review-implementation` checks the implementation against the issue criteria and test results. It can return `continue` with feedback, causing Relayfold to rerun from `implement-change` up to the bounded loop limit.
+3. `review-implementation` checks the implementation against the issue criteria and test results. It can return `continue` with feedback, causing RelayFold to rerun from `implement-change` up to the bounded loop limit.
 4. `create-pull-request` runs after the verifier accepts the implementation, commits and pushes the branch, and creates the PR with `gh pr create`.
 
 All tasks use the same `workspace.group_name: repo` so files produced or edited by one step are visible to later steps.

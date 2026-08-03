@@ -1,9 +1,9 @@
 ---
 title: Scaling
-description: Scale Relayfold by adding workers and partitioning workloads across independent orchestrators.
+description: Scale RelayFold by adding workers and partitioning workloads across independent orchestrators.
 ---
 
-Relayfold separates workflow orchestration from task execution. This gives you two
+RelayFold separates workflow orchestration from task execution. This gives you two
 ways to add capacity:
 
 1. add workers to an orchestrator's worker pool
@@ -23,7 +23,7 @@ flowchart LR
     C["Workflow clients"]
 
     subgraph OM["Orchestrator machine"]
-        O["Relayfold orchestrator"]
+        O["RelayFold orchestrator"]
         S[("Workflow storage")]
         O --- S
     end
@@ -79,7 +79,7 @@ that contains the generated Compose file:
 docker compose up -d --scale worker=4
 ```
 
-Worker processes need unique worker IDs. By default, Relayfold derives an ID from
+Worker processes need unique worker IDs. By default, RelayFold derives an ID from
 the worker hostname and process ID. Set `WORKER_ID` explicitly only when your
 runtime cannot provide unique values.
 
@@ -91,7 +91,7 @@ process.
 
 Use the same host ID for workers only when they can access the same workspace
 and session roots. Workers that do not share those roots need different host
-IDs. Relayfold pins each workflow instance to one eligible host, and workers
+IDs. RelayFold pins each workflow instance to one eligible host, and workers
 registered for that host can execute its tasks.
 
 See [Worker Host Pinning](/relayfold/docs/operations/worker-host-pinning/) for the
@@ -134,7 +134,7 @@ Each partition should have:
   orchestrator
 
 Orchestrator partitioning is horizontal sharding, not an active-active cluster.
-Relayfold does not automatically route, replicate, or rebalance workflows between
+RelayFold does not automatically route, replicate, or rebalance workflows between
 orchestrator instances. Do not point independent orchestrators at the same
 storage database as a substitute for clustering.
 
@@ -147,4 +147,4 @@ failure domains, or separate operational ownership.
 
 Prefer stable partition boundaries. Moving an in-progress workflow between
 partitions also means moving its persisted state and any host-local workspace
-or Agent session data; Relayfold does not perform that migration automatically.
+or Agent session data; RelayFold does not perform that migration automatically.

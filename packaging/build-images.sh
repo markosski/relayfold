@@ -6,7 +6,7 @@ usage() {
 Usage:
   packaging/build-images.sh [--ref REF] [--tag-prefix PREFIX] [--version VERSION] [--push]
 
-Build Relayfold runtime images from the current checkout or from a git ref.
+Build RelayFold runtime images from the current checkout or from a git ref.
 
 Options:
   --ref REF             Git ref to archive and build, for example v0.3.1.

@@ -1,8 +1,8 @@
 ## Context
 
-Relayfold Agent tasks currently create a fresh worker-side agent execution for each attempt. Verifier retries and human-input resumes preserve workflow lineage in the orchestrator, but the worker reconstructs conversational context by injecting upstream inputs, verifier feedback, previous output, or human responses into a new prompt. That keeps the orchestrator deterministic, but it makes the engine responsible for more prompt-history management than it should own.
+RelayFold Agent tasks currently create a fresh worker-side agent execution for each attempt. Verifier retries and human-input resumes preserve workflow lineage in the orchestrator, but the worker reconstructs conversational context by injecting upstream inputs, verifier feedback, previous output, or human responses into a new prompt. That keeps the orchestrator deterministic, but it makes the engine responsible for more prompt-history management than it should own.
 
-Pi already supports persistent JSONL sessions through `SessionManager`, including creating, opening, listing, and continuing sessions. Relayfold should use that capability behind a Relayfold-owned session storage boundary so Agent tasks can resume the same conversation across attempts, worker restarts, and future distributed workers.
+Pi already supports persistent JSONL sessions through `SessionManager`, including creating, opening, listing, and continuing sessions. RelayFold should use that capability behind a RelayFold-owned session storage boundary so Agent tasks can resume the same conversation across attempts, worker restarts, and future distributed workers.
 
 ## Goals / Non-Goals
 
@@ -25,11 +25,11 @@ Pi already supports persistent JSONL sessions through `SessionManager`, includin
 
 ## Decisions
 
-### Add a Relayfold session storage boundary
+### Add a RelayFold session storage boundary
 
 Introduce a worker-side session storage abstraction for Agent sessions. The initial implementation should be file-backed and compatible with Pi `SessionManager` persistent session files. The abstraction should expose operations such open/load, persist, and resolve a stable session key to a local path usable by Pi.
 
-The session key passed to the worker should not assume that the worker always has the same local filesystem path. Use a logical Relayfold session key with enough information for the worker to resolve it through the configured store.
+The session key passed to the worker should not assume that the worker always has the same local filesystem path. Use a logical RelayFold session key with enough information for the worker to resolve it through the configured store.
 
 For reusable Agent sessions, the session key is derived by convention from:
 
@@ -94,7 +94,7 @@ The first storage adapter should support local file-backed sessions, suitable fo
 
 Workers should write updates atomically where possible. Blob-backed implementations should use generation IDs, ETags, or equivalent compare-and-swap semantics to avoid overwriting another worker's update.
 
-Alternative considered: depend directly on Pi's default `~/.pi/agent/sessions` layout. That is useful for prototyping, but Relayfold needs explicit configuration, test isolation, and a path to remote storage.
+Alternative considered: depend directly on Pi's default `~/.pi/agent/sessions` layout. That is useful for prototyping, but RelayFold needs explicit configuration, test isolation, and a path to remote storage.
 
 ### Preserve strict ownership boundaries
 
@@ -123,7 +123,7 @@ This keeps the core engine observable and deterministic while allowing Agent imp
 - [Risk] Local file-backed storage does not work for distributed workers -> Mitigation: define the storage boundary before implementation and treat local files as the first adapter, not the only design.
 - [Risk] Concurrent attempts mutate the same session -> Mitigation: serialize attempts for a logical Agent session initially, and require optimistic concurrency controls for blob-backed storage.
 - [Risk] Session content can contain sensitive user data and tool outputs -> Mitigation: keep session storage configurable, document retention expectations, and avoid copying session contents into broad workflow status APIs.
-- [Risk] Pi session format changes -> Mitigation: isolate Pi-specific file handling in the worker adapter and expose only Relayfold-owned session keys through orchestrator APIs.
+- [Risk] Pi session format changes -> Mitigation: isolate Pi-specific file handling in the worker adapter and expose only RelayFold-owned session keys through orchestrator APIs.
 - [Risk] Debugging becomes harder if feedback is only in the session -> Mitigation: keep structured human-response and verifier-feedback events in task metadata or related orchestration state, but do not replay them as full prompt history by default.
 
 ## Migration Plan
@@ -142,5 +142,5 @@ Rollback before launch can disable durable session reuse and return Agent execut
 ## Open Questions
 
 - Should `reuse_session = false` use attempt-scoped durable sessions for observability, or in-memory sessions with no durable persistence?
-- What exact serialized session key format should Relayfold use for file-backed and future blob-backed sessions?
+- What exact serialized session key format should RelayFold use for file-backed and future blob-backed sessions?
 - What retention and cleanup policy should apply to session files after workflow completion?

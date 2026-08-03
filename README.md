@@ -1,10 +1,10 @@
-# Relayfold
+# RelayFold
 
 <p align="center">
-  <img src="relayfold_logo_large.png" alt="Relayfold logo" width="670">
+  <img src="relayfold_logo_large.png" alt="RelayFold logo" width="670">
 </p>
 
-Relayfold is an agentic workflow orchestrator for composing AI agents, JavaScript
+RelayFold is an agentic workflow orchestrator for composing AI agents, JavaScript
 functions, and API calls into reliable, observable multi-step runs.
 
 Workflows define task dependencies, data flow, schemas, credentials, and
@@ -13,9 +13,9 @@ scheduling, while workers execute tasks in isolated runtimes. This
 separation lets execution scale independently without giving up a consistent, observable
 workflow model.
 
-> Relayfold is in early development. Expect bugs and breaking changes.
+> RelayFold is in early development. Expect bugs and breaking changes.
 
-## What Relayfold Provides
+## What RelayFold Provides
 
 - Mixed workflows of [Agent, Function, and API Call tasks](https://markosski.github.io/relayfold/docs/concepts/tasks/)
 - Explicit [workflow data flow and runtime state](https://markosski.github.io/relayfold/docs/concepts/workflows/)
@@ -26,11 +26,11 @@ workflow model.
 
 ## Get Started
 
-The [Relayfold documentation](https://markosski.github.io/relayfold/docs/) is the
+The [RelayFold documentation](https://markosski.github.io/relayfold/docs/) is the
 authoritative source for installation, concepts, guides, examples, and API
 details.
 
-- [Install Relayfold locally](https://markosski.github.io/relayfold/docs/install/)
+- [Install RelayFold locally](https://markosski.github.io/relayfold/docs/install/)
 - [Register and run your first workflow](https://markosski.github.io/relayfold/docs/guides/register-and-run-workflow/)
 - [Read the workflow YAML reference](https://markosski.github.io/relayfold/docs/concepts/workflow-yaml/)
 - [Try a simple Function workflow](https://markosski.github.io/relayfold/docs/examples/simple-function-workflow/)

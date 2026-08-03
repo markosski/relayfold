@@ -3,7 +3,7 @@ title: API Reference
 description: HTTP endpoints for registering workflows, starting runs, inspecting state, controlling execution, and worker coordination.
 ---
 
-Relayfold exposes a public orchestrator API for users and operators, plus a worker API used by Relayfold workers. Local Docker installs expose the public API on `http://localhost:3000`. The worker API listens separately on `http://localhost:3001` by default and is intended for worker runtime integration.
+RelayFold exposes a public orchestrator API for users and operators, plus a worker API used by RelayFold workers. Local Docker installs expose the public API on `http://localhost:3000`. The worker API listens separately on `http://localhost:3001` by default and is intended for worker runtime integration.
 
 Examples use:
 
@@ -12,7 +12,7 @@ export RELAYFOLD_URL=http://localhost:3000
 ```
 
 For the currently supported single-tenant request path, configure
-`RELAYFOLD_USE_GLOBAL_NAMESPACE=true`. Relayfold then selects the exact built-in
+`RELAYFOLD_USE_GLOBAL_NAMESPACE=true`. RelayFold then selects the exact built-in
 namespace `global-namespace` and ignores any `Authorization` header. When the
 variable is unset or `false`, missing or malformed bearer credentials return
 `401 Unauthorized`. A well-formed `Authorization: Bearer <api-key>` credential
@@ -117,7 +117,7 @@ curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
   --data-binary @workflow.yaml
 ```
 
-Relayfold auto-detects JSON or YAML from the request body. A `Content-Type`
+RelayFold auto-detects JSON or YAML from the request body. A `Content-Type`
 containing `yaml` is treated as a parsing hint, but it is not required. An
 invalid document returns `400 Bad Request`.
 
@@ -212,7 +212,7 @@ immutable and an overwrite returns `409 Conflict`:
 }
 ```
 
-Relayfold does not enforce a versioning scheme. Suffixes such as `_v2` are a
+RelayFold does not enforce a versioning scheme. Suffixes such as `_v2` are a
 suggested convention for choosing a new definition ID.
 
 ## Function definitions
@@ -615,7 +615,7 @@ Response:
 
 ## Worker endpoints
 
-Worker endpoints are for Relayfold worker processes. Application clients normally use the public endpoints above.
+Worker endpoints are for RelayFold worker processes. Application clients normally use the public endpoints above.
 
 Use a separate worker API base URL:
 

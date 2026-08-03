@@ -1,9 +1,9 @@
 ---
 title: Tasks
-description: Understand the task types that make up Relayfold workflows.
+description: Understand the task types that make up RelayFold workflows.
 ---
 
-Tasks are the executable nodes in a Relayfold workflow. Each task receives structured inputs, runs on a worker runtime, and returns structured output for downstream tasks.
+Tasks are the executable nodes in a RelayFold workflow. Each task receives structured inputs, runs on a worker runtime, and returns structured output for downstream tasks.
 
 A workflow can combine different task kinds in one run:
 

@@ -27,12 +27,15 @@ install_packaging_file() {
   chmod "$mode" "$target"
 }
 
-install_packaging_file relayfold "$install_dir/relayfold" 755
+install_packaging_file rf "$install_dir/rf" 755
 install_packaging_file build-images.sh "$install_dir/build-images.sh" 755
 install_packaging_file docker-compose.release.yml "$install_dir/docker-compose.release.yml" 644
 
-echo "Installed relayfold to $install_dir/relayfold"
+ln -sf rf "$install_dir/relayfold"
+
+echo "Installed rf to $install_dir/rf"
+echo "Installed relayfold compatibility alias at $install_dir/relayfold"
 case ":$PATH:" in
   *":$install_dir:"*) ;;
-  *) echo "Add $install_dir to PATH to run relayfold from any directory." ;;
+  *) echo "Add $install_dir to PATH to run rf from any directory." ;;
 esac

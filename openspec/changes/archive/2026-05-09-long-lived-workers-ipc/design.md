@@ -1,6 +1,6 @@
 ## Context
 
-Relayfold currently uses an ephemeral container model where each task execution spins up a fresh Docker container and Node.js environment. This results in several seconds of latency per task. This design introduces a persistent IPC-based worker pool to eliminate this overhead.
+RelayFold currently uses an ephemeral container model where each task execution spins up a fresh Docker container and Node.js environment. This results in several seconds of latency per task. This design introduces a persistent IPC-based worker pool to eliminate this overhead.
 
 ## Goals / Non-Goals
 

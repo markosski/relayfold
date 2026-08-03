@@ -3,7 +3,7 @@ title: Register and Run a Workflow
 description: Register a workflow definition, start a run, inspect status, and read task output.
 ---
 
-This guide walks through the smallest useful Relayfold API flow:
+This guide walks through the smallest useful RelayFold API flow:
 
 1. Create a workflow definition.
 2. Register a workflow definition.
@@ -20,7 +20,7 @@ export RELAYFOLD_URL=http://localhost:3000
 ## Create a workflow
 
 The quickest way to create a workflow is to give your coding agent access to the
-Relayfold repository. Add Relayfold to your application repository as a Git
+RelayFold repository. Add RelayFold to your application repository as a Git
 submodule so the agent can inspect the current examples and documentation while
 it works:
 
@@ -32,7 +32,7 @@ git submodule add https://github.com/markosski/relayfold.git relayfold
 Open your application repository in your coding agent, then adapt this prompt:
 
 ```text
-Create a Relayfold workflow that [describe the outcome you want].
+Create a RelayFold workflow that [describe the outcome you want].
 
 Use the workflow examples in `relayfold/examples/` and the documentation in
 relayfold/website/src/content/docs/docs/ as the authoritative references. Inspect
@@ -41,7 +41,7 @@ workflow needs.
 
 Keep the workflow as small as possible. Define only the required tasks, data
 bindings, input and output schemas, and credentials. Do not invent fields that
-are not supported by the current Relayfold examples or documentation.
+are not supported by the current RelayFold examples or documentation.
 
 Save an API-ready JSON or YAML workflow definition to [path and filename]. Then explain
 the workflow, list the inputs and credentials I must provide, and give me the
@@ -101,11 +101,11 @@ curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
 
 You can register an updated definition under the same ID until its first
 workflow instance is created. After an instance exists in any state, including
-`Completed` or `Failed`, Relayfold keeps the definition immutable and rejects an
+`Completed` or `Failed`, RelayFold keeps the definition immutable and rejects an
 overwrite with `409 Conflict`. Register the update under a new ID instead, for
 example `hello-workflow_v2`.
 
-The `_v2` suffix is only a suggested naming convention. Relayfold does not require
+The `_v2` suffix is only a suggested naming convention. RelayFold does not require
 or interpret workflow definition versions.
 
 ## Start a run

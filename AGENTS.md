@@ -1,10 +1,10 @@
-# Relayfold Project
+# RelayFold Project
 
 This is instructions to the agent on how to do work in this project.
 
 ## Project Description
 
-* Relayfold is a agentic workflow orchestrator. It focuses on composing workflows from agents and tools, and executing them in a reliable and observable way.
+* RelayFold is a agentic workflow orchestrator. It focuses on composing workflows from agents and tools, and executing them in a reliable and observable way.
 
 ## Github integration
 
@@ -18,7 +18,7 @@ This is instructions to the agent on how to do work in this project.
 
 ## Important!
 - Always update existing website documentation with most recent changes made, contents are located in website/ directory, using Starling framework for documentation hosting.
-    - Have in mind the website is geared towards software developers who are users of Relayfold and not the Relayfold code contributors - it should not include too much details about internals unless those details are needed to use Relayfold effectively.
+    - Have in mind the website is geared towards software developers who are users of RelayFold and not the RelayFold code contributors - it should not include too much details about internals unless those details are needed to use RelayFold effectively.
 - Any changes to the project that deviate from established specification defined in openspec/specs/ directory, should be called out and with agreements from user specs should be updated together with code change
 - Focus on minimum or reasonable necessary code changes and functionality, i.e. do not add code to future proof design
 - When making changes to existing code favor simplicity over backwards compatibility

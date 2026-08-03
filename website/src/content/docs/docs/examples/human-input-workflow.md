@@ -23,7 +23,7 @@ tasks:
         model_id: "google/gemini-2.5-flash"
         provider_url: ""
         prompt: |
-          You are a release coordinator preparing an announcement for Relayfold 1.4.0.
+          You are a release coordinator preparing an announcement for RelayFold 1.4.0.
 
           Release facts:
           - Added reusable Agent sessions.
@@ -64,7 +64,7 @@ tasks:
 data_bindings: []
 ```
 
-`ask: true` automatically enables Relayfold's built-in `ask_user` tool. It does
+`ask: true` automatically enables RelayFold's built-in `ask_user` tool. It does
 not need to be listed in `tools`.
 
 ## Configure credentials
@@ -159,7 +159,7 @@ Example output:
   "status": "success",
   "input": [],
   "output": {
-    "response": "Relayfold 1.4.0 is now live on the stable channel. This update introduces reusable Agent sessions, enables human input for workflow decisions, and resolves a bug causing duplicate task attempts when resuming workflows.",
+    "response": "RelayFold 1.4.0 is now live on the stable channel. This update introduces reusable Agent sessions, enables human input for workflow decisions, and resolves a bug causing duplicate task attempts when resuming workflows.",
     "channel": "stable"
   },
   "task_def_id": "release-announcement",

@@ -50,7 +50,7 @@ Common mappings include:
 | `gemini_api_key` | `GEMINI_API_KEY` | `google/...` |
 | `anthropic_api_key` | `ANTHROPIC_API_KEY` | `anthropic/...` |
 
-Relayfold currently supports Agent model authentication through
+RelayFold currently supports Agent model authentication through
 provider-standard API-key environment variables. It does not create a Pi
 runtime override from `required_credentials`, and it does not manage
 persistent Pi or OAuth authentication.

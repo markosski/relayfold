@@ -37,7 +37,7 @@ tasks:
 
 The agent prompt defines the task objective. Inputs from workflow triggers and upstream data bindings are provided to the task execution context so the agent can reason over earlier outputs.
 
-Use schemas when downstream tasks depend on specific fields. A schema makes the contract explicit and gives Relayfold a clear validation boundary before the workflow continues.
+Use schemas when downstream tasks depend on specific fields. A schema makes the contract explicit and gives RelayFold a clear validation boundary before the workflow continues.
 
 ## Tools and skills
 
@@ -52,7 +52,7 @@ uppercase environment variable for the complete Agent execution. No entry has
 special positional meaning.
 
 Use provider-standard names for model API keys, such as `gemini_api_key` for a
-`google/...` model or `openai_api_key` for an `openai/...` model. Relayfold
+`google/...` model or `openai_api_key` for an `openai/...` model. RelayFold
 currently supports Agent model authentication through these API-key
 environment variables rather than persistent Pi or OAuth authentication.
 
@@ -62,10 +62,10 @@ credentials and tools narrowly.
 
 ## Human input
 
-When `ask` is enabled, Relayfold automatically provides the built-in `ask_user`
+When `ask` is enabled, RelayFold automatically provides the built-in `ask_user`
 tool. It does not need to be listed in `tools`. If the task reaches a point
 that requires clarification, the workflow can move to `InputNeeded`. After
-input is supplied, Relayfold can continue the workflow from the persisted state.
+input is supplied, RelayFold can continue the workflow from the persisted state.
 
 When `ask` is false, `ask_user` is unavailable even when `tools` contains
 `ask_user` or `"_all_"`.

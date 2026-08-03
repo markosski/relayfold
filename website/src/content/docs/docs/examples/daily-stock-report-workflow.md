@@ -33,7 +33,7 @@ store:
   "twelve_data": "...",
   "mailgun_api_key": "...",
   "mailgun_domain": "mg.example.com",
-  "mailgun_from": "Relayfold Reports <reports@mg.example.com>"
+  "mailgun_from": "RelayFold Reports <reports@mg.example.com>"
 }
 ```
 
@@ -81,7 +81,7 @@ advice or a prediction of future performance.
 ## Register the workflow
 
 The root `fetch-market-data` and `research-recent-news` tasks each declare the
-same object input schema. Relayfold validates the invocation body against those
+same object input schema. RelayFold validates the invocation body against those
 schemas and exposes it to both tasks as `inputs[0]`.
 
 ```bash

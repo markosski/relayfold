@@ -3,7 +3,7 @@ title: Human Input
 description: Use InputNeeded to pause workflows, ask for clarification, and continue after a human response.
 ---
 
-Human input lets a workflow pause when an Agent task cannot safely continue without clarification. Relayfold records the task as `InputNeeded`, stores the question, and waits until an operator submits a response through the API.
+Human input lets a workflow pause when an Agent task cannot safely continue without clarification. RelayFold records the task as `InputNeeded`, stores the question, and waits until an operator submits a response through the API.
 
 Use human input when a workflow should not guess:
 
@@ -32,7 +32,7 @@ flowchart TB
 ## Agent configuration
 
 Human input is currently an Agent-task capability. Enable it with `ask: true`.
-Relayfold adds the built-in `ask_user` tool automatically, so it does not belong
+RelayFold adds the built-in `ask_user` tool automatically, so it does not belong
 in the task's `tools` list:
 
 ```yaml
@@ -137,11 +137,11 @@ Response:
 }
 ```
 
-Relayfold records the submitted input and queues a continuation attempt for the same logical task. The Agent receives the response as the current human-input event and can finish the task with normal structured output.
+RelayFold records the submitted input and queues a continuation attempt for the same logical task. The Agent receives the response as the current human-input event and can finish the task with normal structured output.
 
 ## Workflow behavior
 
-`InputNeeded` is workflow-blocking. When any task asks for human input, Relayfold stops the current engine pass after recording the state. Independent branches that could otherwise run remain pending until human input is submitted and the workflow is queued again.
+`InputNeeded` is workflow-blocking. When any task asks for human input, RelayFold stops the current engine pass after recording the state. Independent branches that could otherwise run remain pending until human input is submitted and the workflow is queued again.
 
 If the task has `reuse_session: true`, the continuation attempt can reuse the Agent conversation session. This is useful when the Agent already built context before asking the question.
 

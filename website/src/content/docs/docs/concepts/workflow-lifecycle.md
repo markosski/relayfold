@@ -3,14 +3,14 @@ title: Workflow Lifecycle
 description: Understand workflow states, pause and resume behavior, retries, events, and current-status reads.
 ---
 
-A workflow instance moves through explicit lifecycle states as Relayfold schedules tasks and records results.
+A workflow instance moves through explicit lifecycle states as RelayFold schedules tasks and records results.
 
 ## States
 
 | State | Meaning |
 | --- | --- |
 | `Pending` | The workflow is waiting for an engine pass or runnable task work. |
-| `Running` | Relayfold is actively advancing the workflow or waiting for a claimed task result. |
+| `Running` | RelayFold is actively advancing the workflow or waiting for a claimed task result. |
 | `Paused` | The workflow has been stopped by an operator and will not dispatch new work until resumed. |
 | `InputNeeded` | An Agent task asked for human input and the workflow is waiting for a response. |
 | `Completed` | All required work completed successfully. |
@@ -42,7 +42,7 @@ Pause stops queued or future workflow passes from dispatching more work:
 curl -sS -X POST "$RELAYFOLD_URL/workflows/{workflow_instance_id}/pause"
 ```
 
-Pause does not cancel a task that is already in flight. That task may still finish. If an in-flight task completes and more downstream work remains, Relayfold records the result and leaves the workflow paused without dispatching the downstream tasks.
+Pause does not cancel a task that is already in flight. That task may still finish. If an in-flight task completes and more downstream work remains, RelayFold records the result and leaves the workflow paused without dispatching the downstream tasks.
 
 Resume moves a paused workflow back to the queue:
 
@@ -78,7 +78,7 @@ Use force retry only when losing host-local workspace or Agent session context i
 
 ## Queue behavior
 
-Relayfold prevents overlapping engine passes for one workflow instance. If a workflow is queued while an engine pass is active, the queued pass waits until the active pass completes.
+RelayFold prevents overlapping engine passes for one workflow instance. If a workflow is queued while an engine pass is active, the queued pass waits until the active pass completes.
 
 The scheduler uses one deployment-wide queue, but queued identity includes the
 selected namespace. Identical workflow instance IDs in different namespaces are

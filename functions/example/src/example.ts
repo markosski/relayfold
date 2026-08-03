@@ -1,6 +1,6 @@
-import type { RelayfoldFunction } from "../../relayfold";
+import type { RelayFoldFunction } from "../../relayfold";
 
-const run: RelayfoldFunction = async (ctx) => {
+const run: RelayFoldFunction = async (ctx) => {
   return {
     response: "Hello, world!",
     input: ctx.inputs?.[0] ?? null,

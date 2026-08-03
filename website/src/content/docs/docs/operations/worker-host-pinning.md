@@ -1,9 +1,9 @@
 ---
 title: Worker Host Pinning
-description: Understand how Relayfold keeps workflow work on the host that owns its workspace and Agent session state.
+description: Understand how RelayFold keeps workflow work on the host that owns its workspace and Agent session state.
 ---
 
-Relayfold pins each workflow instance to a worker host when the workflow is created. The host identity represents the durable execution state domain that owns workspace and Agent session roots.
+RelayFold pins each workflow instance to a worker host when the workflow is created. The host identity represents the durable execution state domain that owns workspace and Agent session roots.
 
 Workers identify that host with `RELAYFOLD_WORKER_HOST_ID`.
 
@@ -26,17 +26,17 @@ Multiple worker processes may share one `RELAYFOLD_WORKER_HOST_ID` when they sha
 
 ## Starting workflows
 
-When a workflow instance is created, Relayfold selects an eligible registered host and stores it as `pinned_host_id`.
+When a workflow instance is created, RelayFold selects an eligible registered host and stores it as `pinned_host_id`.
 
 If no eligible host is registered, workflow start returns `503 Service Unavailable` instead of creating an unpinned queued instance.
 
 ## Heartbeats and host loss
 
-Workers maintain registration with heartbeats. After a missed heartbeat, Relayfold stops assigning new work to that worker process. After the missed-heartbeat threshold, Relayfold deregisters the worker process.
+Workers maintain registration with heartbeats. After a missed heartbeat, RelayFold stops assigning new work to that worker process. After the missed-heartbeat threshold, RelayFold deregisters the worker process.
 
 If another worker remains registered for the same host ID, future work can continue on that host.
 
-If no worker remains registered for the pinned host, Relayfold waits rather than silently moving the workflow. If the host is considered lost, non-terminal workflows pinned to that host can fail. The workflow pin remains on the failed snapshot.
+If no worker remains registered for the pinned host, RelayFold waits rather than silently moving the workflow. If the host is considered lost, non-terminal workflows pinned to that host can fail. The workflow pin remains on the failed snapshot.
 
 Pinned-host loss reconciliation discovers non-terminal workflows across every
 stored namespace and applies failure transitions using each workflow's stored

@@ -1,6 +1,6 @@
 ## Why
 
-Relayfold needs a flexible, natively parallelizable execution model for agentic workflows. By adopting a Dataflow Architecture instead of a linear step-by-step engine, tasks execute dynamically as their data dependencies are met. This also creates a strict schema-validation boundary to safeguard against unpredictable LLM agent outputs.
+RelayFold needs a flexible, natively parallelizable execution model for agentic workflows. By adopting a Dataflow Architecture instead of a linear step-by-step engine, tasks execute dynamically as their data dependencies are met. This also creates a strict schema-validation boundary to safeguard against unpredictable LLM agent outputs.
 
 ## What Changes
 

@@ -12,7 +12,7 @@ FROM alpine:3.22
 ENV HOME=/home/relayfold
 
 LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
-      org.opencontainers.image.description="Relayfold orchestrator" \
+      org.opencontainers.image.description="RelayFold orchestrator" \
       org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache ca-certificates \

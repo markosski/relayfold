@@ -3,7 +3,7 @@ title: Workflows
 description: Understand workflow definitions, task kinds, data bindings, schemas, and run state.
 ---
 
-A Relayfold workflow is a structured definition of tasks and the data flow between them. A workflow definition becomes a workflow instance when a run starts.
+A RelayFold workflow is a structured definition of tasks and the data flow between them. A workflow definition becomes a workflow instance when a run starts.
 
 ## Workflow definitions
 
@@ -52,6 +52,6 @@ See [Workflow Lifecycle](/relayfold/docs/concepts/workflow-lifecycle/) for pause
 
 ## Bounded loops
 
-Relayfold supports bounded verifier-style loops for workflows such as implementation and review. A verifier task can ask the workflow to continue with feedback, causing a previous step to run again up to a configured limit.
+RelayFold supports bounded verifier-style loops for workflows such as implementation and review. A verifier task can ask the workflow to continue with feedback, causing a previous step to run again up to a configured limit.
 
 Any task kind can be declared as verifier. See [Bounded Loops](/relayfold/docs/concepts/bounded-loops/) for the control-flow contract and guidance on choosing the type of task as verifier.

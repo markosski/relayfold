@@ -1,6 +1,6 @@
-# Relayfold Worker
+# RelayFold Worker
 
-The worker is the Node.js process that executes tasks for the Relayfold
+The worker is the Node.js process that executes tasks for the RelayFold
 orchestrator. It registers with the orchestrator, claims work, executes tasks,
 and reports results. Workers initiate all communication with the orchestrator
 over HTTP.

@@ -20,7 +20,7 @@ The task execution payload SHALL include task attempt generation metadata withou
 - **THEN** the payload does not require loading prior logical-task session history
 
 ### Requirement: Convention-Derived Agent Session Identity
-The task execution contract SHALL use Relayfold-derived session keys for the normal Agent session reuse path rather than requiring workers to return opaque session identifiers.
+The task execution contract SHALL use RelayFold-derived session keys for the normal Agent session reuse path rather than requiring workers to return opaque session identifiers.
 
 #### Scenario: New reusable Agent session is created
 - **WHEN** a worker creates a new durable Agent session while executing an initial reusable Agent task

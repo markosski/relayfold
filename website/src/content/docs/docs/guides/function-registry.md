@@ -9,8 +9,8 @@ Use registered functions for shared integrations, common transformations, or any
 
 ## Create a function
 
-Give your coding agent access to the current Relayfold function implementations
-and documentation. If you have not already done so, add Relayfold to your
+Give your coding agent access to the current RelayFold function implementations
+and documentation. If you have not already done so, add RelayFold to your
 application repository as a Git submodule:
 
 ```bash
@@ -21,14 +21,14 @@ git submodule add https://github.com/markosski/relayfold.git relayfold
 Open your application repository in your coding agent, then adapt this prompt:
 
 ```text
-Create a reusable Relayfold function that [describe what the function should do].
+Create a reusable RelayFold function that [describe what the function should do].
 
 Use the implementations and build tooling in relayfold/functions/ and the
 documentation in relayfold/website/src/content/docs/docs/ as the authoritative
 references. Ensure to understand the function's inputs, output and credential 
 requirements.
 
-Create the function under [path and package name]. Follow the existing Relayfold
+Create the function under [path and package name]. Follow the existing RelayFold
 source, build, and test patterns. Keep the implementation and its dependencies
 as small as possible, pin every runtime dependency to a specific version, and
 do not invent fields that are not supported by the current examples or

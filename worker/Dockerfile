@@ -27,7 +27,7 @@ ENV npm_config_cache=/home/relayfold/.cache/npm
 ENV COREPACK_HOME=/home/relayfold/.cache/corepack
 
 LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
-      org.opencontainers.image.description="Relayfold worker" \
+      org.opencontainers.image.description="RelayFold worker" \
       org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache bash curl git github-cli make g++ python3 py3-pip

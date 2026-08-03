@@ -1,9 +1,9 @@
 ---
 title: Architecture
-description: Learn how Relayfold separates orchestration and task execution.
+description: Learn how RelayFold separates orchestration and task execution.
 ---
 
-Relayfold separates control-plane concerns from execution concerns.
+RelayFold separates control-plane concerns from execution concerns.
 
 ## Orchestrator
 
@@ -41,6 +41,6 @@ Side effects live behind ports and adapters. Storage, workflow queues, task disp
 
 ## Scaling the deployment
 
-Relayfold scales task execution by adding workers to an orchestrator's worker pool. At a larger deployment size, workloads can be partitioned across independent orchestrators with dedicated worker pools.
+RelayFold scales task execution by adding workers to an orchestrator's worker pool. At a larger deployment size, workloads can be partitioned across independent orchestrators with dedicated worker pools.
 
 See [Scaling](/relayfold/docs/operations/scaling/) for deployment guidance and the distinction between worker scaling and orchestrator partitioning.

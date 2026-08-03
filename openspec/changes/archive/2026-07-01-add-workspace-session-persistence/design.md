@@ -1,6 +1,6 @@
 ## Context
 
-Relayfold currently has three related persistence boundaries:
+RelayFold currently has three related persistence boundaries:
 
 - Workflow state is moving toward event-backed snapshots through `WorkflowStateManager` and `StoragePort`.
 - Workspace paths are derived by `WorkspaceManager` under the orchestrator process' configured local root.
@@ -8,7 +8,7 @@ Relayfold currently has three related persistence boundaries:
 
 That shape is adequate for a single-machine deployment, but remote workers make the path meaningless unless they share the same filesystem. Paused workflows and orchestrator restarts create the same class of problem: a workflow can resume later, but its workspace or Agent session may exist only on the host that ran the previous task attempt.
 
-The design should treat workspace/session continuity as a workflow-instance scheduling decision, not as an incidental local path. To keep the first distributed-worker implementation simple, Relayfold pins every workflow instance to one host when the workflow instance is created for execution. The orchestrator owns logical workflow state and pinning constraints. Workers own host-local materialization of workspaces and session stores.
+The design should treat workspace/session continuity as a workflow-instance scheduling decision, not as an incidental local path. To keep the first distributed-worker implementation simple, RelayFold pins every workflow instance to one host when the workflow instance is created for execution. The orchestrator owns logical workflow state and pinning constraints. Workers own host-local materialization of workspaces and session stores.
 
 ## Goals / Non-Goals
 
