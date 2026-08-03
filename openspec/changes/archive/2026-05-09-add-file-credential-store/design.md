@@ -2,7 +2,7 @@
 
 The TypeScript worker already resolves credentials through `CredentialsPort`, and executors call `getCredential(name)` without depending on how credentials are stored. Worker startup currently constructs `InMemoryCredentialsAdapter` with environment variables and hardcoded development fallback values for `llm_api_key` and `system_brave_api_key`.
 
-The change should keep executor-facing behavior stable while moving runtime credentials out of source code. The target credential format is intentionally simple: a local JSON file at `~/.runhelm/file_credentials.json` whose top-level value is an object mapping credential names to string values.
+The change should keep executor-facing behavior stable while moving runtime credentials out of source code. The target credential format is intentionally simple: a local JSON file at `~/.relayfold/file_credentials.json` whose top-level value is an object mapping credential names to string values.
 
 ## Goals / Non-Goals
 
@@ -11,7 +11,7 @@ The change should keep executor-facing behavior stable while moving runtime cred
 - Remove hardcoded credential fallback values from worker startup.
 - Fail fast when the configured credential file cannot be read or parsed.
 - Keep the JSON structure simple enough for local development and container secret mounts.
-- Use `~/.runhelm` as the credential mount directory and mount it read-only in containers.
+- Use `~/.relayfold` as the credential mount directory and mount it read-only in containers.
 - Avoid logging credential values.
 - Document worker configuration and file format.
 
@@ -35,17 +35,17 @@ Worker startup will read the credential file before connecting to the orchestrat
 
 Alternative considered: lazy loading on each credential lookup. That would allow editing the file while the worker runs, but it adds repeated I/O to task execution and makes failures occur after the worker has already registered. Loading once is simpler, deterministic, and enough for the first file-backed store.
 
-### Use `~/.runhelm/file_credentials.json` as the default credential file
+### Use `~/.relayfold/file_credentials.json` as the default credential file
 
-Worker startup will read credentials from `~/.runhelm/file_credentials.json`. Container deployments should mount the host or secret-provided `~/.runhelm` directory into the worker container as read-only. The worker will not provide built-in secret defaults.
+Worker startup will read credentials from `~/.relayfold/file_credentials.json`. Container deployments should mount the host or secret-provided `~/.relayfold` directory into the worker container as read-only. The worker will not provide built-in secret defaults.
 
-Alternative considered: keeping only a `RUNHELM_CREDENTIALS_FILE` path. A fixed default path reduces required configuration and gives local and container usage one documented convention. An environment override can still be added later if multiple credential profiles become necessary.
+Alternative considered: keeping only a `RELAYFOLD_CREDENTIALS_FILE` path. A fixed default path reduces required configuration and gives local and container usage one documented convention. An environment override can still be added later if multiple credential profiles become necessary.
 
 ### Keep the IPC socket outside the credential directory
 
-The orchestrator IPC socket should continue to default to `/tmp/runhelm.sock` and remain configurable through `RUNHELM_SOCKET_PATH`. The credential directory is read-only secret/config material, while the socket is writable runtime state created by the orchestrator and consumed by workers.
+The orchestrator IPC socket should continue to default to `/tmp/relayfold.sock` and remain configurable through `RELAYFOLD_SOCKET_PATH`. The credential directory is read-only secret/config material, while the socket is writable runtime state created by the orchestrator and consumed by workers.
 
-Alternative considered: placing `runhelm.sock` under `~/.runhelm`. That conflicts with the read-only mount requirement and mixes secret material with ephemeral IPC state. If a non-`/tmp` location becomes necessary later, introduce a separate runtime directory such as `RUNHELM_RUNTIME_DIR` or use `XDG_RUNTIME_DIR`, rather than reusing the credential mount.
+Alternative considered: placing `relayfold.sock` under `~/.relayfold`. That conflicts with the read-only mount requirement and mixes secret material with ephemeral IPC state. If a non-`/tmp` location becomes necessary later, introduce a separate runtime directory such as `RELAYFOLD_RUNTIME_DIR` or use `XDG_RUNTIME_DIR`, rather than reusing the credential mount.
 
 ### Validate as flat string key/value JSON
 
@@ -64,22 +64,22 @@ Alternative considered: accepting arbitrary JSON values and coercing them to str
 
 ## Risks / Trade-offs
 
-- Missing file blocks worker startup -> Document `~/.runhelm/file_credentials.json` and fail with a clear error that names the path but not credential values.
+- Missing file blocks worker startup -> Document `~/.relayfold/file_credentials.json` and fail with a clear error that names the path but not credential values.
 - File changes require worker restart -> Accept for this initial implementation; add reload semantics later if needed.
 - Plaintext local file can be mishandled -> Document that the file should be provided through deployment secret mechanisms and excluded from source control.
-- Read-only credential mount cannot host runtime files -> Keep the IPC socket at `/tmp/runhelm.sock` by default and configurable via `RUNHELM_SOCKET_PATH`.
+- Read-only credential mount cannot host runtime files -> Keep the IPC socket at `/tmp/relayfold.sock` by default and configurable via `RELAYFOLD_SOCKET_PATH`.
 - Existing local workflows that relied on hardcoded fallbacks will stop working -> Provide README migration guidance with a sample JSON file.
 
 ## Migration Plan
 
 1. Add the file-backed adapter and unit coverage for successful lookup plus invalid file shapes.
-2. Update worker startup to construct the file-backed adapter from `~/.runhelm/file_credentials.json`.
+2. Update worker startup to construct the file-backed adapter from `~/.relayfold/file_credentials.json`.
 3. Remove hardcoded credential fallback values from `worker/src/index.ts`.
 4. Update worker documentation with the default credential path, read-only mount guidance, and sample JSON.
-5. For local development, create an untracked credentials JSON file at `~/.runhelm/file_credentials.json` before starting the worker.
+5. For local development, create an untracked credentials JSON file at `~/.relayfold/file_credentials.json` before starting the worker.
 
 Rollback is to restore worker startup to use an in-memory adapter populated from environment variables. No task or orchestrator data migration is required.
 
 ## Open Questions
 
-- Should a future change introduce `RUNHELM_CREDENTIALS_FILE` for multiple local credential profiles, or is the fixed `~/.runhelm/file_credentials.json` convention enough for now?
+- Should a future change introduce `RELAYFOLD_CREDENTIALS_FILE` for multiple local credential profiles, or is the fixed `~/.relayfold/file_credentials.json` convention enough for now?

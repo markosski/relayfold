@@ -152,7 +152,7 @@ All existing tests will be updated to pass `Arc::new(FakeExecutor::new())`. No b
 
 - **`DockerExecutor` requires a running Docker daemon** — integration tests for `DockerExecutor` cannot be unit-tested in the same way as `FakeExecutor`. Mitigation: mark Docker integration tests with `#[ignore]` by default; they run explicitly in CI with Docker-in-Docker. The `ExecutorPort` trait makes it trivial to swap in `FakeExecutor` for unit tests.
 
-- **Input injection via stdin couples task images to a specific protocol** — images must read a JSON array from stdin. Mitigation: document this as the RunHelm task image contract; provide a minimal SDK/example. This is a deliberate protocol choice, not an accident.
+- **Input injection via stdin couples task images to a specific protocol** — images must read a JSON array from stdin. Mitigation: document this as the RelayFold task image contract; provide a minimal SDK/example. This is a deliberate protocol choice, not an accident.
 
 - **Sequential execution loop** — the engine currently runs tasks one at a time even if multiple are `Ready`. `DockerExecutor` will add real latency per task. Mitigation: out of scope for this change; concurrency is a future engine concern. `FakeExecutor` is instant, so existing tests remain fast.
 

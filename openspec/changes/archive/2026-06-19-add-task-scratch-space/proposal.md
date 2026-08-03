@@ -1,6 +1,6 @@
 ## Why
 
-RunHelm tasks are currently best suited to structured JSON inputs and outputs, but many useful workflows need a filesystem boundary for repositories, downloaded datasets, generated reports, binaries, logs, and other artifacts. Adding task workspaces gives executions a controlled place for file-native work while preserving isolation, observability, retry behavior, and explicit sharing.
+RelayFold tasks are currently best suited to structured JSON inputs and outputs, but many useful workflows need a filesystem boundary for repositories, downloaded datasets, generated reports, binaries, logs, and other artifacts. Adding task workspaces gives executions a controlled place for file-native work while preserving isolation, observability, retry behavior, and explicit sharing.
 
 ## What Changes
 

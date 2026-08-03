@@ -1,11 +1,11 @@
 ---
 title: Worker Host Pinning
-description: Understand how RunHelm keeps workflow work on the host that owns its workspace and Agent session state.
+description: Understand how RelayFold keeps workflow work on the host that owns its workspace and Agent session state.
 ---
 
-RunHelm pins each workflow instance to a worker host when the workflow is created. The host identity represents the durable execution state domain that owns workspace and Agent session roots.
+RelayFold pins each workflow instance to a worker host when the workflow is created. The host identity represents the durable execution state domain that owns workspace and Agent session roots.
 
-Workers identify that host with `RUNHELM_WORKER_HOST_ID`.
+Workers identify that host with `RELAYFOLD_WORKER_HOST_ID`.
 
 ## Why pinning exists
 
@@ -22,25 +22,25 @@ Pinning keeps every task in a workflow instance on workers registered for the sa
 
 A worker process has a live worker ID. A host ID identifies the durable execution state domain.
 
-Multiple worker processes may share one `RUNHELM_WORKER_HOST_ID` when they share the same workspace and session roots. Any of those workers can execute work for a workflow pinned to that host.
+Multiple worker processes may share one `RELAYFOLD_WORKER_HOST_ID` when they share the same workspace and session roots. Any of those workers can execute work for a workflow pinned to that host.
 
 ## Starting workflows
 
-When a workflow instance is created, RunHelm selects an eligible registered host and stores it as `pinned_host_id`.
+When a workflow instance is created, RelayFold selects an eligible registered host and stores it as `pinned_host_id`.
 
 If no eligible host is registered, workflow start returns `503 Service Unavailable` instead of creating an unpinned queued instance.
 
 ## Heartbeats and host loss
 
-Workers maintain registration with heartbeats. After a missed heartbeat, RunHelm stops assigning new work to that worker process. After the missed-heartbeat threshold, RunHelm deregisters the worker process.
+Workers maintain registration with heartbeats. After a missed heartbeat, RelayFold stops assigning new work to that worker process. After the missed-heartbeat threshold, RelayFold deregisters the worker process.
 
 If another worker remains registered for the same host ID, future work can continue on that host.
 
-If no worker remains registered for the pinned host, RunHelm waits rather than silently moving the workflow. If the host is considered lost, non-terminal workflows pinned to that host can fail. The workflow pin remains on the failed snapshot.
+If no worker remains registered for the pinned host, RelayFold waits rather than silently moving the workflow. If the host is considered lost, non-terminal workflows pinned to that host can fail. The workflow pin remains on the failed snapshot.
 
 Pinned-host loss reconciliation discovers non-terminal workflows across every
 stored namespace and applies failure transitions using each workflow's stored
-namespace. It runs independently of `RUNHELM_USE_GLOBAL_NAMESPACE`, just like
+namespace. It runs independently of `RELAYFOLD_USE_GLOBAL_NAMESPACE`, just like
 startup recovery.
 
 ## Retry behavior
@@ -48,13 +48,13 @@ startup recovery.
 Default retry keeps the existing pinned host:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/{workflow_instance_id}/tasks/{task_id}/retry"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/{workflow_instance_id}/tasks/{task_id}/retry"
 ```
 
 Force retry may reassign the workflow when the pinned host is unavailable:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/{workflow_instance_id}/tasks/{task_id}/retry?force=true"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/{workflow_instance_id}/tasks/{task_id}/retry?force=true"
 ```
 
 Force retry records that local context may be lost. Use it only when losing host-local workspace files or reusable Agent session context is acceptable.

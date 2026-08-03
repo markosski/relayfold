@@ -37,7 +37,7 @@ tasks:
 
 The agent prompt defines the task objective. Inputs from workflow triggers and upstream data bindings are provided to the task execution context so the agent can reason over earlier outputs.
 
-Use schemas when downstream tasks depend on specific fields. A schema makes the contract explicit and gives RunHelm a clear validation boundary before the workflow continues.
+Use schemas when downstream tasks depend on specific fields. A schema makes the contract explicit and gives RelayFold a clear validation boundary before the workflow continues.
 
 ## Tools and skills
 
@@ -52,30 +52,30 @@ uppercase environment variable for the complete Agent execution. No entry has
 special positional meaning.
 
 Use provider-standard names for model API keys, such as `gemini_api_key` for a
-`google/...` model or `openai_api_key` for an `openai/...` model. RunHelm
+`google/...` model or `openai_api_key` for an `openai/...` model. RelayFold
 currently supports Agent model authentication through these API-key
 environment variables rather than persistent Pi or OAuth authentication.
 
-See [Task Credentials](/runhelm/docs/operations/credentials/) for provider mappings.
+See [Task Credentials](/relayfold/docs/operations/credentials/) for provider mappings.
 Required credentials are also available to approved Agent tools, so grant both
 credentials and tools narrowly.
 
 ## Human input
 
-When `ask` is enabled, RunHelm automatically provides the built-in `ask_user`
+When `ask` is enabled, RelayFold automatically provides the built-in `ask_user`
 tool. It does not need to be listed in `tools`. If the task reaches a point
 that requires clarification, the workflow can move to `InputNeeded`. After
-input is supplied, RunHelm can continue the workflow from the persisted state.
+input is supplied, RelayFold can continue the workflow from the persisted state.
 
 When `ask` is false, `ask_user` is unavailable even when `tools` contains
 `ask_user` or `"_all_"`.
 
-See [Human Input](/runhelm/docs/concepts/human-input/) for the `ask_user` flow, API call, and continuation behavior.
+See [Human Input](/relayfold/docs/concepts/human-input/) for the `ask_user` flow, API call, and continuation behavior.
 
 ## Verifier loops
 
-Agent tasks can participate in [bounded loops](/runhelm/docs/concepts/bounded-loops/) as either the task being revised or the verifier task. Use an Agent verifier when the acceptance decision requires judgment, such as reviewing a generated report, assessing a code change, or deciding whether output satisfies ambiguous requirements.
+Agent tasks can participate in [bounded loops](/relayfold/docs/concepts/bounded-loops/) as either the task being revised or the verifier task. Use an Agent verifier when the acceptance decision requires judgment, such as reviewing a generated report, assessing a code change, or deciding whether output satisfies ambiguous requirements.
 
 ## Sessions
 
-Agent tasks can reuse conversation state across attempts. See [Agent Sessions](/runhelm/docs/concepts/agent-sessions/) for `reuse_session` behavior and guidance on when verifier Agents should start fresh.
+Agent tasks can reuse conversation state across attempts. See [Agent Sessions](/relayfold/docs/concepts/agent-sessions/) for `reuse_session` behavior and guidance on when verifier Agents should start fresh.

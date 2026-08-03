@@ -37,7 +37,7 @@ export class FunctionExecutor implements TaskExecutor {
 
         const dependencies = functionDef.dependencies;
         const timeoutMs = functionTimeoutMs();
-        const workDir = await mkdtemp(join(tmpdir(), 'runhelm-function-'));
+        const workDir = await mkdtemp(join(tmpdir(), 'relayfold-function-'));
 
         logger.info(
             { taskId: payload.task.id, dependencyCount: dependencies.length, workDir },
@@ -157,7 +157,7 @@ function validateDependencies(dependencies: FunctionDependency[]): void {
 }
 
 function functionTimeoutMs(): number {
-    const configured = process.env.RUNHELM_FUNCTION_TIMEOUT_MS;
+    const configured = process.env.RELAYFOLD_FUNCTION_TIMEOUT_MS;
     if (!configured) {
         return DEFAULT_FUNCTION_TIMEOUT_MS;
     }
@@ -217,13 +217,13 @@ function runChild(
 function parseFunctionEnvelope(stdout: string): FunctionEnvelope | undefined {
     const resultLine = stdout
         .split('\n')
-        .find((line) => line.startsWith('__RUNHELM_RESULT__'));
+        .find((line) => line.startsWith('__RELAYFOLD_RESULT__'));
 
     if (!resultLine) {
         return undefined;
     }
 
-    const parsed = JSON.parse(resultLine.slice('__RUNHELM_RESULT__'.length)) as FunctionEnvelope;
+    const parsed = JSON.parse(resultLine.slice('__RELAYFOLD_RESULT__'.length)) as FunctionEnvelope;
     if (parsed.status !== 'ok' && parsed.status !== 'error') {
         return undefined;
     }
@@ -247,7 +247,7 @@ function runnerSource(): string {
 import { readFileSync, writeSync } from 'node:fs';
 import task from './task.mjs';
 
-const RESULT_PREFIX = '__RUNHELM_RESULT__';
+const RESULT_PREFIX = '__RELAYFOLD_RESULT__';
 
 function readStdin() {
   return readFileSync(0, 'utf8');

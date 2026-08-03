@@ -8,7 +8,7 @@ tasks:
         provider_url: ""
         prompt: |
           Perform the following actions:
-          - Use curl to access https://markosski.github.io/runhelm/
+          - Use curl to access https://markosski.github.io/relayfold/
           - Download the content to /tmp/index.html
           - Extract the title of the page and return as response
 

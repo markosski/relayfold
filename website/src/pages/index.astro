@@ -4,9 +4,9 @@ import WorkflowFlow from '../components/WorkflowFlow';
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 const url = (path: string) => `${base}${path}`;
 
-const installCommand = `curl -fsSL https://raw.githubusercontent.com/markosski/runhelm/main/packaging/install.sh | sh
-runhelm init --version dev
-runhelm up`;
+const installCommand = `curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/packaging/install.sh | sh
+rf init --version dev
+rf up`;
 ---
 
 <!doctype html>
@@ -16,9 +16,9 @@ runhelm up`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="RunHelm is a durable runtime for autonomous software, with observable, resumable workflows and isolated execution."
+      content="RelayFold is a durable runtime for autonomous software, with observable, resumable workflows and isolated execution."
     />
-    <title>RunHelm</title>
+    <title>RelayFold</title>
     <style>
       :root {
         color-scheme: light;
@@ -364,13 +364,13 @@ runhelm up`;
     <header class="site-header">
       <nav class="nav" aria-label="Main navigation">
         <a class="brand" href={url('')}>
-          <img src={url('runhelm-logo.png')} alt="" />
-          <span>Distributed workflow orchestrator</span>
+          <img src={url('relayfold-logo.png')} alt="" />
+          <span></span>
         </a>
         <div class="nav-links">
           <a href={url('docs/')}>Docs</a>
           <a href={url('docs/install/')}>Install</a>
-          <a href="https://github.com/markosski/runhelm">GitHub</a>
+          <a href="https://github.com/markosski/relayfold">GitHub</a>
         </div>
       </nav>
     </header>
@@ -379,9 +379,9 @@ runhelm up`;
       <section class="hero">
         <div>
           <!--<p class="eyebrow">Distributed, provider-agnostic agentic workflows</p>-->
-          <h1>RunHelm is a durable runtime for autonomous software.</h1>
+          <h1>Durable runtime for autonomous software.</h1>
           <p class="hero-copy">
-            Compose AI agents, API calls, and code execution into
+            RelayFold composes AI agents, and code execution into
             observable, reusable workflow runs with explicit data flow, typed task
             contracts, resumable state, and isolated workers.
           </p>
@@ -393,9 +393,9 @@ runhelm up`;
         </div>
       </section>
 
-      <section class="workflow-showcase" aria-label="RunHelm stock report workflow">
+      <section class="workflow-showcase" aria-label="RelayFold stock report workflow">
           <p class="eyebrow">Showcase: stock report workflow</p>
-          <aside class="system-panel" aria-label="RunHelm stock report workflow">
+          <aside class="system-panel" aria-label="RelayFold stock report workflow">
             <WorkflowFlow client:load />
           </aside>
       </section>
@@ -404,7 +404,7 @@ runhelm up`;
       <section class="section">
         <h2>Build workflows you can reuse, audit, and trust.</h2>
         <p>
-          RunHelm treats agents as workflow nodes. The same execution model
+          RelayFold treats agents as workflow nodes. The same execution model
           applies to agent tasks, function tasks, and API-call tasks, so each
           step can be scheduled, inspected, retried, and wired to downstream
           work.
@@ -444,9 +444,9 @@ runhelm up`;
       </section>
 
       <section class="section">
-        <h2>Is RunHelm the right fit for you?</h2>
+        <h2>Is RelayFold the right fit for you?</h2>
         <p>
-          RunHelm may be a good fit if <strong>you need to:</strong>
+          RelayFold may be a good fit if <strong>you need to:</strong>
         </p>
 
         <div class="fit-panel">
@@ -459,7 +459,7 @@ runhelm up`;
             <li>Verify AI agents are doing the right thing and self-correct?</li>
           </ul>
           <p class="fit-conclusion">
-            If your answer is <strong>yes</strong> to these questions, RunHelm is for you!
+            If your answer is <strong>yes</strong> to these questions, RelayFold is for you!
           </p>
         </div>
       </section>
@@ -468,7 +468,7 @@ runhelm up`;
         <h2>Start locally with Docker.</h2>
         <p>
           The local install path uses a small wrapper and Docker Compose so
-          users can easily try out RunHelm without complex setup.
+          users can easily try out RelayFold without complex setup.
         </p>
         <div class="install">
           <pre><code>{installCommand}</code></pre>
@@ -476,7 +476,7 @@ runhelm up`;
             <h3>What starts</h3>
             <p>
               The generated local environment starts the orchestrator with SQLite backend, single worker services and creates local configuration under
-              <code>~/.runhelm</code>.
+              <code>~/.relayfold</code>.
             </p>
             <div class="actions">
               <a class="button primary" href={url('docs/install/')}>Install guide</a>

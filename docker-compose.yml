@@ -9,20 +9,20 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      RUNHELM_USE_GLOBAL_NAMESPACE: "true"
-      RUNHELM_WORKER_HTTP_ADDR: 0.0.0.0:3001
-      RUNHELM_STORAGE: mysql
-      RUNHELM_STORE_MYSQL_HOST: ${RUNHELM_STORE_MYSQL_HOST:-host.docker.internal}
-      RUNHELM_STORE_MYSQL_PORT: ${RUNHELM_STORE_MYSQL_PORT:-3306}
-      RUNHELM_STORE_MYSQL_DATABASE: ${RUNHELM_STORE_MYSQL_DATABASE:-runhelm}
-      RUNHELM_STORE_MYSQL_USERNAME: ${RUNHELM_STORE_MYSQL_USERNAME:-root}
-      RUNHELM_STORE_MYSQL_PASSWORD: ${RUNHELM_STORE_MYSQL_PASSWORD:-pass}
+      RELAYFOLD_USE_GLOBAL_NAMESPACE: "true"
+      RELAYFOLD_WORKER_HTTP_ADDR: 0.0.0.0:3001
+      RELAYFOLD_STORAGE: mysql
+      RELAYFOLD_STORE_MYSQL_HOST: ${RELAYFOLD_STORE_MYSQL_HOST:-host.docker.internal}
+      RELAYFOLD_STORE_MYSQL_PORT: ${RELAYFOLD_STORE_MYSQL_PORT:-3306}
+      RELAYFOLD_STORE_MYSQL_DATABASE: ${RELAYFOLD_STORE_MYSQL_DATABASE:-relayfold}
+      RELAYFOLD_STORE_MYSQL_USERNAME: ${RELAYFOLD_STORE_MYSQL_USERNAME:-root}
+      RELAYFOLD_STORE_MYSQL_PASSWORD: ${RELAYFOLD_STORE_MYSQL_PASSWORD:-pass}
       # To use SQLite instead, comment out the MySQL settings above and uncomment:
-      # RUNHELM_STORAGE: sqlite
-      # RUNHELM_STORE_SQLITE_PATH: /var/lib/runhelm/runhelm.db
+      # RELAYFOLD_STORAGE: sqlite
+      # RELAYFOLD_STORE_SQLITE_PATH: /var/lib/relayfold/relayfold.db
     # Also uncomment this volume when using SQLite:
     # volumes:
-    #   - runhelm-storage:/var/lib/runhelm
+    #   - relayfold-storage:/var/lib/relayfold
     read_only: true
     tmpfs:
       - /tmp
@@ -41,14 +41,14 @@ services:
       orchestrator:
         condition: service_healthy
     environment:
-      RUNHELM_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
-      RUNHELM_WORKER_HOST_ID: compose-local-host
-      RUNHELM_WORKSPACE_ROOT: /workspaces
+      RELAYFOLD_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
+      RELAYFOLD_WORKER_HOST_ID: compose-local-host
+      RELAYFOLD_WORKSPACE_ROOT: /workspaces
     volumes:
-      - ${HOME}/.runhelm:/home/runhelm/.runhelm:ro
-      - ${RUNHELM_SKILLS_DIR:-${HOME}/.runhelm/skills}:/home/runhelm/.pi/agent/skills:ro
-      - runhelm-workspaces:/workspaces
-      - runhelm-cache:/home/runhelm/.cache
+      - ${HOME}/.relayfold:/home/relayfold/.relayfold:ro
+      - ${RELAYFOLD_SKILLS_DIR:-${HOME}/.relayfold/skills}:/home/relayfold/.pi/agent/skills:ro
+      - relayfold-workspaces:/workspaces
+      - relayfold-cache:/home/relayfold/.cache
     read_only: true
     tmpfs:
       - /tmp
@@ -62,6 +62,6 @@ services:
 
 volumes:
   # Used by the commented SQLite configuration above.
-  runhelm-storage:
-  runhelm-workspaces:
-  runhelm-cache:
+  relayfold-storage:
+  relayfold-workspaces:
+  relayfold-cache:

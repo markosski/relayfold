@@ -39,7 +39,7 @@ function App() {
       <aside className="sidebar">
         <div className="sidebar-logo">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          RunHelm
+          RelayFold
         </div>
 
         <div className="nav-section">
@@ -72,7 +72,7 @@ function App() {
         <header className="page-header animate-fade-in">
           <div>
             <h1 className="page-title">Dashboard</h1>
-            <p className="page-subtitle">Welcome back to RunHelm Orchestrator</p>
+            <p className="page-subtitle">Welcome back to RelayFold Orchestrator</p>
           </div>
           <button className="btn btn-primary">
             <IconPlus /> New Workflow

@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Durable Agent Session Store
-The system SHALL provide a durable Agent session store that can create, load, and persist Agent conversation sessions using stable RunHelm session keys.
+The system SHALL provide a durable Agent session store that can create, load, and persist Agent conversation sessions using stable RelayFold session keys.
 
 #### Scenario: File-backed session is created
 - **WHEN** an initial reusable Agent task attempt starts and no session exists for its derived session key
@@ -14,18 +14,18 @@ The system SHALL provide a durable Agent session store that can create, load, an
 
 #### Scenario: Session key is storage-independent
 - **WHEN** the worker derives a session key from workflow instance ID and logical task ID
-- **THEN** the key identifies the session through the RunHelm session store boundary rather than requiring a worker-local filesystem path
+- **THEN** the key identifies the session through the RelayFold session store boundary rather than requiring a worker-local filesystem path
 
 ### Requirement: Agent Session Reuse Policy
 Agent task definitions SHALL support `reuse_session`, defaulting to `true`.
 
 #### Scenario: Reuse session defaults to true
 - **WHEN** an Agent task definition omits `reuse_session`
-- **THEN** RunHelm treats `reuse_session` as `true`
+- **THEN** RelayFold treats `reuse_session` as `true`
 
 #### Scenario: Reusable Agent session key is logical-task scoped
 - **WHEN** an Agent task has `reuse_session` set to `true`
-- **THEN** RunHelm derives the session key from the workflow instance ID and logical task ID
+- **THEN** RelayFold derives the session key from the workflow instance ID and logical task ID
 - **THEN** all materialized attempts for that logical Agent task use the same session key
 
 #### Scenario: Agent session reuse is disabled

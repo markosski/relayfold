@@ -62,7 +62,7 @@ The task dispatch payload SHALL include task attempt generation metadata without
 - **THEN** the payload does not require loading prior logical-task session history
 
 ### Requirement: Convention-Derived Agent Session Identity
-The task execution contract SHALL use RunHelm-derived session keys for the normal Agent session reuse path rather than requiring workers to return opaque session identifiers.
+The task execution contract SHALL use RelayFold-derived session keys for the normal Agent session reuse path rather than requiring workers to return opaque session identifiers.
 
 #### Scenario: New reusable Agent session is created
 - **WHEN** a worker creates a new durable Agent session while executing an initial reusable Agent task
@@ -139,7 +139,7 @@ Workers SHALL provide selected workspace path guidance without claiming strict f
 - **THEN** the system does not claim per-task selected workspace mount isolation
 
 #### Scenario: Future strict containment
-- **WHEN** RunHelm adds owned file tools, per-task containers, or another sandbox
+- **WHEN** RelayFold adds owned file tools, per-task containers, or another sandbox
 - **THEN** that future design may validate file paths against the selected workspace before filesystem access
 
 ### Requirement: Namespace-Aware Task Dispatch

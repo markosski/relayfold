@@ -10,7 +10,7 @@ The Orchestrator SHALL host a Unix Domain Socket server to receive connections f
 
 #### Scenario: Orchestrator starts IPC server
 - **WHEN** the Orchestrator application starts up
-- **THEN** it binds to a Unix Domain Socket at the path specified in the configuration (defaulting to `/tmp/runhelm.sock`)
+- **THEN** it binds to a Unix Domain Socket at the path specified in the configuration (defaulting to `/tmp/relayfold.sock`)
 
 ### Requirement: Workflow-Pin Task Claiming
 The orchestrator SHALL only allow a worker to claim a task when the worker satisfies the workflow instance's host pin constraint.
@@ -37,7 +37,7 @@ The orchestrator SHALL only allow a worker to claim a task when the worker satis
 Workers SHALL connect to the Orchestrator's socket and provide a registration message identifying their worker process and configured stable host identity.
 
 #### Scenario: Worker host id is required
-- **WHEN** a Worker process starts without `RUNHELM_WORKER_HOST_ID`
+- **WHEN** a Worker process starts without `RELAYFOLD_WORKER_HOST_ID`
 - **THEN** the Worker fails startup or registration with a clear host identity configuration error
 
 #### Scenario: Successful worker registration
@@ -47,7 +47,7 @@ Workers SHALL connect to the Orchestrator's socket and provide a registration me
 
 #### Scenario: Worker registers stable host identity
 - **WHEN** a Worker process registers
-- **THEN** the registration identifies the stable host from `RUNHELM_WORKER_HOST_ID` whose local workspace and session stores the worker can access
+- **THEN** the registration identifies the stable host from `RELAYFOLD_WORKER_HOST_ID` whose local workspace and session stores the worker can access
 
 #### Scenario: Worker registration omits host identity
 - **WHEN** a Worker process registers without a host ID

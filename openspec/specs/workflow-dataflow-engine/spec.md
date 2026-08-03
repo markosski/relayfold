@@ -431,33 +431,33 @@ Storage adapters SHALL be responsible for persistence mechanics and SHALL NOT ow
 - **THEN** the persisted task row stores enough task status detail to reconstruct the full task attempt
 
 ### Requirement: Durable SQL Backend Selection
-The orchestrator SHALL select a supported durable SQL adapter directly from `RUNHELM_STORAGE` while preserving the same `StoragePort` behavior for each supported backend.
+The orchestrator SHALL select a supported durable SQL adapter directly from `RELAYFOLD_STORAGE` while preserving the same `StoragePort` behavior for each supported backend.
 
 #### Scenario: SQLite storage configuration
-- **WHEN** `RUNHELM_STORAGE` is `sqlite` and a non-empty `RUNHELM_STORE_SQLITE_PATH` is configured
+- **WHEN** `RELAYFOLD_STORAGE` is `sqlite` and a non-empty `RELAYFOLD_STORE_SQLITE_PATH` is configured
 - **THEN** the orchestrator uses the SQLite storage adapter
 - **THEN** the adapter opens or creates the database at the configured filesystem path
 - **THEN** schema migrations are applied before storage is used
 
 #### Scenario: MySQL storage configuration
-- **WHEN** `RUNHELM_STORAGE` is `mysql` and non-empty `RUNHELM_STORE_MYSQL_HOST`, `RUNHELM_STORE_MYSQL_USERNAME`, and `RUNHELM_STORE_MYSQL_PASSWORD` settings are configured
+- **WHEN** `RELAYFOLD_STORAGE` is `mysql` and non-empty `RELAYFOLD_STORE_MYSQL_HOST`, `RELAYFOLD_STORE_MYSQL_USERNAME`, and `RELAYFOLD_STORE_MYSQL_PASSWORD` settings are configured
 - **THEN** the orchestrator uses the MySQL storage adapter
-- **THEN** the MySQL port defaults to `3306` and the database defaults to `runhelm` when those settings are omitted
+- **THEN** the MySQL port defaults to `3306` and the database defaults to `relayfold` when those settings are omitted
 - **THEN** schema migrations are applied before storage is used
 
 #### Scenario: Invalid durable storage configuration
-- **WHEN** a required backend-specific setting is missing or empty, the MySQL port is invalid, or `RUNHELM_STORAGE` is unsupported
+- **WHEN** a required backend-specific setting is missing or empty, the MySQL port is invalid, or `RELAYFOLD_STORAGE` is unsupported
 - **THEN** orchestrator startup fails with a configuration error identifying the invalid setting
 
 #### Scenario: Legacy SQL configuration is rejected
-- **WHEN** `RUNHELM_STORAGE` is `sql` or only `RUNHELM_DATABASE_URL` is configured
+- **WHEN** `RELAYFOLD_STORAGE` is `sql` or only `RELAYFOLD_DATABASE_URL` is configured
 - **THEN** the legacy URL configuration does not select or configure a durable adapter
-- **THEN** `RUNHELM_STORAGE=sql` fails startup as unsupported
+- **THEN** `RELAYFOLD_STORAGE=sql` fails startup as unsupported
 
 #### Scenario: Legacy backend variable names are ignored
-- **WHEN** a durable adapter is selected but only the previous `RUNHELM_MYSQL_*` or `RUNHELM_SQLITE_*` variables are configured
+- **WHEN** a durable adapter is selected but only the previous `RELAYFOLD_MYSQL_*` or `RELAYFOLD_SQLITE_*` variables are configured
 - **THEN** those variables do not configure the selected adapter
-- **THEN** startup fails when the corresponding required `RUNHELM_STORE_*` variable is absent
+- **THEN** startup fails when the corresponding required `RELAYFOLD_STORE_*` variable is absent
 
 #### Scenario: Concurrent MySQL transition
 - **WHEN** concurrent MySQL transactions attempt to commit transitions from the same workflow instance version

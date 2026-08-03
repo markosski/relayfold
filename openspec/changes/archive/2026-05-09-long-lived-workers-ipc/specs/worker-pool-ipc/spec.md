@@ -5,7 +5,7 @@ The Orchestrator SHALL host a Unix Domain Socket server to receive connections f
 
 #### Scenario: Orchestrator starts IPC server
 - **WHEN** the Orchestrator application starts up
-- **THEN** it binds to a Unix Domain Socket at the path specified in the configuration (defaulting to `/tmp/runhelm.sock`)
+- **THEN** it binds to a Unix Domain Socket at the path specified in the configuration (defaulting to `/tmp/relayfold.sock`)
 
 ### Requirement: Worker Connection and Registration
 Workers SHALL connect to the Orchestrator's socket and provide a "registration" message identifying their capabilities and identity.

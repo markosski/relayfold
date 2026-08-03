@@ -19,33 +19,33 @@ RUN npm run build
 FROM node:20-alpine
 
 WORKDIR /app
-ARG RUNHELM_PI_PACKAGES=""
+ARG RELAYFOLD_PI_PACKAGES=""
 ENV NODE_ENV=production
-ENV HOME=/home/runhelm
-ENV XDG_CACHE_HOME=/home/runhelm/.cache
-ENV npm_config_cache=/home/runhelm/.cache/npm
-ENV COREPACK_HOME=/home/runhelm/.cache/corepack
+ENV HOME=/home/relayfold
+ENV XDG_CACHE_HOME=/home/relayfold/.cache
+ENV npm_config_cache=/home/relayfold/.cache/npm
+ENV COREPACK_HOME=/home/relayfold/.cache/corepack
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/runhelm" \
-      org.opencontainers.image.description="RunHelm worker" \
+LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+      org.opencontainers.image.description="RelayFold worker" \
       org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache bash curl git github-cli make g++ python3 py3-pip
-RUN addgroup -g 10001 runhelm \
-    && adduser -D -h /home/runhelm -u 10001 -G runhelm runhelm \
-    && mkdir -p /app /home/runhelm/.runhelm /home/runhelm/.cache /home/runhelm/.pi/agent/skills /workspaces \
-    && chown runhelm:runhelm /app /home/runhelm /home/runhelm/.runhelm /home/runhelm/.cache /home/runhelm/.pi /workspaces
+RUN addgroup -g 10001 relayfold \
+    && adduser -D -h /home/relayfold -u 10001 -G relayfold relayfold \
+    && mkdir -p /app /home/relayfold/.relayfold /home/relayfold/.cache /home/relayfold/.pi/agent/skills /workspaces \
+    && chown relayfold:relayfold /app /home/relayfold /home/relayfold/.relayfold /home/relayfold/.cache /home/relayfold/.pi /workspaces
 
 # Copy package.json and install production dependencies only
-COPY --chown=runhelm:runhelm package*.json ./
+COPY --chown=relayfold:relayfold package*.json ./
 
 RUN npm install --omit=dev
-RUN if [ -n "$RUNHELM_PI_PACKAGES" ]; then npm install --omit=dev --no-save $RUNHELM_PI_PACKAGES; fi
+RUN if [ -n "$RELAYFOLD_PI_PACKAGES" ]; then npm install --omit=dev --no-save $RELAYFOLD_PI_PACKAGES; fi
 RUN corepack enable
 
 # Copy the built output from the builder stage
-COPY --from=builder --chown=runhelm:runhelm /app/dist ./dist
+COPY --from=builder --chown=relayfold:relayfold /app/dist ./dist
 
 # Set the entrypoint to run the worker directly with node
-USER runhelm
+USER relayfold
 ENTRYPOINT ["node", "dist/index.js"]

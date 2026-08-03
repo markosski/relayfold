@@ -4,20 +4,20 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   site: 'https://markosski.github.io',
-  base: '/runhelm',
+  base: '/relayfold',
   integrations: [
     react(),
     starlight({
-      title: 'RunHelm',
+      title: 'RelayFold',
       logo: {
-        src: './public/runhelm-logo.png',
-        alt: 'RunHelm',
+        src: './public/relayfold-logo.png',
+        alt: 'RelayFold',
       },
       social: [
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/markosski/runhelm',
+          href: 'https://github.com/markosski/relayfold',
         },
       ],
       components: {

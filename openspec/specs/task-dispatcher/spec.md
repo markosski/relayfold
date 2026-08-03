@@ -94,11 +94,11 @@ Defines the behavior of `TaskDispatcher`, the in-memory component that implement
 - **AND** the active dispatch lease SHALL be removed
 
 #### Scenario: Built-in default timeout
-- **WHEN** a task dispatch does not override the timeout and `RUNHELM_TASK_TIMEOUT_SECS` is unset or invalid
+- **WHEN** a task dispatch does not override the timeout and `RELAYFOLD_TASK_TIMEOUT_SECS` is unset or invalid
 - **THEN** the dispatcher SHALL use a 300 second claimed-task timeout
 
 #### Scenario: Environment default timeout
-- **WHEN** a task dispatch does not override the timeout and `RUNHELM_TASK_TIMEOUT_SECS` is a valid unsigned integer
+- **WHEN** a task dispatch does not override the timeout and `RELAYFOLD_TASK_TIMEOUT_SECS` is a valid unsigned integer
 - **THEN** the dispatcher SHALL use that value in seconds as the claimed-task timeout
 
 ### Requirement: Workspace Dispatch Metadata

@@ -1,17 +1,17 @@
-# Canonical Compose template for release images and `runhelm init`.
+# Canonical Compose template for release images and `rf init`.
 services:
   orchestrator:
-    image: ${RUNHELM_ORCHESTRATOR_IMAGE}
+    image: ${RELAYFOLD_ORCHESTRATOR_IMAGE}
     ports:
-      - "${RUNHELM_PUBLIC_HTTP_BIND:-127.0.0.1:3000}:3000"
+      - "${RELAYFOLD_PUBLIC_HTTP_BIND:-127.0.0.1:3000}:3000"
     environment:
-      RUNHELM_USE_GLOBAL_NAMESPACE: "true"
-      RUNHELM_WORKER_HTTP_ADDR: 0.0.0.0:3001
-      RUNHELM_STORAGE: ${RUNHELM_STORAGE:-sqlite}
-      RUNHELM_STORE_SQLITE_PATH: ${RUNHELM_STORE_SQLITE_PATH:-/tmp/runhelm.db}
-      RUNHELM_MAX_CONCURRENT_WORKFLOWS: ${RUNHELM_MAX_CONCURRENT_WORKFLOWS:-1}
-      RUNHELM_WORKFLOW_QUEUE_CAPACITY: ${RUNHELM_WORKFLOW_QUEUE_CAPACITY:-1024}
-      RUNHELM_TASK_TIMEOUT_SECS: ${RUNHELM_TASK_TIMEOUT_SECS:-300}
+      RELAYFOLD_USE_GLOBAL_NAMESPACE: "true"
+      RELAYFOLD_WORKER_HTTP_ADDR: 0.0.0.0:3001
+      RELAYFOLD_STORAGE: ${RELAYFOLD_STORAGE:-sqlite}
+      RELAYFOLD_STORE_SQLITE_PATH: ${RELAYFOLD_STORE_SQLITE_PATH:-/tmp/relayfold.db}
+      RELAYFOLD_MAX_CONCURRENT_WORKFLOWS: ${RELAYFOLD_MAX_CONCURRENT_WORKFLOWS:-1}
+      RELAYFOLD_WORKFLOW_QUEUE_CAPACITY: ${RELAYFOLD_WORKFLOW_QUEUE_CAPACITY:-1024}
+      RELAYFOLD_TASK_TIMEOUT_SECS: ${RELAYFOLD_TASK_TIMEOUT_SECS:-300}
     read_only: true
     tmpfs:
       - /tmp
@@ -25,20 +25,20 @@ services:
     restart: unless-stopped
 
   worker:
-    image: ${RUNHELM_WORKER_IMAGE}
-    user: "${RUNHELM_WORKER_UID:-10001}:${RUNHELM_WORKER_GID:-10001}"
+    image: ${RELAYFOLD_WORKER_IMAGE}
+    user: "${RELAYFOLD_WORKER_UID:-10001}:${RELAYFOLD_WORKER_GID:-10001}"
     depends_on:
       orchestrator:
         condition: service_healthy
     environment:
-      RUNHELM_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
-      RUNHELM_WORKER_HOST_ID: ${RUNHELM_WORKER_HOST_ID:-local-host}
-      RUNHELM_WORKSPACE_ROOT: /workspaces
+      RELAYFOLD_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
+      RELAYFOLD_WORKER_HOST_ID: ${RELAYFOLD_WORKER_HOST_ID:-local-host}
+      RELAYFOLD_WORKSPACE_ROOT: /workspaces
     volumes:
-      - ${RUNHELM_HOME}/file_credentials.json:/home/runhelm/.runhelm/file_credentials.json:ro
-      - ${RUNHELM_HOME}/skills:/home/runhelm/.pi/agent/skills:ro
-      - ${RUNHELM_HOME}/workspaces:/workspaces
-      - ${RUNHELM_HOME}/cache:/home/runhelm/.cache
+      - ${RELAYFOLD_HOME}/file_credentials.json:/home/relayfold/.relayfold/file_credentials.json:ro
+      - ${RELAYFOLD_HOME}/skills:/home/relayfold/.pi/agent/skills:ro
+      - ${RELAYFOLD_HOME}/workspaces:/workspaces
+      - ${RELAYFOLD_HOME}/cache:/home/relayfold/.cache
     read_only: true
     tmpfs:
       - /tmp

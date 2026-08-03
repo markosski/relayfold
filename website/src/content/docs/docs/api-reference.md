@@ -3,16 +3,16 @@ title: API Reference
 description: HTTP endpoints for registering workflows, starting runs, inspecting state, controlling execution, and worker coordination.
 ---
 
-RunHelm exposes a public orchestrator API for users and operators, plus a worker API used by RunHelm workers. Local Docker installs expose the public API on `http://localhost:3000`. The worker API listens separately on `http://localhost:3001` by default and is intended for worker runtime integration.
+RelayFold exposes a public orchestrator API for users and operators, plus a worker API used by RelayFold workers. Local Docker installs expose the public API on `http://localhost:3000`. The worker API listens separately on `http://localhost:3001` by default and is intended for worker runtime integration.
 
 Examples use:
 
 ```bash
-export RUNHELM_URL=http://localhost:3000
+export RELAYFOLD_URL=http://localhost:3000
 ```
 
 For the currently supported single-tenant request path, configure
-`RUNHELM_USE_GLOBAL_NAMESPACE=true`. RunHelm then selects the exact built-in
+`RELAYFOLD_USE_GLOBAL_NAMESPACE=true`. RelayFold then selects the exact built-in
 namespace `global-namespace` and ignores any `Authorization` header. When the
 variable is unset or `false`, missing or malformed bearer credentials return
 `401 Unauthorized`. A well-formed `Authorization: Bearer <api-key>` credential
@@ -57,7 +57,7 @@ the same way as an unknown ID.
 ## Health
 
 ```bash
-curl -sS "$RUNHELM_URL/health"
+curl -sS "$RELAYFOLD_URL/health"
 ```
 
 Response:
@@ -71,7 +71,7 @@ OK
 Register a workflow definition:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
   -d '{
     "id": "hello-workflow",
     "description": "Says hello to a named user.",
@@ -113,18 +113,18 @@ Response:
 Workflow definitions may also be posted as YAML without conversion:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
   --data-binary @workflow.yaml
 ```
 
-RunHelm auto-detects JSON or YAML from the request body. A `Content-Type`
+RelayFold auto-detects JSON or YAML from the request body. A `Content-Type`
 containing `yaml` is treated as a parsing hint, but it is not required. An
 invalid document returns `400 Bad Request`.
 
 List registered workflow definitions without loading their task definitions or data bindings:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflow-def"
+curl -sS "$RELAYFOLD_URL/workflow-def"
 ```
 
 Response:
@@ -154,7 +154,7 @@ Get one complete registered workflow definition when you need its tasks, schemas
 or data bindings:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflow-def/hello-workflow"
+curl -sS "$RELAYFOLD_URL/workflow-def/hello-workflow"
 ```
 
 Response:
@@ -195,7 +195,7 @@ JSON is the default response format. Request YAML with the `format` query
 parameter:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflow-def/hello-workflow?format=yaml"
+curl -sS "$RELAYFOLD_URL/workflow-def/hello-workflow?format=yaml"
 ```
 
 The supported values are `json` and `yaml`. YAML responses use
@@ -212,7 +212,7 @@ immutable and an overwrite returns `409 Conflict`:
 }
 ```
 
-RunHelm does not enforce a versioning scheme. Suffixes such as `_v2` are a
+RelayFold does not enforce a versioning scheme. Suffixes such as `_v2` are a
 suggested convention for choosing a new definition ID.
 
 ## Function definitions
@@ -220,7 +220,7 @@ suggested convention for choosing a new definition ID.
 Register a reusable function definition:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/function-def" \
+curl -sS -X POST "$RELAYFOLD_URL/function-def" \
   -d '{
     "id": "format.hello",
     "dependencies": [],
@@ -241,14 +241,14 @@ Function definitions use the same JSON/YAML auto-detection as workflow
 definitions. For example, register a YAML artifact directly with:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/function-def" \
+curl -sS -X POST "$RELAYFOLD_URL/function-def" \
   --data-binary @function.yaml
 ```
 
 Delete a reusable function definition:
 
 ```bash
-curl -i -X DELETE "$RUNHELM_URL/function-def/format.hello"
+curl -i -X DELETE "$RELAYFOLD_URL/function-def/format.hello"
 ```
 
 Successful deletion returns `204 No Content`. Missing definitions return `404 Not Found`.
@@ -258,7 +258,7 @@ Successful deletion returns `204 No Content`. Missing definitions return `404 No
 Create and queue a workflow instance from a registered workflow definition:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def/hello-workflow" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def/hello-workflow" \
   -H 'content-type: application/json' \
   -d '{ "name": "Ada" }'
 ```
@@ -282,7 +282,7 @@ If no eligible worker host is registered, the API returns `503 Service Unavailab
 Run a task from a registered workflow definition without creating a workflow instance:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflow-def/hello-workflow/tasks/hello" \
+curl -sS -X POST "$RELAYFOLD_URL/workflow-def/hello-workflow/tasks/hello" \
   -H 'content-type: application/json' \
   -d '{ "inputs": [{ "name": "Ada" }] }'
 ```
@@ -327,7 +327,7 @@ Other result statuses are:
 ## List workflows
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows?status=completed&limit=20"
+curl -sS "$RELAYFOLD_URL/workflows?status=completed&limit=20"
 ```
 
 Query parameters:
@@ -362,7 +362,7 @@ Response:
 ## Workflow status
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000"
 ```
 
 Response:
@@ -388,7 +388,7 @@ Response:
 ## Workflow events
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/events?limit=100"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/events?limit=100"
 ```
 
 Response shape:
@@ -405,7 +405,7 @@ Events are returned in ascending sequence order. When `next_sequence` is not
 `null`, pass it as `after_sequence` to request the next page:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/events?limit=100&after_sequence=100"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/events?limit=100&after_sequence=100"
 ```
 
 The default page size is 100 and the maximum is 500. Exact event payloads depend
@@ -416,7 +416,7 @@ on the workflow operations that have occurred.
 Pause one workflow:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/pause"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/pause"
 ```
 
 Response:
@@ -431,7 +431,7 @@ Response:
 Resume one workflow:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/resume"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/resume"
 ```
 
 Response:
@@ -446,13 +446,13 @@ Response:
 Pause all active workflows:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/pause"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/pause"
 ```
 
 Resume all paused workflows:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/resume"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/resume"
 ```
 
 Bulk responses include the operation status, affected count, and workflow instance IDs:
@@ -473,7 +473,7 @@ Bulk responses include the operation status, affected count, and workflow instan
 List task results for a workflow instance:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks"
 ```
 
 Response:
@@ -507,13 +507,13 @@ Response:
 Get the latest result for one logical task:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks/hello"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks/hello"
 ```
 
 Get a specific generation:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/1"
+curl -sS "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/1"
 ```
 
 Task result statuses include `success`, `failure`, `pending`, `running`, and `input_needed`. Success results include `output`; failure results include `error_message`; input-needed results include `input_request`.
@@ -522,10 +522,10 @@ Task result statuses include `success`, `failure`, `pending`, `running`, and `in
 
 Submit input for an Agent task currently waiting in `InputNeeded`:
 
-See [Human Input](/runhelm/docs/concepts/human-input/) for the full workflow behavior and Agent configuration.
+See [Human Input](/relayfold/docs/concepts/human-input/) for the full workflow behavior and Agent configuration.
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/human-workflow-1780000000000000000/tasks/collect-release-preference/human-input" \
+curl -sS -X POST "$RELAYFOLD_URL/workflows/human-workflow-1780000000000000000/tasks/collect-release-preference/human-input" \
   -H 'content-type: application/json' \
   -d '{ "input": "Use the stable release channel." }'
 ```
@@ -547,7 +547,7 @@ The API returns `409 Conflict` if the task is not waiting for input or is not an
 Retry a failed task on the workflow's existing pinned host:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/retry"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/retry"
 ```
 
 Response:
@@ -565,7 +565,7 @@ Response:
 Force retry can reassign the workflow to another eligible host when the original host is unavailable:
 
 ```bash
-curl -sS -X POST "$RUNHELM_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/retry?force=true"
+curl -sS -X POST "$RELAYFOLD_URL/workflows/hello-workflow-1780000000000000000/tasks/hello/retry?force=true"
 ```
 
 If no retry host is available, the API returns `503 Service Unavailable`.
@@ -575,7 +575,7 @@ If no retry host is available, the API returns `503 Service Unavailable`.
 Inspect pending workflow instance IDs:
 
 ```bash
-curl -sS "$RUNHELM_URL/workflow-queue"
+curl -sS "$RELAYFOLD_URL/workflow-queue"
 ```
 
 Response:
@@ -591,7 +591,7 @@ Response:
 Remove one queued workflow instance:
 
 ```bash
-curl -i -X DELETE "$RUNHELM_URL/workflow-queue/hello-workflow-1780000000000000000"
+curl -i -X DELETE "$RELAYFOLD_URL/workflow-queue/hello-workflow-1780000000000000000"
 ```
 
 Successful removal returns `204 No Content`.
@@ -599,7 +599,7 @@ Successful removal returns `204 No Content`.
 Purge the queue:
 
 ```bash
-curl -sS -X DELETE "$RUNHELM_URL/workflow-queue"
+curl -sS -X DELETE "$RELAYFOLD_URL/workflow-queue"
 ```
 
 Response:
@@ -615,18 +615,18 @@ Response:
 
 ## Worker endpoints
 
-Worker endpoints are for RunHelm worker processes. Application clients normally use the public endpoints above.
+Worker endpoints are for RelayFold worker processes. Application clients normally use the public endpoints above.
 
 Use a separate worker API base URL:
 
 ```bash
-export RUNHELM_WORKER_URL=http://localhost:3001
+export RELAYFOLD_WORKER_URL=http://localhost:3001
 ```
 
 ### Register worker
 
 ```bash
-curl -sS -X POST "$RUNHELM_WORKER_URL/workers/register" \
+curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/register" \
   -H 'content-type: application/json' \
   -d '{
     "worker_id": "worker-1",
@@ -647,7 +647,7 @@ Response:
 ### Heartbeat worker
 
 ```bash
-curl -sS -X POST "$RUNHELM_WORKER_URL/workers/heartbeat" \
+curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/heartbeat" \
   -H 'content-type: application/json' \
   -d '{
     "worker_id": "worker-1",
@@ -667,7 +667,7 @@ Response:
 ### Claim task
 
 ```bash
-curl -sS -X POST "$RUNHELM_WORKER_URL/workers/tasks/claim" \
+curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/tasks/claim" \
   -H 'content-type: application/json' \
   -d '{ "worker_id": "worker-1" }'
 ```
@@ -711,7 +711,7 @@ No-task response:
 ### Complete task
 
 ```bash
-curl -sS -X POST "$RUNHELM_WORKER_URL/workers/tasks/worker-pool-0/result" \
+curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/tasks/worker-pool-0/result" \
   -H 'content-type: application/json' \
   -d '{
     "kind": "success",

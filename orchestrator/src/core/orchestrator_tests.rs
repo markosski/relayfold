@@ -1314,14 +1314,14 @@ fn startup_recovery_is_cross_namespace_with_or_without_global_namespace_mode() {
         command
             .arg("startup_recovery_cross_namespace_child")
             .arg("--nocapture")
-            .env("RUNHELM_STARTUP_RECOVERY_CHILD", "1");
+            .env("RELAYFOLD_STARTUP_RECOVERY_CHILD", "1");
 
         match use_global_namespace {
             Some(enabled) => {
-                command.env("RUNHELM_USE_GLOBAL_NAMESPACE", enabled);
+                command.env("RELAYFOLD_USE_GLOBAL_NAMESPACE", enabled);
             }
             None => {
-                command.env_remove("RUNHELM_USE_GLOBAL_NAMESPACE");
+                command.env_remove("RELAYFOLD_USE_GLOBAL_NAMESPACE");
             }
         }
 
@@ -1337,7 +1337,7 @@ fn startup_recovery_is_cross_namespace_with_or_without_global_namespace_mode() {
 
 #[tokio::test]
 async fn startup_recovery_cross_namespace_child() {
-    if std::env::var_os("RUNHELM_STARTUP_RECOVERY_CHILD").is_none() {
+    if std::env::var_os("RELAYFOLD_STARTUP_RECOVERY_CHILD").is_none() {
         return;
     }
 

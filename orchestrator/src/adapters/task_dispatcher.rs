@@ -399,7 +399,7 @@ fn new_dispatch_namespace() -> String {
 }
 
 fn task_timeout_from_env() -> Duration {
-    std::env::var("RUNHELM_TASK_TIMEOUT_SECS")
+    std::env::var("RELAYFOLD_TASK_TIMEOUT_SECS")
         .ok()
         .and_then(|value| value.parse::<u64>().ok())
         .map(Duration::from_secs)

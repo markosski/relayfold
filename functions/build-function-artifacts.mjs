@@ -37,7 +37,7 @@ async function readFunctionCode(root, source) {
 
 async function compileTypeScript(root, sourcePath) {
   const ts = loadTypeScript(root);
-  const outDir = await mkdtemp(join(tmpdir(), "runhelm-functions-ts-"));
+  const outDir = await mkdtemp(join(tmpdir(), "relayfold-functions-ts-"));
 
   try {
     const options = {
