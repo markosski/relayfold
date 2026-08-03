@@ -120,64 +120,10 @@ Delete only when no active or future workflows need the reference. Workflows tha
 
 ## Build artifacts from source
 
-The repository includes a function artifact builder under `functions/`. The example package compiles TypeScript into registry-ready JSON:
-
-```bash
-cd functions/example
-npm install
-npm run build
-```
-
-TypeScript functions under `functions/<package>/src/` can use the shared runtime
-context type:
-
-```ts
-import type { RelayFoldFunction } from "../../relayfold";
-
-const run: RelayFoldFunction = async ({ inputs }) => ({
-  response: "function completed",
-  input: inputs[0] ?? null
-});
-
-export default run;
-```
-
-The import is type-only and is removed from the generated JavaScript artifact.
-
-When a function entry in `scripts/build.mjs` omits `dependencies`, the artifact
-builder copies the package's runtime `dependencies` from `package.json` into the
-generated JSON and YAML. A function can declare its own `dependencies` array to
-override that default, which is useful when a package builds multiple functions
-with different runtime requirements.
-
-The repository example demonstrates this by using `unique-names-generator` to
-create a name in its greeting and including that package in both generated
-artifacts.
-
-Run `npm test` from the example package to import and invoke the TypeScript
-function directly. Its test verifies the greeting and confirms that trigger
-input reaches the function unchanged.
-
-The build writes artifacts such as:
-
-```text
-functions/example/dist/example.example.json
-functions/example/dist/example.example.yaml
-```
-
-Register the JSON artifact:
-
-```bash
-curl -sS -X POST "$RELAYFOLD_URL/function-def" \
-  --data-binary @functions/example/dist/example.example.json
-```
-
-Register a YAML artifact directly without converting it:
-
-```bash
-curl -sS -X POST "$RELAYFOLD_URL/function-def" \
-  --data-binary @functions/example/dist/example.yaml
-```
+Use the [`functions/example` README](https://github.com/markosski/relayfold/blob/main/functions/example/README.md)
+for the TypeScript template, direct testing, dependency handling, artifact
+generation, and guidance for maintaining larger Functions in dedicated
+repositories.
 
 ## When to use inline functions
 
