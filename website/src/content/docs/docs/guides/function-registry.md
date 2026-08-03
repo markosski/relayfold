@@ -128,6 +128,36 @@ npm install
 npm run build
 ```
 
+TypeScript functions under `functions/<package>/src/` can use the shared runtime
+context type:
+
+```ts
+import type { RelayFoldFunction } from "../../relayfold";
+
+const run: RelayFoldFunction = async ({ inputs }) => ({
+  response: "function completed",
+  input: inputs[0] ?? null
+});
+
+export default run;
+```
+
+The import is type-only and is removed from the generated JavaScript artifact.
+
+When a function entry in `scripts/build.mjs` omits `dependencies`, the artifact
+builder copies the package's runtime `dependencies` from `package.json` into the
+generated JSON and YAML. A function can declare its own `dependencies` array to
+override that default, which is useful when a package builds multiple functions
+with different runtime requirements.
+
+The repository example demonstrates this by using `unique-names-generator` to
+create a name in its greeting and including that package in both generated
+artifacts.
+
+Run `npm test` from the example package to import and invoke the TypeScript
+function directly. Its test verifies the greeting and confirms that trigger
+input reaches the function unchanged.
+
 The build writes artifacts such as:
 
 ```text

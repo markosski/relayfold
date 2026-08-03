@@ -10,5 +10,8 @@
   "devDependencies": {
     "@types/node": "^20.19.39",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "unique-names-generator": "^4.7.1"
   }
 }
