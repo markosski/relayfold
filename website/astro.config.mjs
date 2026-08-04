@@ -69,6 +69,10 @@ export default defineConfig({
           items: [
             { label: 'Register and Run a Workflow', slug: 'docs/guides/register-and-run-workflow' },
             { label: 'Function Registry', slug: 'docs/guides/function-registry' },
+            {
+              label: 'Safe Agentic Workflows',
+              slug: 'docs/guides/safe-agentic-workflows',
+            },
           ],
         },
         {

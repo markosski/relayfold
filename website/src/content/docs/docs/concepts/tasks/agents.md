@@ -45,6 +45,11 @@ Use schemas when downstream tasks depend on specific fields. A schema makes the 
 
 Keep tool access narrow. If a task only needs to classify text, it should not receive file or shell tools. If it needs to edit a workspace, pair tool approval with a workspace group and a prompt that names the expected file work.
 
+For workflows that change external systems, prefer read-only Agent access and
+delegate mutations to narrow Function tasks. See
+[Safe Agentic Workflows](/relayfold/docs/guides/safe-agentic-workflows/) for the
+read, decide, and mutate pattern.
+
 ## Credentials
 
 Every `required_credentials` entry is resolved by name and exposed as an

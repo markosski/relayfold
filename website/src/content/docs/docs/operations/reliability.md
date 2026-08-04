@@ -37,6 +37,24 @@ Prefer side effects that are safe to repeat:
 
 Avoid tasks that blindly create, charge, publish, or notify without a dedupe key.
 
+## Keep side-effecting tasks single-purpose
+
+Give each task that mutates an external system one responsibility. Do not combine
+independent operations such as updating a record and sending a notification in
+the same task.
+
+If a combined task completes the update and then fails while sending the
+notification, retrying the task may repeat the update. Separate tasks create
+narrower retry boundaries:
+
+```text
+update record -> send notification
+```
+
+Each task can independently detect whether its operation already completed.
+Keep mutations together only when the external system exposes them as one
+atomic transaction or idempotent operation.
+
 ## Place irreversible work late
 
 Put irreversible side effects after verifiers and human approvals.
