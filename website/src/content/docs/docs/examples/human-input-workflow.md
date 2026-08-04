@@ -9,7 +9,7 @@ recognize that it cannot complete the task without inventing information and ask
 the operator for the missing decision.
 
 The ready-to-run definition is
-[`examples/example_human_input_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_human_input_workflow.yaml)
+[`examples/example_human_input_workflow.yaml`](https://github.com/parsablelabs/relayfold/blob/main/examples/example_human_input_workflow.yaml)
 
 ## Workflow definition
 
@@ -84,7 +84,7 @@ Download and register the example YAML directly from GitHub:
 ```bash
 export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_human_input_workflow.yaml \
+curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/examples/example_human_input_workflow.yaml \
   | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```

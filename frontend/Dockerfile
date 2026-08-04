@@ -11,7 +11,7 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+LABEL org.opencontainers.image.source="https://github.com/parsablelabs/relayfold" \
       org.opencontainers.image.description="RelayFold frontend" \
       org.opencontainers.image.licenses="MIT"
 

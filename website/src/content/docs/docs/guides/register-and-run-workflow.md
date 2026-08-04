@@ -26,7 +26,7 @@ it works:
 
 ```bash
 cd path/to/your-application
-git submodule add https://github.com/markosski/relayfold.git relayfold
+git submodule add https://github.com/parsablelabs/relayfold.git relayfold
 ```
 
 Open your application repository in your coding agent, then adapt this prompt:

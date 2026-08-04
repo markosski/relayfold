@@ -6,7 +6,7 @@ RELAYFOLD_HOME="${RELAYFOLD_HOME:-$HOME/.relayfold}"
 CONFIG_FILE="$RELAYFOLD_HOME/config.env"
 COMPOSE_FILE="$RELAYFOLD_HOME/docker-compose.yml"
 COMPOSE_TEMPLATE_FILE="$RELAYFOLD_SCRIPT_DIR/docker-compose.release.yml"
-DEFAULT_IMAGE_REGISTRY="ghcr.io/markosski"
+DEFAULT_IMAGE_REGISTRY="ghcr.io/parsablelabs"
 DEFAULT_VERSION="0"
 
 usage() {

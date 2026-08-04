@@ -26,7 +26,7 @@ ENV XDG_CACHE_HOME=/home/relayfold/.cache
 ENV npm_config_cache=/home/relayfold/.cache/npm
 ENV COREPACK_HOME=/home/relayfold/.cache/corepack
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+LABEL org.opencontainers.image.source="https://github.com/parsablelabs/relayfold" \
       org.opencontainers.image.description="RelayFold worker" \
       org.opencontainers.image.licenses="MIT"
 

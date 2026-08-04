@@ -7,11 +7,13 @@ The Docker-first local install path does not require Rust, Node.js, or a source 
 
 :::caution
 This local install path is intended for development and evaluation only. It is
-not suitable for production deployments.
+not suitable for production deployments. See
+[Production Deployment](/relayfold/docs/operations/production-deployment/) for
+the changes required to harden this starter configuration.
 :::
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/packaging/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
 rf init --version dev # dev for unstable or release tag
 rf up
 ```
