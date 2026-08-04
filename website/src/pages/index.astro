@@ -4,7 +4,7 @@ import WorkflowFlow from '../components/WorkflowFlow';
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 const url = (path: string) => `${base}${path}`;
 
-const installCommand = `curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/packaging/install.sh | sh
+const installCommand = `curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
 rf init --version dev
 rf up`;
 ---
@@ -370,7 +370,7 @@ rf up`;
         <div class="nav-links">
           <a href={url('docs/')}>Docs</a>
           <a href={url('docs/install/')}>Install</a>
-          <a href="https://github.com/markosski/relayfold">GitHub</a>
+          <a href="https://github.com/parsablelabs/relayfold">GitHub</a>
         </div>
       </nav>
     </header>

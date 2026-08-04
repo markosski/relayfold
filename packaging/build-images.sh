@@ -10,7 +10,7 @@ Build RelayFold runtime images from the current checkout or from a git ref.
 
 Options:
   --ref REF             Git ref to archive and build, for example v0.3.1.
-  --tag-prefix PREFIX   Image prefix, default ghcr.io/markosski.
+  --tag-prefix PREFIX   Image prefix, default ghcr.io/parsablelabs.
   --version VERSION     Image tag, default is REF without a leading v, or dev.
   --push                Push images after building.
 
@@ -21,7 +21,7 @@ USAGE
 }
 
 ref=""
-tag_prefix="ghcr.io/markosski"
+tag_prefix="ghcr.io/parsablelabs"
 version=""
 push="false"
 

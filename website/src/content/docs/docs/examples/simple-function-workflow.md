@@ -6,7 +6,7 @@ description: A minimal workflow that uses one inline Function task.
 This example shows a single Function task that reads trigger input and returns structured output.
 
 The ready-to-run definition is
-[`examples/example_simple_function_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_simple_function_workflow.yaml)
+[`examples/example_simple_function_workflow.yaml`](https://github.com/parsablelabs/relayfold/blob/main/examples/example_simple_function_workflow.yaml)
 
 ## Workflow definition
 
@@ -56,7 +56,7 @@ directly from GitHub:
 ```bash
 export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_simple_function_workflow.yaml \
+curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/examples/example_simple_function_workflow.yaml \
   | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```

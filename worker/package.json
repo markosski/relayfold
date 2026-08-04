@@ -2,6 +2,7 @@
   "name": "worker",
   "version": "0.1.0",
   "description": "Docker container worker for executing agentic tasks",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

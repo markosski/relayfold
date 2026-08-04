@@ -3,7 +3,7 @@ title: GitHub Issue to Pull Request Workflow
 description: Example agentic workflow that fetches a GitHub issue, implements a change, verifies it, and creates a pull request.
 ---
 
-[`examples/example_github_issue_pr_workflow.yaml`](https://github.com/markosski/relayfold/blob/main/examples/example_github_issue_pr_workflow.yaml)
+[`examples/example_github_issue_pr_workflow.yaml`](https://github.com/parsablelabs/relayfold/blob/main/examples/example_github_issue_pr_workflow.yaml)
 demonstrates an agentic workflow that fetches a GitHub issue, implements the requested change, uses a verifier loop to review the implementation, and creates a pull request.
 
 ## Worker image tooling
@@ -35,7 +35,7 @@ The first task requires one input object with the issue identifiers:
 
 ```json
 {
-  "repository": "markosski/relayfold",
+  "repository": "parsablelabs/relayfold",
   "issue_number": 46
 }
 ```
@@ -79,7 +79,7 @@ Download and register the ready-to-run example directly from GitHub:
 ```bash
 export RELAYFOLD_URL=http://localhost:3000
 
-curl -fsSL https://raw.githubusercontent.com/markosski/relayfold/main/examples/example_github_issue_pr_workflow.yaml \
+curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/examples/example_github_issue_pr_workflow.yaml \
   | curl -fsS -X POST "$RELAYFOLD_URL/workflow-def" \
       --data-binary @-
 ```
@@ -93,7 +93,7 @@ implement:
 curl -fsS -X POST "$RELAYFOLD_URL/workflow-def/github-issue-pr-workflow" \
   -H 'content-type: application/json' \
   -d '{
-    "repository": "markosski/relayfold",
+    "repository": "parsablelabs/relayfold",
     "issue_number": 46
   }'
 ```

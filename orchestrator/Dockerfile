@@ -7,11 +7,15 @@ COPY migrations ./migrations
 COPY src ./src
 RUN cargo build --release
 
+FROM scratch AS artifact
+
+COPY --from=builder /app/target/release/orchestrator /orchestrator
+
 FROM alpine:3.22
 
 ENV HOME=/home/relayfold
 
-LABEL org.opencontainers.image.source="https://github.com/markosski/relayfold" \
+LABEL org.opencontainers.image.source="https://github.com/parsablelabs/relayfold" \
       org.opencontainers.image.description="RelayFold orchestrator" \
       org.opencontainers.image.licenses="MIT"
 

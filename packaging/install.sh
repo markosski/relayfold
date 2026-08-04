@@ -4,7 +4,7 @@ set -eu
 install_dir="${RELAYFOLD_INSTALL_DIR:-$HOME/.local/bin}"
 source_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 install_ref="${RELAYFOLD_INSTALL_REF:-main}"
-raw_base="${RELAYFOLD_RAW_BASE:-https://raw.githubusercontent.com/markosski/relayfold/$install_ref}"
+raw_base="${RELAYFOLD_RAW_BASE:-https://raw.githubusercontent.com/parsablelabs/relayfold/$install_ref}"
 
 mkdir -p "$install_dir"
 

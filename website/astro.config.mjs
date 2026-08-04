@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 
 export default defineConfig({
-  site: 'https://markosski.github.io',
+  site: 'https://parsablelabs.github.io',
   base: '/relayfold',
   integrations: [
     react(),
@@ -17,7 +17,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/markosski/relayfold',
+          href: 'https://github.com/parsablelabs/relayfold',
         },
       ],
       components: {
@@ -56,6 +56,7 @@ export default defineConfig({
         {
           label: 'Operations',
           items: [
+            { label: 'Production Deployment', slug: 'docs/operations/production-deployment' },
             { label: 'Scaling', slug: 'docs/operations/scaling' },
             { label: 'Orchestrator Storage', slug: 'docs/operations/storage' },
             { label: 'Workspaces', slug: 'docs/operations/workspaces' },

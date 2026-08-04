@@ -87,7 +87,7 @@ npm run deploy
 
 The deploy command adds a `.nojekyll` marker to the published branch so GitHub Pages serves Astro's underscore-prefixed `_astro` asset directory.
 
-In the repository's GitHub Pages settings, select **Deploy from a branch**, choose `gh-pages`, and publish from `/(root)`. The site is available at `https://markosski.github.io/relayfold/`.
+In the repository's GitHub Pages settings, select **Deploy from a branch**, choose `gh-pages`, and publish from `/(root)`. The site is available at `https://parsablelabs.github.io/relayfold/`.
 
 Example S3 upload:
 

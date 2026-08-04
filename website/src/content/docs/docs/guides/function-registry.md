@@ -15,7 +15,7 @@ application repository as a Git submodule:
 
 ```bash
 cd path/to/your-application
-git submodule add https://github.com/markosski/relayfold.git relayfold
+git submodule add https://github.com/parsablelabs/relayfold.git relayfold
 ```
 
 Open your application repository in your coding agent, then adapt this prompt:
@@ -120,7 +120,7 @@ Delete only when no active or future workflows need the reference. Workflows tha
 
 ## Build artifacts from source
 
-Use the [`functions/example` README](https://github.com/markosski/relayfold/blob/main/functions/example/README.md)
+Use the [`functions/example` README](https://github.com/parsablelabs/relayfold/blob/main/functions/example/README.md)
 for the TypeScript template, direct testing, dependency handling, artifact
 generation, and guidance for maintaining larger Functions in dedicated
 repositories.

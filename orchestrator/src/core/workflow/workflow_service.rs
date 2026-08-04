@@ -1363,7 +1363,7 @@ mod tests {
             .await
             .unwrap();
 
-        let input = json!({ "repository": "markosski/relayfold" });
+        let input = json!({ "repository": "parsablelabs/relayfold" });
         let instance_id = service
             .create_workflow_instance_for_def(
                 &crate::core::namespace::test_namespace(),

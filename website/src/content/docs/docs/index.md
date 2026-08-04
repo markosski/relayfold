@@ -37,6 +37,11 @@ RelayFold treats an agent the same way it treats a function or API task: as a no
 
 > **RelayFold is still in an early development stage, expect bugs and breaking changes.**
 
+## License
+
+RelayFold is open source under the
+[Apache License 2.0](https://github.com/parsablelabs/relayfold/blob/main/LICENSE).
+
 ## Where to start?
 
 Start with the [install guide](/relayfold/docs/install/) for local setup, then try [Register and Run a Workflow](/relayfold/docs/guides/register-and-run-workflow/). After that, read the [workflow concepts](/relayfold/docs/concepts/workflows/), [task concepts](/relayfold/docs/concepts/tasks/), [workflow YAML reference](/relayfold/docs/concepts/workflow-yaml/), [API reference](/relayfold/docs/api-reference/), and [architecture overview](/relayfold/docs/concepts/architecture/).
