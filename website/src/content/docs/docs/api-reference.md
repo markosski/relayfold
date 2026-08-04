@@ -621,12 +621,19 @@ Use a separate worker API base URL:
 
 ```bash
 export RELAYFOLD_WORKER_URL=http://localhost:3001
+export RELAYFOLD_WORKER_AUTH_TOKEN=<shared-secret>
 ```
+
+Every `/workers/*` request requires exactly one
+`Authorization: Bearer <token>` header matching the orchestrator's
+`RELAYFOLD_WORKER_AUTH_TOKEN`. The worker listener's `/health` route remains
+public for readiness probes.
 
 ### Register worker
 
 ```bash
 curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/register" \
+  -H "authorization: Bearer $RELAYFOLD_WORKER_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{
     "worker_id": "worker-1",
@@ -648,6 +655,7 @@ Response:
 
 ```bash
 curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/heartbeat" \
+  -H "authorization: Bearer $RELAYFOLD_WORKER_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{
     "worker_id": "worker-1",
@@ -668,6 +676,7 @@ Response:
 
 ```bash
 curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/tasks/claim" \
+  -H "authorization: Bearer $RELAYFOLD_WORKER_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{ "worker_id": "worker-1" }'
 ```
@@ -712,6 +721,7 @@ No-task response:
 
 ```bash
 curl -sS -X POST "$RELAYFOLD_WORKER_URL/workers/tasks/worker-pool-0/result" \
+  -H "authorization: Bearer $RELAYFOLD_WORKER_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{
     "kind": "success",

@@ -66,11 +66,19 @@ increases the number of tasks the pool can execute without changing workflow
 definitions.
 
 Configure every worker in the pool with the worker API URL for the same
+orchestrator and the same high-entropy shared token configured on that
 orchestrator:
 
 ```bash
 RELAYFOLD_ORCHESTRATOR_HTTP_URL=http://orchestrator:3001
+RELAYFOLD_WORKER_AUTH_TOKEN=<shared-secret>
 ```
+
+All worker API requests use this token as a bearer credential. A mismatched
+token stops the worker. Rotate it by updating the orchestrator and all workers
+from the same secret source and restarting them together; overlapping tokens
+and live reload are not supported. Use TLS when worker API traffic crosses an
+untrusted network because bearer authentication does not encrypt traffic.
 
 For a Docker Compose installation, scale the worker service from the directory
 that contains the generated Compose file:

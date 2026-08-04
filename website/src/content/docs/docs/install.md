@@ -61,6 +61,15 @@ Workflow definitions and run state use SQLite at `/tmp/relayfold.db` inside the
 orchestrator container. This database is temporary and is discarded when the
 orchestrator stops.
 
+`rf init` also generates a high-entropy `RELAYFOLD_WORKER_AUTH_TOKEN` in
+`config.env`. The orchestrator and all workers use this shared bearer token to
+authenticate worker registration, heartbeat, task claim, and result requests.
+Keep `config.env` private. To rotate the token, replace it in the deployment
+secret source and restart the orchestrator and every worker together.
+
+The token authenticates workers but does not encrypt worker API traffic. Use
+TLS when that traffic crosses an untrusted network.
+
 ## Global namespace mode
 
 Public resource endpoints require a namespace. Local and single-tenant

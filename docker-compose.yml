@@ -11,6 +11,7 @@ services:
     environment:
       RELAYFOLD_USE_GLOBAL_NAMESPACE: "true"
       RELAYFOLD_WORKER_HTTP_ADDR: 0.0.0.0:3001
+      RELAYFOLD_WORKER_AUTH_TOKEN: ${RELAYFOLD_WORKER_AUTH_TOKEN:-relayfold-local-development-token}
       RELAYFOLD_STORAGE: mysql
       RELAYFOLD_STORE_MYSQL_HOST: ${RELAYFOLD_STORE_MYSQL_HOST:-host.docker.internal}
       RELAYFOLD_STORE_MYSQL_PORT: ${RELAYFOLD_STORE_MYSQL_PORT:-3306}
@@ -42,6 +43,7 @@ services:
         condition: service_healthy
     environment:
       RELAYFOLD_ORCHESTRATOR_HTTP_URL: http://orchestrator:3001
+      RELAYFOLD_WORKER_AUTH_TOKEN: ${RELAYFOLD_WORKER_AUTH_TOKEN:-relayfold-local-development-token}
       RELAYFOLD_WORKER_HOST_ID: compose-local-host
       RELAYFOLD_WORKSPACE_ROOT: /workspaces
     volumes:

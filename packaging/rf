@@ -46,6 +46,7 @@ write_config() {
   registry="$2"
   worker_uid="$(id -u)"
   worker_gid="$(id -g)"
+  worker_auth_token="$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')"
   cat > "$CONFIG_FILE" <<EOF_CONFIG
 RELAYFOLD_HOME=$RELAYFOLD_HOME
 RELAYFOLD_VERSION=$version
@@ -54,6 +55,7 @@ RELAYFOLD_WORKER_IMAGE=$registry/relayfold-worker:$version
 RELAYFOLD_WORKER_UID=$worker_uid
 RELAYFOLD_WORKER_GID=$worker_gid
 RELAYFOLD_WORKER_HOST_ID=local-host
+RELAYFOLD_WORKER_AUTH_TOKEN=$worker_auth_token
 RELAYFOLD_PUBLIC_HTTP_BIND=127.0.0.1:3000
 RELAYFOLD_STORAGE=sqlite
 RELAYFOLD_STORE_SQLITE_PATH=/tmp/relayfold.db

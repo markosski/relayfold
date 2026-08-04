@@ -1,11 +1,12 @@
 use axum::{
-    Router,
+    Router, middleware,
     routing::{delete, get, post},
 };
 use std::sync::Arc;
 
 use super::handlers;
 
+use super::worker_auth::{WorkerAuth, require_worker_auth};
 use crate::adapters::task_dispatcher::TaskDispatcher;
 use crate::adapters::worker_registry::WorkerRegistry;
 use crate::core::function::function_service::FunctionService;
@@ -101,14 +102,14 @@ pub fn create_public_router(
 pub fn create_worker_router(
     worker_registry: WorkerRegistry,
     task_dispatcher: Arc<TaskDispatcher>,
+    worker_auth: WorkerAuth,
 ) -> Router {
     let state = WorkerAppState {
         worker_registry,
         task_dispatcher,
     };
 
-    Router::new()
-        .route("/health", get(handlers::health_check))
+    let protected = Router::new()
         .route("/workers/register", post(handlers::register_worker))
         .route("/workers/heartbeat", post(handlers::heartbeat_worker))
         .route("/workers/tasks/claim", post(handlers::claim_worker_task))
@@ -116,6 +117,14 @@ pub fn create_worker_router(
             "/workers/tasks/{task_id}/result",
             post(handlers::complete_worker_task),
         )
+        .route_layer(middleware::from_fn_with_state(
+            worker_auth,
+            require_worker_auth,
+        ));
+
+    Router::new()
+        .route("/health", get(handlers::health_check))
+        .merge(protected)
         .fallback(handlers::not_found)
         .with_state(state)
 }
@@ -136,7 +145,7 @@ mod tests {
     use async_trait::async_trait;
     use axum::{
         body::{Body, Bytes, to_bytes},
-        http::{Method, Request, StatusCode, header::AUTHORIZATION},
+        http::{HeaderValue, Method, Request, StatusCode, header::AUTHORIZATION},
     };
     use serde_json::{Value, json};
     use std::collections::HashMap;
@@ -231,6 +240,114 @@ mod tests {
         let status = response.status();
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         (status, body)
+    }
+
+    fn worker_router(registry: WorkerRegistry) -> Router {
+        create_worker_router(
+            registry,
+            Arc::new(TaskDispatcher::new()),
+            WorkerAuth::from_token("worker-test-token").unwrap(),
+        )
+    }
+
+    async fn worker_request(
+        router: &Router,
+        uri: &str,
+        authorization: &[&str],
+        body: Option<Value>,
+    ) -> StatusCode {
+        let mut request = Request::builder().method(Method::POST).uri(uri);
+        if body.is_some() {
+            request = request.header("content-type", "application/json");
+        }
+        let mut request = request
+            .body(body.map_or_else(Body::empty, |body| Body::from(body.to_string())))
+            .unwrap();
+        for value in authorization {
+            request
+                .headers_mut()
+                .append(AUTHORIZATION, HeaderValue::from_str(value).unwrap());
+        }
+
+        router.clone().oneshot(request).await.unwrap().status()
+    }
+
+    #[tokio::test]
+    async fn worker_health_is_public() {
+        let response = worker_router(WorkerRegistry::new())
+            .oneshot(
+                Request::builder()
+                    .uri("/health")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn worker_routes_require_exactly_one_matching_bearer_token() {
+        let cases: &[&[&str]] = &[
+            &[],
+            &["Basic worker-test-token"],
+            &["Bearer wrong-token"],
+            &["Bearer worker-test-token", "Bearer worker-test-token"],
+        ];
+
+        for authorization in cases {
+            let status = worker_request(
+                &worker_router(WorkerRegistry::new()),
+                "/workers/register",
+                authorization,
+                Some(json!({
+                    "type": "register",
+                    "worker_id": "worker-1",
+                    "host_id": "host-1"
+                })),
+            )
+            .await;
+            assert_eq!(status, StatusCode::UNAUTHORIZED);
+        }
+    }
+
+    #[tokio::test]
+    async fn rejected_worker_registration_does_not_mutate_registry() {
+        let registry = WorkerRegistry::new();
+        let status = worker_request(
+            &worker_router(registry.clone()),
+            "/workers/register",
+            &["Bearer wrong-token"],
+            Some(json!({
+                "type": "register",
+                "worker_id": "worker-1",
+                "host_id": "host-1"
+            })),
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        assert_eq!(registry.select_eligible_host().await, None);
+    }
+
+    #[tokio::test]
+    async fn matching_worker_token_allows_registration() {
+        let registry = WorkerRegistry::new();
+        let status = worker_request(
+            &worker_router(registry.clone()),
+            "/workers/register",
+            &["bearer worker-test-token"],
+            Some(json!({
+                "type": "register",
+                "worker_id": "worker-1",
+                "host_id": "host-1"
+            })),
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(registry.select_eligible_host().await.unwrap().0, "host-1");
     }
 
     fn task(status: TaskStatus) -> TaskInstance {

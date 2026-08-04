@@ -12,6 +12,7 @@ use orchestrator::adapters::sqlite_storage::{self, SqliteStorage};
 use orchestrator::adapters::task_dispatcher::{self, TaskDispatcher};
 use orchestrator::adapters::worker_registry::WorkerRegistry;
 use orchestrator::api::router;
+use orchestrator::api::worker_auth::WorkerAuth;
 use orchestrator::core::function::function_service::FunctionService;
 use orchestrator::core::namespace::NamespaceResolver;
 use orchestrator::core::orchestrator::Orchestrator;
@@ -24,6 +25,7 @@ async fn main() -> anyhow::Result<()> {
         .with_env_filter(EnvFilter::from_default_env().add_directive("info".parse()?))
         .init();
     info!("Starting RelayFold Orchestrator...");
+    let worker_auth = WorkerAuth::from_env()?;
 
     // Initialize dependencies (Adapters)
     let storage = create_storage().await?;
@@ -60,7 +62,11 @@ async fn main() -> anyhow::Result<()> {
         worker_registry.clone(),
         namespace_resolver,
     );
-    let worker_app = router::create_worker_router(worker_registry.clone(), task_dispatcher.clone());
+    let worker_app = router::create_worker_router(
+        worker_registry.clone(),
+        task_dispatcher.clone(),
+        worker_auth,
+    );
 
     let public_addr = resolve_public_http_addr();
     let worker_addr = resolve_worker_http_addr();

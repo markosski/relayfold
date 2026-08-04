@@ -64,6 +64,11 @@ Set `RELAYFOLD_WORKER_HOST_ID` before starting the worker. It identifies the
 durable host state domain that owns the worker's local workspace and session
 stores, rather than a short-lived process or container.
 
+Set `RELAYFOLD_WORKER_AUTH_TOKEN` to the same high-entropy, URL-safe secret
+configured on the orchestrator. The worker sends it as a bearer credential on
+every worker API request. An authentication rejection stops the worker so a bad
+secret does not retry indefinitely.
+
 The worker registers before polling for tasks. Registration is retried until it
 succeeds, which allows the worker to start before the orchestrator is ready
 during container startup.
@@ -91,6 +96,7 @@ host identity, see the website documentation:
 | Variable | Default | Description |
 | --- | --- | --- |
 | `RELAYFOLD_ORCHESTRATOR_HTTP_URL` | `http://127.0.0.1:3001` | Worker API base URL used for registration, task claiming, and task completion. |
+| `RELAYFOLD_WORKER_AUTH_TOKEN` | required | Shared bearer token configured identically on the orchestrator and every worker. |
 | `RELAYFOLD_WORKER_HOST_ID` | required | Stable host identity. Workers sharing durable workspace and session roots must use the same value. |
 | `RELAYFOLD_WORKSPACE_ROOT` | `$HOME/.cache/relayfold/workspaces` | Root for task workspaces. The Docker Compose worker uses `/workspaces`. |
 | `WORKER_ID` | hostname plus process ID | Worker identity sent during registration. |
@@ -133,6 +139,7 @@ Run the worker with access to the orchestrator worker API:
 ```bash
 docker run --rm \
   -e RELAYFOLD_ORCHESTRATOR_HTTP_URL=http://host.docker.internal:3001 \
+  -e RELAYFOLD_WORKER_AUTH_TOKEN="$RELAYFOLD_WORKER_AUTH_TOKEN" \
   -e RELAYFOLD_WORKER_HOST_ID=local-docker-host \
   -v ~/.relayfold:/home/relayfold/.relayfold:ro \
   relayfold-worker

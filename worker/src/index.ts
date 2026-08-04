@@ -10,6 +10,7 @@ import type { TaskExecutionResult } from './core/ports/TaskExecutor.js';
 import { materializeTaskWorkspace } from './core/WorkspaceManager.js';
 
 import * as os from 'os';
+import { pathToFileURL } from 'url';
 import { logger } from './utils/logger.js';
 
 const DEFAULT_ORCHESTRATOR_HTTP_URL = 'http://127.0.0.1:3001';
@@ -56,7 +57,7 @@ type ResultAckRetryPolicy = {
     retryDelayMs: number;
 };
 
-class HttpError extends Error {
+export class HttpError extends Error {
     constructor(
         public readonly status: number,
         public readonly url: string,
@@ -65,6 +66,25 @@ class HttpError extends Error {
         super(`HTTP ${status} from ${url}: ${message}`);
         this.name = 'HttpError';
     }
+}
+
+export class WorkerAuthenticationError extends Error {
+    constructor() {
+        super('Worker API authentication failed; verify RELAYFOLD_WORKER_AUTH_TOKEN');
+        this.name = 'WorkerAuthenticationError';
+    }
+}
+
+export function requiredWorkerAuthToken(env: NodeJS.ProcessEnv = process.env): string {
+    const token = env.RELAYFOLD_WORKER_AUTH_TOKEN;
+    if (!token || token.trim().length === 0) {
+        throw new Error('RELAYFOLD_WORKER_AUTH_TOKEN is required and must be non-empty');
+    }
+    if (!/^[A-Za-z0-9\-._~+/=]+$/.test(token)) {
+        throw new Error('RELAYFOLD_WORKER_AUTH_TOKEN must be a valid bearer token');
+    }
+
+    return token;
 }
 
 function createWorkerId(): string {
@@ -135,19 +155,26 @@ async function postWorkerPresence<T>(
     baseUrl: string,
     endpoint: string,
     workerId: string,
-    workerHostId: string
+    workerHostId: string,
+    authToken: string
 ): Promise<T> {
-    return await postJson<T>(`${baseUrl}${endpoint}`, workerPresence(workerId, workerHostId));
+    return await postJson<T>(`${baseUrl}${endpoint}`, workerPresence(workerId, workerHostId), authToken);
 }
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+export async function postJson<T>(url: string, body: unknown, authToken: string): Promise<T> {
     const response = await fetch(url, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+            'authorization': `Bearer ${authToken}`,
+            'content-type': 'application/json',
+        },
         body: JSON.stringify(body),
     });
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new WorkerAuthenticationError();
+        }
         throw new HttpError(response.status, url, await response.text());
     }
 
@@ -175,7 +202,12 @@ type WorkerHeartbeatPolicy = {
     heartbeatIntervalMs: number;
 };
 
-async function registerWorkerUntilAck(baseUrl: string, workerId: string, workerHostId: string): Promise<WorkerHeartbeatPolicy> {
+export async function registerWorkerUntilAck(
+    baseUrl: string,
+    workerId: string,
+    workerHostId: string,
+    authToken: string
+): Promise<WorkerHeartbeatPolicy> {
     let attempt = 0;
 
     while (true) {
@@ -184,7 +216,8 @@ async function registerWorkerUntilAck(baseUrl: string, workerId: string, workerH
                 baseUrl,
                 '/workers/register',
                 workerId,
-                workerHostId
+                workerHostId,
+                authToken
             );
             if (
                 ack.type === 'registration_ack' &&
@@ -207,6 +240,9 @@ async function registerWorkerUntilAck(baseUrl: string, workerId: string, workerH
 
             logger.warn({ ack, workerId, workerHostId }, "Unexpected worker registration ack");
         } catch (err) {
+            if (err instanceof WorkerAuthenticationError) {
+                throw err;
+            }
             attempt += 1;
             const retryContext = {
                 error: describeError(err),
@@ -231,16 +267,23 @@ function startHeartbeatLoop(
     baseUrl: string,
     workerId: string,
     workerHostId: string,
-    heartbeatPolicy: WorkerHeartbeatPolicy
+    heartbeatPolicy: WorkerHeartbeatPolicy,
+    authToken: string,
+    onFatalError: (error: WorkerAuthenticationError) => void
 ): NodeJS.Timeout {
     return setInterval(() => {
         void postWorkerPresence<ResultAckMessage>(
             baseUrl,
             '/workers/heartbeat',
             workerId,
-            workerHostId
+            workerHostId,
+            authToken
         )
             .catch((err) => {
+                if (err instanceof WorkerAuthenticationError) {
+                    onFatalError(err);
+                    return;
+                }
                 logger.warn(
                     {
                         error: describeError(err),
@@ -258,6 +301,7 @@ async function postTaskResultUntilAck(
     baseUrl: string,
     taskId: string,
     result: WorkerExecutionResult,
+    authToken: string,
     retryPolicy: ResultAckRetryPolicy = {
         maxAttempts: DEFAULT_RESULT_ACK_MAX_ATTEMPTS,
         retryDelayMs: DEFAULT_RESULT_ACK_RETRY_DELAY_MS,
@@ -268,7 +312,7 @@ async function postTaskResultUntilAck(
 
     for (let attempt = 1; attempt <= retryPolicy.maxAttempts; attempt++) {
         try {
-            const ack = await postJson<ResultAckMessage>(url, result);
+            const ack = await postJson<ResultAckMessage>(url, result, authToken);
             if (ack.status === 'accepted') {
                 return;
             }
@@ -276,6 +320,9 @@ async function postTaskResultUntilAck(
             lastError = new Error(`Unexpected result ack: ${JSON.stringify(ack)}`);
             logger.warn({ taskId, ack, attempt, maxAttempts: retryPolicy.maxAttempts }, "Task result post did not receive accepted ack");
         } catch (err) {
+            if (err instanceof WorkerAuthenticationError) {
+                throw err;
+            }
             lastError = err;
             logger.warn({ taskId, err, attempt, maxAttempts: retryPolicy.maxAttempts }, "Task result post failed");
         }
@@ -296,27 +343,50 @@ async function runWorker(
     executorFactory: ExecutorFactory,
     credentialsAdapter: CredentialsPort,
     sessionStore: SessionStore,
-    ajv: Ajv
+    ajv: Ajv,
+    authToken: string
 ) {
     const baseUrl = (process.env.RELAYFOLD_ORCHESTRATOR_HTTP_URL || DEFAULT_ORCHESTRATOR_HTTP_URL)
         .replace(/\/$/, '');
     logger.info({ baseUrl, workerId, workerHostId }, "Connecting to orchestrator HTTP API");
 
-    let heartbeatPolicy = await registerWorkerUntilAck(baseUrl, workerId, workerHostId);
-    let heartbeatTimer = startHeartbeatLoop(baseUrl, workerId, workerHostId, heartbeatPolicy);
+    let rejectHeartbeatFailure: (error: WorkerAuthenticationError) => void = () => {};
+    const heartbeatFailure = new Promise<never>((_resolve, reject) => {
+        rejectHeartbeatFailure = reject;
+    });
+    let heartbeatPolicy = await registerWorkerUntilAck(baseUrl, workerId, workerHostId, authToken);
+    let heartbeatTimer = startHeartbeatLoop(
+        baseUrl,
+        workerId,
+        workerHostId,
+        heartbeatPolicy,
+        authToken,
+        rejectHeartbeatFailure
+    );
 
-    while(true) {
+    const claimLoop = async (): Promise<never> => {
+      while(true) {
         let message: WorkerResponse;
         try {
             message = await postJson<WorkerResponse>(`${baseUrl}/workers/tasks/claim`, {
                 worker_id: workerId,
-            });
+            }, authToken);
         } catch (err) {
+            if (err instanceof WorkerAuthenticationError) {
+                throw err;
+            }
             if (err instanceof HttpError && err.status === 404) {
                 logger.warn({ workerId }, "Worker is not registered with orchestrator; re-registering");
-                heartbeatPolicy = await registerWorkerUntilAck(baseUrl, workerId, workerHostId);
+                heartbeatPolicy = await registerWorkerUntilAck(baseUrl, workerId, workerHostId, authToken);
                 clearInterval(heartbeatTimer);
-                heartbeatTimer = startHeartbeatLoop(baseUrl, workerId, workerHostId, heartbeatPolicy);
+                heartbeatTimer = startHeartbeatLoop(
+                    baseUrl,
+                    workerId,
+                    workerHostId,
+                    heartbeatPolicy,
+                    authToken,
+                    rejectHeartbeatFailure
+                );
             } else {
                 logger.warn({ error: describeError(err), workerId, retryDelayMs: DEFAULT_ORCHESTRATOR_RETRY_DELAY_MS }, "Worker task claim failed; retrying");
                 await sleep(DEFAULT_ORCHESTRATOR_RETRY_DELAY_MS);
@@ -338,9 +408,12 @@ async function runWorker(
         const result = await materializeTaskWorkspace(message)
             .then((payload) => processTask(payload, executorFactory, credentialsAdapter, sessionStore, ajv))
             .catch((error) => ({ kind: 'failure' as const, reason: describeError(error) }));
-        await postTaskResultUntilAck(baseUrl, message.task_id, result);
+        await postTaskResultUntilAck(baseUrl, message.task_id, result, authToken);
         logger.info({ taskId: message.task_id, resultKind: result.kind }, "Task result acknowledged");
-    }
+      }
+    };
+
+    await Promise.race([claimLoop(), heartbeatFailure]);
 }
 
 async function main() {
@@ -348,6 +421,7 @@ async function main() {
 
     const workerId = createWorkerId();
     const workerHostId = requiredWorkerHostId();
+    const authToken = requiredWorkerAuthToken();
     const executorFactory = new ExecutorFactory();
     const credentialsFilePath = defaultCredentialsFilePath();
     const credentialsAdapter = await FileCredentialsAdapter.fromFile(credentialsFilePath);
@@ -355,10 +429,12 @@ async function main() {
 
     const ajv = createJsonSchemaValidator();
 
-    await runWorker(workerId, workerHostId, executorFactory, credentialsAdapter, sessionStore, ajv);
+    await runWorker(workerId, workerHostId, executorFactory, credentialsAdapter, sessionStore, ajv, authToken);
 }
 
-main().catch((err) => {
-    logger.error({ err }, "Worker failed to start");
-    process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((err) => {
+        logger.error({ err }, "Worker failed to start");
+        process.exit(1);
+    });
+}
