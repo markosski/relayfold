@@ -5,6 +5,11 @@ description: Write JavaScript functions for deterministic workflow steps.
 
 Function tasks run JavaScript ESM code in a Node.js child process managed by the worker. They are a good fit for deterministic workflow steps: parsing, validation, data shaping, API SDK calls, file generation, and integration glue.
 
+Functions are also the preferred authority boundary for writes to external
+systems. A narrow Function can re-read current state, enforce application
+invariants, and safely apply a structured Agent decision. See
+[Safe Agentic Workflows](/relayfold/docs/guides/safe-agentic-workflows/).
+
 ## Entry point
 
 A function task must export a default function:
