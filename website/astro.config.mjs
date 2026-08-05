@@ -56,7 +56,6 @@ export default defineConfig({
         {
           label: 'Operations',
           items: [
-            { label: 'Production Deployment', slug: 'docs/operations/production-deployment' },
             { label: 'Scaling', slug: 'docs/operations/scaling' },
             { label: 'Orchestrator Storage', slug: 'docs/operations/storage' },
             { label: 'Workspaces', slug: 'docs/operations/workspaces' },
