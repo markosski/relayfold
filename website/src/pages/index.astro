@@ -5,7 +5,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 const url = (path: string) => `${base}${path}`;
 
 const installCommand = `curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
-rf init --version dev
+rf init --version VERSION
 rf up`;
 ---
 

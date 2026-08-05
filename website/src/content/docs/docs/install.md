@@ -14,12 +14,11 @@ the changes required to harden this starter configuration.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
-rf init --version dev # dev for unstable or release tag
+rf init --version VERSION
 rf up
 ```
 
-The `--version dev` option configures the local environment to use the current
-development images.
+Replace `VERSION` with the RelayFold release version you want to install.
 
 `rf up` runs in the foreground and streams the container logs to the
 terminal. Press `Ctrl+C` to stop the containers. Run commands such as
@@ -31,13 +30,13 @@ continue to work.
 ## Try an example
 
 Once RelayFold is running, start with the
-[Simple Function Workflow](/runhelm/docs/examples/simple-function-workflow/) to
+[Simple Function Workflow](/relayfold/docs/examples/simple-function-workflow/) to
 register and execute a minimal workflow through the HTTP API.
 
 For more complete patterns, try the
-[Human Input Workflow](/runhelm/docs/examples/human-input-workflow/),
-[GitHub Issue to PR workflow](/runhelm/docs/examples/github-issue-pr-workflow/),
-or [Daily Stock Report workflow](/runhelm/docs/examples/daily-stock-report-workflow/).
+[Human Input Workflow](/relayfold/docs/examples/human-input-workflow/),
+[GitHub Issue to PR workflow](/relayfold/docs/examples/github-issue-pr-workflow/),
+or [Daily Stock Report workflow](/relayfold/docs/examples/daily-stock-report-workflow/).
 
 ## Local files
 
