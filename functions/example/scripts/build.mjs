@@ -4,11 +4,4 @@ import { buildFunctionArtifacts } from "../../build-function-artifacts.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
-const functions = [
-  {
-    id: "example.example",
-    source: "src/example.ts",
-  }
-];
-
-await buildFunctionArtifacts({ root, functions });
+await buildFunctionArtifacts({ root });
