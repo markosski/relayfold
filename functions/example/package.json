@@ -5,7 +5,20 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "relayfold": {
+    "functions": [
+      {
+        "id": "example.greeting",
+        "source": "src/greeting.ts"
+      },
+      {
+        "id": "example.uppercase",
+        "source": "src/uppercase.ts",
+        "dependencies": []
+      }
+    ]
   },
   "devDependencies": {
     "@types/node": "^20.19.39",

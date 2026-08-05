@@ -21,29 +21,31 @@ git submodule add https://github.com/parsablelabs/relayfold.git relayfold
 Open your application repository in your coding agent, then adapt this prompt:
 
 ```text
-Create a reusable RelayFold function that [describe what the function should do].
+Create one or more reusable RelayFold functions that [describe what the
+functions should do].
 
 Use the implementations and build tooling in relayfold/functions/ and the
 documentation in relayfold/website/src/content/docs/docs/ as the authoritative
 references. Ensure to understand the function's inputs, output and credential 
 requirements.
 
-Create the function under [path and package name]. Follow the existing RelayFold
-source, build, and test patterns. Keep the implementation and its dependencies
-as small as possible, pin every runtime dependency to a specific version, and
-do not invent fields that are not supported by the current examples or
-documentation.
+Create the functions in one workspace under [path and package name]. List every
+stable Function ID and source path in the workspace's `relayfold.functions`
+manifest. Follow the existing RelayFold source, build, and test patterns. Keep
+each implementation and its dependencies as small as possible, pin every
+runtime dependency to a specific version, and do not invent fields that are not
+supported by the current examples or documentation.
 
-Add tests for the function's behavior and generate the registry-ready JSON and
-YAML artifacts. Run the tests and build, then explain the function ID, inputs,
-output, dependencies, and credentials that a referencing workflow task must
-declare. Give me the curl command to register the JSON artifact against
+Add tests for each Function's behavior and generate the registry-ready JSON and
+YAML artifacts. Run the tests and build, then explain each Function's ID,
+inputs, output, dependencies, and credentials that a referencing workflow task
+must declare. Give me the curl commands to register the JSON artifacts against
 $RELAYFOLD_URL.
 ```
 
 Replace the bracketed text with the desired behavior and output location. Review
 the generated code, dependency versions, and credential usage before
-registering the function.
+registering the Functions.
 
 ## Function definition shape
 
@@ -121,9 +123,10 @@ Delete only when no active or future workflows need the reference. Workflows tha
 ## Build artifacts from source
 
 Use the [`functions/example` README](https://github.com/parsablelabs/relayfold/blob/main/functions/example/README.md)
-for the TypeScript template, direct testing, dependency handling, artifact
-generation, and guidance for maintaining larger Functions in dedicated
-repositories.
+for the multi-Function TypeScript workspace template, direct testing, dependency
+handling, artifact generation, and guidance for maintaining larger Function
+collections. A workspace declares all entries in `package.json` under
+`relayfold.functions`; one build emits a YAML and JSON artifact for every entry.
 
 ## When to use inline functions
 

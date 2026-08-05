@@ -7,11 +7,16 @@ import { fileURLToPath } from "node:url";
 const functionsRoot = dirname(fileURLToPath(import.meta.url));
 
 export async function buildFunctionArtifacts({ root, functions }) {
+  const packageJson = await readPackageJson(root);
+  const functionDefinitions = functions ?? packageJson.relayfold?.functions;
+  validateFunctionDefinitions(functionDefinitions);
+
   const distDir = join(root, "dist");
-  const packageDependencies = await readPackageDependencies(root);
+  const packageDependencies = packageDependenciesFrom(packageJson);
+  await rm(distDir, { recursive: true, force: true });
   await mkdir(distDir, { recursive: true });
 
-  for (const def of functions) {
+  for (const def of functionDefinitions) {
     const code = await readFunctionCode(root, def.source);
     const dependencies = def.dependencies ?? packageDependencies;
     const functionDef = {
@@ -28,11 +33,36 @@ export async function buildFunctionArtifacts({ root, functions }) {
   }
 }
 
-async function readPackageDependencies(root) {
-  const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+async function readPackageJson(root) {
+  return JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+}
+
+function packageDependenciesFrom(packageJson) {
   return Object.entries(packageJson.dependencies ?? {})
     .map(([name, version]) => ({ name, version }))
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function validateFunctionDefinitions(functionDefinitions) {
+  if (!Array.isArray(functionDefinitions) || functionDefinitions.length === 0) {
+    throw new Error(
+      'Define at least one Function in package.json under "relayfold.functions".',
+    );
+  }
+
+  const ids = new Set();
+  for (const definition of functionDefinitions) {
+    if (typeof definition?.id !== "string" || definition.id.length === 0) {
+      throw new Error("Each Function definition must have a non-empty id.");
+    }
+    if (typeof definition.source !== "string" || definition.source.length === 0) {
+      throw new Error(`Function "${definition.id}" must have a non-empty source path.`);
+    }
+    if (ids.has(definition.id)) {
+      throw new Error(`Function id "${definition.id}" is defined more than once.`);
+    }
+    ids.add(definition.id);
+  }
 }
 
 async function readFunctionCode(root, source) {
