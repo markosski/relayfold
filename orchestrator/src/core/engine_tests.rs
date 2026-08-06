@@ -196,6 +196,48 @@ impl TaskDispatchPort for InputNeededDispatcher {
     }
 }
 
+struct ApiResponseDispatcher {
+    response: serde_json::Value,
+    calls: StdMutex<Vec<(String, Vec<serde_json::Value>)>>,
+}
+
+impl ApiResponseDispatcher {
+    fn new(response: serde_json::Value) -> Self {
+        Self {
+            response,
+            calls: StdMutex::new(vec![]),
+        }
+    }
+
+    fn calls(&self) -> Vec<(String, Vec<serde_json::Value>)> {
+        self.calls.lock().unwrap().clone()
+    }
+}
+
+#[async_trait]
+impl TaskDispatchPort for ApiResponseDispatcher {
+    async fn dispatch_task(
+        &self,
+        _namespace: &crate::core::namespace::Namespace,
+        _workflow_inst_id: &str,
+        task: &TaskDef,
+        inputs: &[serde_json::Value],
+        _metadata: &ExecutionMetadata,
+        _dispatch: &TaskDispatchConstraints,
+    ) -> anyhow::Result<ExecutionResult> {
+        self.calls
+            .lock()
+            .unwrap()
+            .push((task.id.clone(), inputs.to_vec()));
+
+        if task.id == "fetch-data" {
+            return Ok(ExecutionResult::Success(self.response.clone()));
+        }
+
+        Ok(ExecutionResult::Success(json!({ "done": true })))
+    }
+}
+
 struct InputNeededForTaskDispatcher {
     input_needed_task_id: String,
     calls: StdMutex<Vec<String>>,
@@ -288,6 +330,7 @@ fn task_def(id: &str, output_schema: serde_json::Value) -> TaskDef {
         kind: TaskTypeDef::ApiCall {
             url: "http://example.com".to_string(),
             method: "GET".to_string(),
+            headers: HashMap::new(),
         },
         control: None,
         timeout_secs: None,
@@ -1011,6 +1054,7 @@ async fn test_fan_in_workflow_completes_with_propagation() {
                 kind: TaskTypeDef::ApiCall {
                     url: "http://example.com".to_string(),
                     method: "POST".to_string(),
+                    headers: HashMap::new(),
                 },
                 control: None,
                 timeout_secs: None,
@@ -1949,6 +1993,149 @@ async fn test_schema_validation_failure_marks_workflow_failed() {
         .unwrap();
     assert_eq!(instance.status, WorkflowStatus::Failed);
     assert_eq!(instance.tasks["task-strict[1]"].status, TaskStatus::Failed);
+}
+
+#[tokio::test]
+async fn api_call_complete_response_satisfies_schema_and_propagates_downstream() {
+    let response = json!({
+        "status": 200,
+        "headers": { "content-type": "application/json" },
+        "body": { "id": "item-1" }
+    });
+    let dispatcher = Arc::new(ApiResponseDispatcher::new(response.clone()));
+    let engine = make_engine_with_dispatcher(dispatcher.clone());
+    let def = WorkflowDef {
+        id: "api-response-valid".to_string(),
+        description: String::new(),
+        tasks: vec![
+            TaskDef {
+                id: "fetch-data".to_string(),
+                kind: TaskTypeDef::ApiCall {
+                    url: "http://example.com/items".to_string(),
+                    method: "GET".to_string(),
+                    headers: HashMap::from([(
+                        "Accept".to_string(),
+                        "application/json".to_string(),
+                    )]),
+                },
+                control: None,
+                timeout_secs: None,
+                input_schemas: vec![],
+                output_schema: Some(api_response_schema()),
+                workspace: None,
+                required_credentials: vec![],
+            },
+            task_def("consume-data", json!({ "type": "object" })),
+        ],
+        data_bindings: vec![DataBinding {
+            source_task_id: "fetch-data".to_string(),
+            target_task_id: "consume-data".to_string(),
+        }],
+    };
+
+    let instance_id = setup(&engine, def).await;
+    engine
+        .run_workflow_instance(
+            &crate::core::namespace::test_namespace(),
+            instance_id.clone(),
+        )
+        .await
+        .unwrap();
+
+    let instance = engine
+        .storage
+        .get_workflow_instance(&crate::core::namespace::test_namespace(), &instance_id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(instance.status, WorkflowStatus::Completed);
+    assert_eq!(
+        instance.tasks["fetch-data[1]"].output_data,
+        Some(response.clone())
+    );
+    assert_eq!(
+        dispatcher.calls(),
+        vec![
+            ("fetch-data".to_string(), vec![]),
+            ("consume-data".to_string(), vec![response]),
+        ]
+    );
+}
+
+#[tokio::test]
+async fn api_call_complete_response_that_violates_schema_is_not_propagated() {
+    let dispatcher = Arc::new(ApiResponseDispatcher::new(json!({
+        "status": 200,
+        "headers": { "content-type": "application/json" },
+        "body": { "id": 42 }
+    })));
+    let engine = make_engine_with_dispatcher(dispatcher.clone());
+    let def = WorkflowDef {
+        id: "api-response-invalid".to_string(),
+        description: String::new(),
+        tasks: vec![
+            TaskDef {
+                id: "fetch-data".to_string(),
+                kind: TaskTypeDef::ApiCall {
+                    url: "http://example.com/items".to_string(),
+                    method: "GET".to_string(),
+                    headers: HashMap::new(),
+                },
+                control: None,
+                timeout_secs: None,
+                input_schemas: vec![],
+                output_schema: Some(api_response_schema()),
+                workspace: None,
+                required_credentials: vec![],
+            },
+            task_def("consume-data", json!({ "type": "object" })),
+        ],
+        data_bindings: vec![DataBinding {
+            source_task_id: "fetch-data".to_string(),
+            target_task_id: "consume-data".to_string(),
+        }],
+    };
+
+    let instance_id = setup(&engine, def).await;
+    let result = engine
+        .run_workflow_instance(
+            &crate::core::namespace::test_namespace(),
+            instance_id.clone(),
+        )
+        .await;
+    assert!(result.is_err());
+
+    let instance = engine
+        .storage
+        .get_workflow_instance(&crate::core::namespace::test_namespace(), &instance_id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(instance.status, WorkflowStatus::Failed);
+    assert_eq!(instance.tasks["fetch-data[1]"].status, TaskStatus::Failed);
+    assert_eq!(instance.tasks["fetch-data[1]"].output_data, None);
+    assert_eq!(dispatcher.calls(), vec![("fetch-data".to_string(), vec![])]);
+}
+
+fn api_response_schema() -> serde_json::Value {
+    json!({
+        "type": "object",
+        "required": ["status", "headers", "body"],
+        "properties": {
+            "status": { "type": "integer" },
+            "headers": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+            },
+            "body": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                    "id": { "type": "string" }
+                }
+            }
+        }
+    })
 }
 
 #[tokio::test]

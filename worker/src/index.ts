@@ -1,8 +1,6 @@
-import type { Ajv } from 'ajv';
 import { ExecutorFactory } from './adapters/executors/ExecutorFactory.js';
 import { FileCredentialsAdapter, defaultCredentialsFilePath } from './adapters/FileCredentialsAdapter.js';
 import { FileSessionStore } from './adapters/FileSessionStore.js';
-import { createJsonSchemaValidator } from './core/JsonSchemaValidator.js';
 import type { TaskDispatchPayload, TaskExecutionPayload } from './core/models/TaskDef.js';
 import type { CredentialsPort } from './core/ports/CredentialsPort.js';
 import type { SessionStore } from './core/ports/SessionStore.js';
@@ -95,8 +93,7 @@ async function processTask(
     payload: TaskExecutionPayload,
     executorFactory: ExecutorFactory,
     credentialsAdapter: CredentialsPort,
-    sessionStore: SessionStore,
-    ajv: Ajv
+    sessionStore: SessionStore
 ): Promise<WorkerExecutionResult> {
     try {
         logger.info(`Received task: ${payload.task?.id || 'unknown'}`);
@@ -105,18 +102,6 @@ async function processTask(
         const executor = executorFactory.getExecutor(payload.task.kind);
         const result = await executor.execute(payload, credentialsAdapter, sessionStore);
 
-        if (result.status === 'ok') {
-            // Validate the result against the output_schema if provided
-            const outputSchema = payload.task?.output_schema;
-            if (outputSchema) {
-                const validate = ajv.compile(outputSchema);
-                const isValid = validate(result.output);
-                if (!isValid) {
-                    const errorMsg = `Output schema validation failed: ${ajv.errorsText(validate.errors)}`;
-                    return { kind: 'failure', reason: errorMsg };
-                }
-            }
-        }
         return mapExecutionResult(result);
     } catch (error) {
         return { kind: 'failure', reason: String(error) };
@@ -295,8 +280,7 @@ async function runWorker(
     workerHostId: string,
     executorFactory: ExecutorFactory,
     credentialsAdapter: CredentialsPort,
-    sessionStore: SessionStore,
-    ajv: Ajv
+    sessionStore: SessionStore
 ) {
     const baseUrl = (process.env.RELAYFOLD_ORCHESTRATOR_HTTP_URL || DEFAULT_ORCHESTRATOR_HTTP_URL)
         .replace(/\/$/, '');
@@ -336,7 +320,7 @@ async function runWorker(
         logger.info({ taskId: message.task_id }, "Claimed task dispatch");
         // TODO: consider adding a timeout for task execution and implement a heartbeat mechanism to let the orchestrator know the worker is still alive and working on the task, especially for long-running tasks
         const result = await materializeTaskWorkspace(message)
-            .then((payload) => processTask(payload, executorFactory, credentialsAdapter, sessionStore, ajv))
+            .then((payload) => processTask(payload, executorFactory, credentialsAdapter, sessionStore))
             .catch((error) => ({ kind: 'failure' as const, reason: describeError(error) }));
         await postTaskResultUntilAck(baseUrl, message.task_id, result);
         logger.info({ taskId: message.task_id, resultKind: result.kind }, "Task result acknowledged");
@@ -353,9 +337,7 @@ async function main() {
     const credentialsAdapter = await FileCredentialsAdapter.fromFile(credentialsFilePath);
     const sessionStore = new FileSessionStore();
 
-    const ajv = createJsonSchemaValidator();
-
-    await runWorker(workerId, workerHostId, executorFactory, credentialsAdapter, sessionStore, ajv);
+    await runWorker(workerId, workerHostId, executorFactory, credentialsAdapter, sessionStore);
 }
 
 main().catch((err) => {

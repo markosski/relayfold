@@ -103,9 +103,17 @@ API Call task:
 ```yaml
 kind:
   apiCall:
-    url: "https://example.com/status"
+    url: "https://api.example.com/items"
     method: "GET"
+    headers:
+      Accept: "application/json"
+      X-Client-Version: "1"
 ```
+
+`headers` is an optional string-to-string map of literal request headers. A successful
+API call returns `{ status, headers, body }`. JSON media types produce a parsed JSON
+`body`; other response bodies are strings. When present, `output_schema` validates
+this complete response value before it can flow to downstream tasks.
 
 ## Data bindings
 

@@ -115,6 +115,7 @@ mod tests {
             kind: crate::core::task::TaskTypeDef::ApiCall {
                 url: "http://example.com".to_string(),
                 method: "GET".to_string(),
+                headers: std::collections::HashMap::new(),
             },
             control: None,
             timeout_secs: None,
