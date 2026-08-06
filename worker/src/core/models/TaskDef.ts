@@ -1,7 +1,7 @@
 export type TaskKind =
     | { agent: { model_id: string; provider_url: string; prompt: string; tools: string[]; skills: string[];
         ask?: boolean; schema_failure_retry_times?: number, reuse_session?: boolean} }
-    | { apiCall: { url: string; method: string } }
+    | { apiCall: { url: string; method: string; headers?: Record<string, string> } }
     | { function: InlineFunctionTask | ReferencedFunctionTask };
 
 export interface InlineFunctionTask {
