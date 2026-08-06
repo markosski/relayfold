@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
+use std::collections::HashMap;
 
 use crate::core::function::models::FunctionTaskDef;
 use crate::core::verifier::{LoopExecutionContext, VerifierAttemptMetadata, VerifierControlConfig};
@@ -13,7 +14,12 @@ fn default_true() -> bool {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TaskTypeDef {
     #[serde(rename = "apiCall")]
-    ApiCall { url: String, method: String },
+    ApiCall {
+        url: String,
+        method: String,
+        #[serde(default)]
+        headers: HashMap<String, String>,
+    },
     #[serde(rename = "agent")]
     Agent {
         // Model name, e.g. sonnet, oput, gpt-5.5, gemini-2.5-flash, etc.
@@ -225,6 +231,7 @@ mod tests {
         let api_call = serde_json::to_value(TaskTypeDef::ApiCall {
             url: "https://example.com".to_string(),
             method: "GET".to_string(),
+            headers: HashMap::new(),
         })
         .unwrap();
         let function = serde_json::to_value(TaskTypeDef::Function(FunctionTaskDef::Inline {
@@ -235,6 +242,47 @@ mod tests {
 
         assert!(api_call.get("apiCall").is_some());
         assert!(function.get("function").is_some());
+    }
+
+    #[test]
+    fn api_call_headers_default_to_empty_when_omitted_from_json() {
+        let task: TaskTypeDef = serde_json::from_value(json!({
+            "apiCall": {
+                "url": "https://example.com/items",
+                "method": "GET"
+            }
+        }))
+        .unwrap();
+
+        assert!(matches!(
+            task,
+            TaskTypeDef::ApiCall { headers, .. } if headers.is_empty()
+        ));
+    }
+
+    #[test]
+    fn api_call_headers_deserialize_from_yaml_and_serialize_for_worker_dispatch() {
+        let yaml_value: serde_json::Value = serde_yaml::from_str(
+            r#"
+apiCall:
+  url: https://example.com/items
+  method: GET
+  headers:
+    Accept: application/json
+    X-Client-Version: "1"
+"#,
+        )
+        .unwrap();
+        let task: TaskTypeDef = serde_json::from_value(yaml_value).unwrap();
+
+        let serialized = serde_json::to_value(task).unwrap();
+        assert_eq!(
+            serialized["apiCall"]["headers"],
+            json!({
+                "Accept": "application/json",
+                "X-Client-Version": "1"
+            })
+        );
     }
 
     #[test]
