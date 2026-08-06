@@ -68,7 +68,14 @@ curl -sS -X POST "$RELAYFOLD_URL/workflow-def" \
             "code": "export default async function run({ inputs }) { const name = inputs[0]?.name ?? \"friend\"; return { response: `Hello, ${name}!` }; }"
           }
         },
-        "input_schemas": [],
+        "input_schemas": [
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
+        ],
         "output_schema": {
           "type": "object",
           "required": ["response"],

@@ -33,7 +33,12 @@ Workers:
 - validate task output against JSON Schema
 - read required credentials through a credentials port
 
-Function tasks run arbitrary code in an isolated Node.js child process. Agent tasks use a provider-agnostic model interface, approved tools, selected skills, and credentials loaded through the worker credential adapter.
+Function tasks run arbitrary code in an isolated Node.js child process.
+RelayFold's Agent runtime is built on the
+[Pi coding agent](https://github.com/earendil-works/pi-mono), which provides the
+underlying agent session, model, tool, and skill capabilities. RelayFold workers
+integrate those capabilities with workflow task isolation, credentials, and
+lifecycle management.
 
 ## Ports and adapters
 

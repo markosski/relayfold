@@ -44,6 +44,13 @@ details.
 - [`worker/`](worker/) — TypeScript runtime for executing workflow tasks
 - [`website/`](website/) — project website and user documentation
 
+## Acknowledgements
+
+RelayFold's Agent runtime is built on the excellent
+[Pi coding agent](https://github.com/earendil-works/pi-mono) project. Pi provides
+the underlying agent session, model, tool, and skill capabilities used by
+RelayFold workers.
+
 ## License
 
 RelayFold is licensed under the [Apache License 2.0](LICENSE).
