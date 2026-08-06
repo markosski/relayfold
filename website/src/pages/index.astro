@@ -239,6 +239,16 @@ rf up`;
         padding-top: 24px;
       }
 
+      .demo-video {
+        display: block;
+        width: 75%;
+        margin-top: 28px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #111923;
+        box-shadow: 0 18px 48px rgba(21, 32, 43, 0.08);
+      }
+
       .section > p {
         max-width: 760px;
         margin-top: 14px;
@@ -418,7 +428,21 @@ rf up`;
             <WorkflowFlow client:load />
           </aside>
       </section>
-      
+
+      <section class="section" aria-labelledby="human-input-demo">
+        <p class="eyebrow">Demo: human-in-the-loop workflow</p>
+        <h2 id="human-input-demo">Pause for input. Resume where you left off.</h2>
+        <p>
+          Watch RelayFold run an Agent workflow, pause when a decision is
+          needed, accept human input, and continue the same workflow to
+          completion.
+        </p>
+        <video class="demo-video" controls playsinline preload="metadata">
+          <source src={url('hitl-demo.webm')} type="video/webm" />
+          Your browser cannot play this video.
+          <a href={url('hitl-demo.webm')}>Download the human-in-the-loop demo</a>.
+        </video>
+      </section>
 
       <section class="section">
         <h2>A deterministic control plane for agent work.</h2>
