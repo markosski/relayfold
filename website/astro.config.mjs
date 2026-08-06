@@ -60,6 +60,10 @@ export default defineConfig({
             { label: 'Orchestrator Storage', slug: 'docs/operations/storage' },
             { label: 'Workspaces', slug: 'docs/operations/workspaces' },
             { label: 'Credentials', slug: 'docs/operations/credentials' },
+            {
+              label: 'Production Deployment (WIP)',
+              slug: 'docs/operations/production-deployment',
+            },
             { label: 'Reliability and Side Effects', slug: 'docs/operations/reliability' },
             { label: 'Worker Host Pinning', slug: 'docs/operations/worker-host-pinning' },
           ],

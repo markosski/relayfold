@@ -9,16 +9,22 @@ The Docker-first local install path does not require Rust, Node.js, or a source 
 This local install path is intended for development and evaluation only. It is
 not suitable for production deployments. See
 [Production Deployment](/relayfold/docs/operations/production-deployment/) for
-the changes required to harden this starter configuration.
+work-in-progress guidance on changes required to harden this starter
+configuration.
 :::
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
-rf init --version VERSION
+rf init --version 0.1.0
 rf up
 ```
 
-Replace `VERSION` with the RelayFold release version you want to install.
+Pass a different release to `--version` when needed. If `--version` is omitted,
+`rf init` resolves and uses the latest RelayFold GitHub release:
+
+```bash
+rf init
+```
 
 `rf up` runs in the foreground and streams the container logs to the
 terminal. Press `Ctrl+C` to stop the containers. Run commands such as
