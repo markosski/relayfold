@@ -29,6 +29,9 @@ rf init
 `rf up` runs in the foreground and streams the container logs to the
 terminal. Press `Ctrl+C` to stop the containers. Run commands such as
 `rf status` from another terminal while RelayFold is running.
+On Apple Silicon Macs, `rf up` automatically runs the published AMD64 images
+through Docker's architecture emulation by setting
+`DOCKER_DEFAULT_PLATFORM=linux/amd64`.
 
 The installer also creates `relayfold` as an alias for `rf` so existing commands
 continue to work.

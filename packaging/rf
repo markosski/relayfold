@@ -41,6 +41,16 @@ compose_cmd() {
   docker compose --env-file "$CONFIG_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
+configure_docker_platform() {
+  if [ "$(uname -s)" = "Darwin" ]; then
+    case "$(uname -m)" in
+      arm64|aarch64)
+        export DOCKER_DEFAULT_PLATFORM=linux/amd64
+        ;;
+    esac
+  fi
+}
+
 write_config() {
   version="$1"
   registry="$2"
@@ -196,6 +206,7 @@ case "$command" in
     init_relayfold "$@"
     ;;
   up)
+    configure_docker_platform
     compose_cmd up "$@"
     ;;
   down)
