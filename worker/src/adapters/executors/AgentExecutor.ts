@@ -33,11 +33,24 @@ function extractAssistantText(agent: Agent): string {
     return resultText;
 }
 
-function extractJsonString(resultText: string): string {
+export function extractJsonString(resultText: string): string {
     let jsonString = resultText.trim();
-    
-    // Remove markdown code blocks if present
-    const markdownMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+
+    if (!jsonString) {
+        return "";
+    }
+
+    // Prefer the complete response when it is already valid JSON. This preserves
+    // Markdown fences and other brace-like content inside JSON string values.
+    try {
+        JSON.parse(jsonString);
+        return jsonString;
+    } catch {
+        // Continue with compatibility extraction for fenced or prefixed output.
+    }
+
+    // Remove a Markdown code block only when it wraps the complete response.
+    const markdownMatch = jsonString.match(/^```(?:json)?\s*([\s\S]*?)\s*```\s*$/i);
     if (markdownMatch?.[1]) {
         jsonString = markdownMatch[1].trim();
     }

@@ -39,6 +39,14 @@ The agent prompt defines the task objective. Inputs from workflow triggers and u
 
 Use schemas when downstream tasks depend on specific fields. A schema makes the contract explicit and gives RelayFold a clear validation boundary before the workflow continues.
 
+## Structured output
+
+When `output_schema` is present, the Agent's final response must be a JSON value
+that satisfies the schema. RelayFold accepts raw JSON and a whole-response
+`json` code fence. Markdown code fences contained inside JSON string fields,
+such as an issue body or generated documentation, remain part of the string and
+do not affect response parsing.
+
 ## Tools and skills
 
 `tools` declares the approved tool names the agent may use. `skills` declares selected skills that should be loaded for the task.
