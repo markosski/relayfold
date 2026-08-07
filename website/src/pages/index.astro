@@ -422,23 +422,20 @@ rf up`;
         </div>
       </section>
 
-      <section class="workflow-showcase" aria-label="RelayFold stock report workflow">
-          <p class="eyebrow">Showcase: stock report workflow</p>
+      <section class="section workflow-showcase" aria-label="RelayFold stock report workflow">
+          <p class="eyebrow">How it works</p>
           <aside class="system-panel" aria-label="RelayFold stock report workflow">
             <WorkflowFlow client:load />
           </aside>
       </section>
 
       <section class="section" aria-labelledby="human-input-demo">
-        <p class="eyebrow">Demo: human-in-the-loop workflow</p>
-        <h2 id="human-input-demo">Pause for input. Resume where you left off.</h2>
+        <p class="eyebrow">Demo: implement Github issue workflow</p>
         <p>
-          Watch RelayFold run an Agent workflow, pause when a decision is
-          needed, accept human input, and continue the same workflow to
-          completion.
+          Watch RelayFold run an Agent workflow designed to take repository name and issue number as input, implement and test the change, review changes and finally submit a PR.
         </p>
         <video class="demo-video" controls playsinline preload="metadata">
-          <source src={url('hitl-demo.webm')} type="video/webm" />
+          <source src={url('demo.mp4')} type="video/mp4" />
           Your browser cannot play this video.
           <a href={url('hitl-demo.webm')}>Download the human-in-the-loop demo</a>.
         </video>

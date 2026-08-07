@@ -15,7 +15,7 @@ configuration.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/parsablelabs/relayfold/main/packaging/install.sh | sh
-rf init --version 0.1.0
+rf init --version VERSION
 rf up
 ```
 
@@ -110,7 +110,7 @@ RELAYFOLD_WORKER_IMAGE=registry.example.com/relayfold-worker:dev
 Users who need to own their image artifacts can build them from a checkout or git ref:
 
 ```bash
-packaging/build-images.sh --ref v0.3.1 --tag-prefix registry.example.com/relayfold --push
+packaging/build-images.sh --ref vVERSION --tag-prefix registry.example.com/relayfold --push
 ```
 
 Use the source-build path for contributor workflows or controlled image publishing. The normal local-user path should stay Docker-first and use published images.
